@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('express-rate-limit');
 require('dotenv').config();
 const pool = require('./config/database');
 

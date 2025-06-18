@@ -8,7 +8,7 @@ const auth = require('../middleware/auth');
 router.get('/', productsController.getProducts);
 
 // Obtener producto por ID
-router.get('/:id', [param('id').isInt()], productsController.getProductById);
+router.get('/:id', [param('id').isInt()], productsController.getProduct);
 
 // Crear producto (requiere autenticación)
 router.post(
@@ -37,5 +37,8 @@ router.put(
 
 // Eliminar producto (requiere autenticación)
 router.delete('/:id', auth, [param('id').isInt()], productsController.deleteProduct);
+
+// Listar categorías
+router.get('/categories', productsController.getCategories);
 
 module.exports = router; 
