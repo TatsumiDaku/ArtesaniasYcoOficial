@@ -106,7 +106,7 @@ Usaremos Certbot para generar los certificados SSL gratuitos. Lo haremos **antes
     ```bash
     sudo docker compose run --rm --entrypoint "\
       certbot certonly --webroot -w /var/www/certbot \
-      --email tu-email@dominio.com \
+      --email somos@artesaniasyco.com \
       --agree-tos \
       --no-eff-email \
       -d artesaniasyco.com -d www.artesaniasyco.com" nginx

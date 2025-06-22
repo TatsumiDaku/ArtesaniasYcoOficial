@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
 import StarRating from '@/components/ui/StarRating';
@@ -14,7 +14,7 @@ const Reviews = ({ productId }) => {
   const [submitting, setSubmitting] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const res = await api.get(`/products/${productId}/reviews`);
       setReviews(res.data);
@@ -27,13 +27,13 @@ const Reviews = ({ productId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId]);
 
   useEffect(() => {
     if (productId) {
       fetchReviews();
     }
-  }, [productId]);
+  }, [productId, fetchReviews]);
   
   const handleReviewSubmit = async (e) => {
     e.preventDefault();

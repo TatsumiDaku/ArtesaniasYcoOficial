@@ -100,9 +100,9 @@ const SobreNosotros = () => {
                             <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-8 text-white">
                                 <h3 className="text-2xl font-bold mb-4">Nuestra Misión</h3>
                                 <p className="text-lg leading-relaxed">
-                                    "Preservar y promover las tradiciones artesanales mientras creamos oportunidades 
+                                    &quot;Preservar y promover las tradiciones artesanales mientras creamos oportunidades 
                                     económicas sostenibles para artesanos de todo el mundo, conectando culturas a 
-                                    través del arte único y auténtico."
+                                    través del arte único y auténtico.&quot;
                                 </p>
                             </div>
                         </div>

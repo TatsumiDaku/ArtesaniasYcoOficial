@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/utils/api';
 import { jwtDecode } from 'jwt-decode'; // Using a direct import for simplicity
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [showPendingModal, setShowPendingModal] = useState(false);
   const router = useRouter();
 
-  const loadUserFromToken = async () => {
+  const loadUserFromToken = useCallback(async () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       try {
@@ -48,11 +48,11 @@ export const AuthProvider = ({ children }) => {
       }
     }
     setLoading(false);
-  };
+  }, [router]);
 
   useEffect(() => {
     loadUserFromToken();
-  }, []);
+  }, [loadUserFromToken]);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     toast.success('Perfil actualizado.');
   };
 
-  const logout = (notify = true) => {
+  const logout = useCallback((notify = true) => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Has cerrado sesión.');
     }
     router.push('/login');
-  };
+  }, [router]);
 
   const isAuthenticated = !!token;
   const isAdmin = user?.role === 'admin';

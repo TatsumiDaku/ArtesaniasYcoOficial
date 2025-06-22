@@ -22,7 +22,7 @@ const withAuthProtection = (WrappedComponent, { requiredRole } = {}) => {
         router.replace('/'); // Redirigir a la página de inicio o a una página de 'no autorizado'.
       }
 
-    }, [isAuthenticated, loading, router, user, requiredRole]);
+    }, [isAuthenticated, loading, router, user]);
     
     // --- Lógica de Renderizado Estricta ---
     
