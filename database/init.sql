@@ -1,6 +1,3 @@
--- Crear base de datos
-CREATE DATABASE artesanias_db;
-
 -- Usar la base de datos
 \c artesanias_db;
 
