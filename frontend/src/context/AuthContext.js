@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       }
     }
     setLoading(false);
-  }, [router]);
+  }, [router, logout]);
 
   useEffect(() => {
     loadUserFromToken();
