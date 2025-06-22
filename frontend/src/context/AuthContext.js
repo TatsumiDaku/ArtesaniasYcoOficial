@@ -3,7 +3,7 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/utils/api';
-import { jwtDecode } from 'jwt-decode'; // Using a direct import for simplicity
+import { jwtDecode } from 'jwt-decode';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
@@ -15,18 +15,26 @@ export const AuthProvider = ({ children }) => {
   const [showPendingModal, setShowPendingModal] = useState(false);
   const router = useRouter();
 
+  const logout = useCallback((notify = true) => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+    if (notify) {
+      toast.success('Has cerrado sesión.');
+    }
+    router.push('/login');
+  }, [router]);
+
   const loadUserFromToken = useCallback(async () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       try {
         const decoded = jwtDecode(storedToken);
-        // Check if token is expired
         if (decoded.exp * 1000 < Date.now()) {
           logout(false);
           return;
         }
         setToken(storedToken);
-        // Reconstruir el objeto de usuario completo desde el payload del token
         setUser({ 
           id: decoded.id, 
           name: decoded.name, 
@@ -44,11 +52,11 @@ export const AuthProvider = ({ children }) => {
         });
       } catch (error) {
         console.error("Invalid token", error);
-        logout(false); // Clear invalid token
+        logout(false);
       }
     }
     setLoading(false);
-  }, [router, logout]);
+  }, [logout]);
 
   useEffect(() => {
     loadUserFromToken();
@@ -61,16 +69,11 @@ export const AuthProvider = ({ children }) => {
       const { token, user } = res.data;
       localStorage.setItem('token', token);
       setToken(token);
-      setUser(user); // El backend ahora devuelve el objeto de usuario completo
+      setUser(user);
       toast.success(`Bienvenido, ${user.name}!`);
-
-      // Redirigir siempre a la página de inicio sin importar el rol
       router.push('/');
-
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión.';
-      
-      // Aquí está la magia: si el mensaje de error es el de pendiente, mostramos el modal.
       if (error.response?.status === 403 && errorMessage.includes('pendiente de aprobación')) {
           setShowPendingModal(true);
       } else {
@@ -86,19 +89,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const res = await api.post('/auth/register', userData);
-      
-      // Si es un artesano, el backend devuelve un mensaje especial.
       if (res.data.artisanPending) {
         toast.success('¡Registro casi listo!');
         return { success: true, artisanPending: true };
       }
-
-      // Para clientes, procedemos al login automático
       toast.success('¡Registro exitoso!');
       const { email, password } = userData;
-      await login(email, password); // Iniciar sesión automáticamente
+      await login(email, password);
       return { success: true };
-
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error en el registro.';
       toast.error(errorMessage);
@@ -115,16 +113,6 @@ export const AuthProvider = ({ children }) => {
     setUser(newUser);
     toast.success('Perfil actualizado.');
   };
-
-  const logout = useCallback((notify = true) => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    if (notify) {
-      toast.success('Has cerrado sesión.');
-    }
-    router.push('/login');
-  }, [router]);
 
   const isAuthenticated = !!token;
   const isAdmin = user?.role === 'admin';

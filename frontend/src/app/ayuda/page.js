@@ -252,12 +252,12 @@ const Ayuda = () => {
     ],
     artesanos: [
       {
-        pregunta: "¿Cómo puedo convertirme en artesano?",
-        respuesta: "Para convertirte en artesano: 1) Completa el formulario de registro como artesano, 2) Envía muestras de tu trabajo, 3) Participa en una entrevista, 4) Si eres aprobado, configura tu tienda virtual."
+        pregunta: "¿Cómo puedo vender mis productos en la plataforma?",
+        respuesta: "Para vender tus productos: 1) Regístrate como artesano, 2) Completa tu perfil con tu historia y fotos de tu trabajo, 3) Sube tus productos para revisión, 4) Una vez aprobados, estarán disponibles para la venta."
       },
       {
-        pregunta: "¿Qué comisión cobran por venta?",
-        respuesta: "Cobramos una comisión del 15% por cada venta. Esta comisión cubre los costos de la plataforma, marketing, soporte al cliente y procesamiento de pagos."
+        pregunta: "¿Qué comisiones cobran?",
+        respuesta: "Cobramos una comisión del 15% sobre cada venta para cubrir los costos de la plataforma, marketing y soporte. No hay tarifas de registro ni de mantenimiento."
       },
       {
         pregunta: "¿Cómo recibo mis pagos?",
@@ -294,443 +294,150 @@ const Ayuda = () => {
     ]
   };
 
-  // Función para buscar en todas las FAQs
-  const searchFAQs = (term) => {
-    if (!term.trim()) return [];
-    
-    const allFAQs = Object.values(faqs).flat();
-    return allFAQs.filter(faq => 
-      faq.pregunta.toLowerCase().includes(term.toLowerCase()) ||
-      faq.respuesta.toLowerCase().includes(term.toLowerCase())
-    ).slice(0, 5); // Mostrar máximo 5 resultados
-  };
+  const allFaqs = Object.values(faqs).flat();
+  const filteredFaqs = searchTerm
+    ? allFaqs.filter(faq =>
+        faq.pregunta.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.respuesta.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setShowSearchResults(value.length > 0);
+    setSearchTerm(e.target.value);
+    setShowSearchResults(e.target.value.length > 2);
   };
-
-  const searchResults = searchFAQs(searchTerm);
-
-  const tutoriales = [
-    {
-      titulo: "Cómo realizar tu primera compra",
-      descripcion: "Aprende paso a paso cómo navegar por la plataforma y realizar tu primera compra de productos artesanales.",
-      duracion: "5:30",
-      categoria: "compras",
-      videoId: "tutorial-primera-compra"
-    },
-    {
-      titulo: "Configuración de tu cuenta de artesano",
-      descripcion: "Guía completa para configurar tu tienda virtual y empezar a vender tus productos artesanales.",
-      duracion: "12:45",
-      categoria: "artesanos",
-      videoId: "tutorial-artesano"
-    },
-    {
-      titulo: "Gestión de pedidos y envíos",
-      descripcion: "Aprende cómo gestionar tus pedidos, preparar envíos y mantener a tus clientes informados.",
-      duracion: "8:20",
-      categoria: "artesanos",
-      videoId: "tutorial-pedidos"
-    },
-    {
-      titulo: "Cómo añadir productos a favoritos",
-      descripcion: "Descubre cómo guardar tus productos favoritos para comprarlos más tarde.",
-      duracion: "3:15",
-      categoria: "general",
-      videoId: "tutorial-favoritos"
-    },
-    {
-      titulo: "Proceso de devoluciones y reembolsos",
-      descripcion: "Conoce nuestras políticas de devolución y cómo solicitar un reembolso si es necesario.",
-      duracion: "6:40",
-      categoria: "compras",
-      videoId: "tutorial-devoluciones"
-    },
-    {
-      titulo: "Optimización de tu perfil de artesano",
-      descripcion: "Mejora tu visibilidad y ventas optimizando tu perfil y descripciones de productos.",
-      duracion: "10:25",
-      categoria: "artesanos",
-      videoId: "tutorial-perfil"
-    }
-  ];
 
   const toggleFaq = (index) => {
     setExpandedFaq(expandedFaq === index ? null : index);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-pacifico bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-8 leading-loose py-8">
-              Centro de Ayuda
-            </h1>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-8">
-              Encuentra respuestas a todas tus preguntas, tutoriales paso a paso y recursos 
-              para aprovechar al máximo tu experiencia en ArtesaníasYCo.
+    <div className="bg-gray-50 min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header y Barra de Búsqueda */}
+        <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Centro de Ayuda</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                ¿Tienes preguntas? Tenemos respuestas. Encuentra lo que necesitas para que tu experiencia sea perfecta.
             </p>
-            
-            {/* Barra de búsqueda */}
-            <div className="max-w-2xl mx-auto relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Buscar ayuda, tutoriales o preguntas frecuentes..."
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-              
-              {/* Resultados de búsqueda */}
-              {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-200 mt-2 z-50 max-h-96 overflow-y-auto">
-                  <div className="p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                      Resultados de búsqueda para "{searchTerm}"
-                    </h3>
-                    <div className="space-y-3">
-                      {searchResults.map((result, index) => (
-                        <div key={index} className="p-3 hover:bg-gray-50 rounded-lg cursor-pointer border-l-4 border-blue-500">
-                          <h4 className="font-medium text-gray-800 mb-1">{result.pregunta}</h4>
-                          <p className="text-sm text-gray-600 line-clamp-2">{result.respuesta}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Mostrando {searchResults.length} de {Object.values(faqs).flat().length} resultados
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Mensaje cuando no hay resultados */}
-              {showSearchResults && searchResults.length === 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-200 mt-2 z-50">
-                  <div className="p-4 text-center">
-                    <p className="text-gray-600 mb-2">No se encontraron resultados para "{searchTerm}"</p>
-                    <p className="text-sm text-gray-500">Intenta con otras palabras clave o contacta a nuestro soporte</p>
-                  </div>
-                </div>
-              )}
+            <div className="mt-8 max-w-xl mx-auto relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Busca por palabra clave (ej. 'envío', 'pago')"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all"
+                />
             </div>
-          </div>
         </div>
-      </section>
 
-      {/* Categorías de Ayuda */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categorias.map((categoria) => (
-              <button
-                key={categoria.id}
-                onClick={() => setActiveTab(categoria.id)}
-                className={`p-6 rounded-xl text-left transition-all duration-300 ${
-                  activeTab === categoria.id
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                    : 'bg-white hover:shadow-lg'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    activeTab === categoria.id ? 'bg-white/20' : 'bg-blue-100'
-                  }`}>
-                    <categoria.icon className={`w-6 h-6 ${
-                      activeTab === categoria.id ? 'text-white' : 'text-blue-600'
-                    }`} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">{categoria.nombre}</h3>
-                    <p className={`text-sm ${
-                      activeTab === categoria.id ? 'text-blue-100' : 'text-gray-600'
-                    }`}>
-                      {faqs[categoria.id]?.length || 0} artículos de ayuda
-                    </p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Preguntas Frecuentes - {categorias.find(c => c.id === activeTab)?.nombre}
-          </h2>
-          
-          <div className="space-y-4">
-            {faqs[activeTab]?.map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <h3 className="text-lg font-semibold text-gray-800">{faq.pregunta}</h3>
-                  {expandedFaq === index ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500" />
-                  )}
-                </button>
-                {expandedFaq === index && (
-                  <div className="px-6 pb-4">
-                    <p className="text-gray-600 leading-relaxed">{faq.respuesta}</p>
-                  </div>
+        {/* Resultados de búsqueda o Contenido principal */}
+        {showSearchResults ? (
+            <section>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Resultados de la búsqueda para &quot;{searchTerm}&quot;</h2>
+                {filteredFaqs.length > 0 ? (
+                    <div className="space-y-4">
+                        {filteredFaqs.map((faq, index) => (
+                            <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
+                                <h3 className="font-semibold text-orange-600">{faq.pregunta}</h3>
+                                <p className="text-gray-600 mt-2">{faq.respuesta}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-600">No se encontraron resultados. Intenta con otra búsqueda.</p>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tutoriales en Video */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Tutoriales en Video</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Aprende a usar todas las funciones de ArtesaníasYCo con nuestros tutoriales paso a paso.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tutoriales.map((tutorial, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                {/* 
-                  ========================================
-                  ZONA PARA INTEGRAR VIDEOS TUTORIALES
-                  ========================================
-                  
-                  OPCIÓN 1: EMBED DE YOUTUBE
-                  Reemplazar el div placeholder con:
-                  
-                  <iframe
-                    className="w-full h-48"
-                    src={`https://www.youtube.com/embed/${tutorial.videoId}`}
-                    title={tutorial.titulo}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                  
-                  OPCIÓN 2: VIDEO HTML5 NATIVO
-                  Reemplazar con:
-                  
-                  <video
-                    className="w-full h-48 object-cover"
-                    controls
-                    poster={`/static/tutorials/${tutorial.videoId}-poster.jpg`}
-                  >
-                    <source src={`/static/tutorials/${tutorial.videoId}.mp4`} type="video/mp4" />
-                    <source src={`/static/tutorials/${tutorial.videoId}.webm`} type="video/webm" />
-                    Tu navegador no soporta el elemento video.
-                  </video>
-                  
-                  OPCIÓN 3: VIMEO EMBED
-                  Reemplazar con:
-                  
-                  <iframe
-                    className="w-full h-48"
-                    src={`https://player.vimeo.com/video/${tutorial.videoId}`}
-                    title={tutorial.titulo}
-                    frameBorder="0"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                  
-                  ESTRUCTURA DE CARPETAS RECOMENDADA:
-                  - /public/static/tutorials/ (para videos locales)
-                  - /public/static/tutorials/posters/ (para miniaturas)
-                  
-                  FORMATOS SOPORTADOS:
-                  - MP4 (recomendado)
-                  - WebM (para mejor compresión)
-                  - OGG (alternativa)
-                  
-                  TAMAÑOS RECOMENDADOS:
-                  - Resolución: 1280x720 (HD) o 1920x1080 (Full HD)
-                  - Duración: 3-15 minutos
-                  - Tamaño archivo: < 100MB por video
-                */}
-                
-                {/* Placeholder para video - REEMPLAZAR CON VIDEO REAL */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-400 to-purple-500">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <Play className="w-8 h-8 text-white ml-1" />
+            </section>
+        ) : (
+            <>
+                {/* Categorías */}
+                <section className="mb-16">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        {categorias.map(cat => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setActiveTab(cat.id)}
+                                className={`flex flex-col items-center justify-center text-center p-4 rounded-xl transition-all duration-300 ${activeTab === cat.id ? 'bg-orange-500 text-white shadow-lg' : 'bg-white hover:bg-orange-100'}`}
+                            >
+                                <cat.icon className="w-8 h-8 mb-2" />
+                                <span className="font-semibold">{cat.nombre}</span>
+                            </button>
+                        ))}
                     </div>
-                  </div>
-                  <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-                    {tutorial.duracion}
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Video className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-blue-600 font-medium">
-                      {categorias.find(c => c.id === tutorial.categoria)?.nombre}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">{tutorial.titulo}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{tutorial.descripcion}</p>
-                  
-                  {/* 
-                    ========================================
-                    BOTÓN PARA REPRODUCIR VIDEO
-                    ========================================
-                    
-                    OPCIÓN 1: MODAL CON VIDEO
-                    Reemplazar el botón con:
-                    
-                    <button 
-                      onClick={() => openVideoModal(tutorial.videoId)}
-                      className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-                    >
-                      Ver Tutorial
-                    </button>
-                    
-                    OPCIÓN 2: REPRODUCIR INLINE
-                    Reemplazar con:
-                    
-                    <button 
-                      onClick={() => toggleVideo(index)}
-                      className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300"
-                    >
-                      {isPlaying[index] ? 'Pausar' : 'Ver Tutorial'}
-                    </button>
-                    
-                    OPCIÓN 3: ENLACE EXTERNO
-                    Reemplazar con:
-                    
-                    <a 
-                      href={`https://youtube.com/watch?v=${tutorial.videoId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-center block"
-                    >
-                      Ver en YouTube
-                    </a>
-                  */}
-                  
-                  <button className="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300">
-                    Ver Tutorial
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                </section>
 
-      {/* Recursos Adicionales */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Recursos Adicionales</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Encuentra más información y recursos para mejorar tu experiencia.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <BookOpen className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Guía del Usuario</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Manual completo con todas las funciones de la plataforma.
-              </p>
-              <button className="text-blue-600 hover:text-blue-700 font-medium">
-                Descargar PDF
-              </button>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <MessageCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Chat en Vivo</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Habla directamente con nuestro equipo de soporte.
-              </p>
-              <button className="text-green-600 hover:text-green-700 font-medium">
-                Iniciar Chat
-              </button>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <Mail className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Email de Soporte</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Envía tus consultas por email y recibe respuesta en 24h.
-              </p>
-              <button className="text-purple-600 hover:text-purple-700 font-medium">
-                Enviar Email
-              </button>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-              <Phone className="w-12 h-12 text-orange-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Línea Telefónica</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Llámanos para atención personalizada inmediata.
-              </p>
-              <button className="text-orange-600 hover:text-orange-700 font-medium">
-                Llamar Ahora
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+                {/* FAQs */}
+                <section>
+                    {faqs[activeTab] && (
+                        <div className="space-y-4 max-w-4xl mx-auto">
+                            {faqs[activeTab].map((faq, index) => (
+                                <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                    <button
+                                        onClick={() => toggleFaq(index)}
+                                        className="w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none"
+                                    >
+                                        <span>{faq.pregunta}</span>
+                                        {expandedFaq === index ? <ChevronUp /> : <ChevronDown />}
+                                    </button>
+                                    {expandedFaq === index && (
+                                        <div className="p-5 pt-0 text-gray-600">
+                                            <p>{faq.respuesta}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
 
-      {/* Información de Contacto */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-500 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            ¿No encontraste lo que buscabas?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Nuestro equipo de soporte está aquí para ayudarte. Contáctanos y te responderemos 
-            en menos de 24 horas.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div className="text-center">
-              <Clock className="w-8 h-8 text-white mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-white mb-2">Soporte 24/7</h3>
-              <p className="text-blue-100">Disponible todos los días del año</p>
-            </div>
-            <div className="text-center">
-              <Star className="w-8 h-8 text-white mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-white mb-2">Respuesta Rápida</h3>
-              <p className="text-blue-100">Menos de 24 horas de respuesta</p>
-            </div>
-            <div className="text-center">
-              <Shield className="w-8 h-8 text-white mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-white mb-2">Soporte Experto</h3>
-              <p className="text-blue-100">Equipo especializado en la plataforma</p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300">
-              Contactar Soporte
-            </button>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-300">
-              Ver Más Tutoriales
-            </button>
-          </div>
-        </div>
-      </section>
+                {/* Contacto y Videos */}
+                <section className="mt-20">
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="bg-white rounded-xl p-8 shadow-lg">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">¿No encontraste lo que buscabas?</h3>
+                            <p className="text-gray-600 mb-6">
+                                Nuestro equipo de soporte está listo para ayudarte. Contáctanos a través de cualquiera de estos canales.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 text-gray-700">
+                                    <Mail className="w-5 h-5 text-orange-500" />
+                                    <a href="mailto:soporte@artesaniasyco.com" className="hover:underline">soporte@artesaniasyco.com</a>
+                                </div>
+                                <div className="flex items-center gap-4 text-gray-700">
+                                    <Phone className="w-5 h-5 text-orange-500" />
+                                    <span>+1-800-ARTESANIAS (L-V, 9am - 6pm)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-white rounded-xl p-8 shadow-lg">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4">Tutoriales en Video</h3>
+                            <p className="text-gray-600 mb-6">
+                                ¿Prefieres aprender visualmente? Revisa nuestros video-tutoriales sobre cómo usar la plataforma.
+                            </p>
+                            <div className="space-y-4">
+                                <a href="#" className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <Play className="w-8 h-8 text-orange-500" />
+                                    <div>
+                                        <p className="font-semibold text-gray-800">&quot;Cómo hacer tu primera compra&quot;</p>
+                                        <p className="text-sm text-gray-500">Duración: 5:30 min</p>
+                                    </div>
+                                </a>
+                                <a href="#" className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <Play className="w-8 h-8 text-orange-500" />
+                                    <div>
+                                        <p className="font-semibold text-gray-800">&quot;Gestionando tu perfil de artesano&quot;</p>
+                                        <p className="text-sm text-gray-500">Duración: 12:15 min</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </>
+        )}
+      </main>
     </div>
   );
 };
