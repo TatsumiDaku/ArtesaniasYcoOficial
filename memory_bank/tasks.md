@@ -2,6 +2,32 @@
 
 - [x] Estructura de carpetas y archivos base
 - [x] Backend: autenticación, productos, pedidos, usuarios, carrito
-- [x] Frontend: páginas principales, paneles, dashboard
-- [ ] Favoritos, notificaciones, reviews
-- [ ] Mejoras visuales y experiencia móvil 
+- [x] Frontend: Fase 1 - Estructura y Autenticación
+  - [x] Setup inicial de Next.js y Tailwind CSS
+  - [x] Creación de Layout principal (Header, Footer)
+  - [x] Implementación de AuthContext para gestión de sesión
+  - [x] Creación de páginas de Login y Registro
+  - [x] Creación de menú de usuario dinámico
+- [x] Frontend: Fase 2 - Flujo de Productos y Compra
+  - [x] Implementación de CartContext para gestión del carrito
+  - [x] Creación de componente ProductCard
+  - [x] Creación de página de galería de productos
+  - [x] Creación de página de detalle de producto
+  - [x] Creación de página del carrito
+- [x] Frontend: Fase 3 - Paneles de Usuario, Artesano y Admin
+  - [x] Implementación de sistema de rutas protegidas por rol
+  - [x] Creación de componente `DataTable` reutilizable
+  - [x] Creación de página de Dashboard principal
+  - [x] Creación de panel de administrador (productos, usuarios, pedidos)
+  - [x] Creación de panel de artesano (gestión de sus productos)
+  - [x] Implementación de registro extendido para artesanos con subida de avatar.
+  - [x] Implementación de sistema de aprobación de artesanos por parte del admin.
+  - [x] Implementación de página de edición de perfil para artesanos.
+- [x] Features Adicionales y Mejoras
+  - [x] Implementación de la funcionalidad de Favoritos (Context API y Backend)
+  - [x] Implementación de sistema de Notificaciones con `react-hot-toast`
+  - [x] Implementación de sistema de Reviews y Calificaciones
+  - [x] Añadido toggle para ver/ocultar contraseñas
+  - [x] Mejoras visuales y de UX en todos los paneles
+  - [x] Componentes responsivos (Header, Grids, etc.)
+  - [x] Micro-interacciones y transiciones sutiles (hover effects, etc.) 

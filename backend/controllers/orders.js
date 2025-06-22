@@ -1,21 +1,42 @@
 const pool = require('../config/database');
 const { validationResult } = require('express-validator');
 
-// Obtener todas las órdenes de un usuario (admin ve todas)
+// Obtener órdenes (admin ve todas, usuario ve las propias)
 const getOrders = async (req, res) => {
   try {
-    let orders;
     if (req.user.role === 'admin') {
-      orders = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
-    } else {
-      orders = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+      const orders = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+      return res.json(orders.rows);
     }
+    
+    // Si no es admin, solo puede ver sus propias órdenes
+    const orders = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
     res.json(orders.rows);
+
   } catch (error) {
     console.error('Error obteniendo órdenes:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+// Obtener todas las órdenes de un usuario específico (solo admin)
+const getOrdersByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso no autorizado.' });
+    }
+
+    const orders = await pool.query('SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    res.json(orders.rows);
+
+  } catch (error) {
+    console.error('Error obteniendo las órdenes del usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 
 // Obtener una orden específica
 const getOrder = async (req, res) => {
@@ -52,7 +73,7 @@ const createOrder = async (req, res) => {
     for (const item of items) {
       const product = await pool.query('SELECT * FROM products WHERE id = $1', [item.product_id]);
       if (product.rows.length === 0 || product.rows[0].status !== 'active') {
-        return res.status(400).json({ message: `Producto no válido: ${item.product_id}` });
+        return res.status(400).json({ message: `Producto no válido o no disponible: ${item.product_id}` });
       }
       if (product.rows[0].stock < item.quantity) {
         return res.status(400).json({ message: `Stock insuficiente para: ${product.rows[0].name}` });
@@ -107,9 +128,26 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// Eliminar una orden (solo admin)
+const deleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING *', [id]);
+    if (deleted.rows.length === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    res.json({ message: 'Orden eliminada', order: deleted.rows[0] });
+  } catch (error) {
+    console.error('Error eliminando orden:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   getOrders,
+  getOrdersByUserId,
   getOrder,
   createOrder,
-  updateOrderStatus
+  updateOrderStatus,
+  deleteOrder
 }; 

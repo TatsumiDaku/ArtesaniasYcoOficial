@@ -13,6 +13,9 @@ const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const userRoutes = require('./routes/users');
 const cartRoutes = require('./routes/cart');
+const categoryRoutes = require('./routes/categories');
+const statsRoutes = require('./routes/stats');
+const favoritesRoutes = require('./routes/favorites');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,10 +25,16 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
 
-// Rate limiting
+// Rate limiting - más permisivo en desarrollo
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // límite de 100 requests por ventana de tiempo
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // más permisivo en desarrollo
+  message: {
+    error: 'Demasiadas peticiones, por favor intenta de nuevo más tarde.',
+    retryAfter: '15 minutos'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
@@ -50,10 +59,18 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Ruta de salud
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    rateLimit: process.env.NODE_ENV === 'production' ? '100 requests/15min' : '1000 requests/15min'
+  });
 });
 
 // Manejo de errores
@@ -73,6 +90,8 @@ app.use('*', (req, res) => {
 // Al iniciar el servidor, probar la conexión a la base de datos y mostrar el estado
 app.listen(PORT, async () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Rate Limit: ${process.env.NODE_ENV === 'production' ? '100 requests/15min' : '1000 requests/15min'}`);
   try {
     await pool.query('SELECT 1');
     console.log('✅ Conexión a la base de datos PostgreSQL exitosa');

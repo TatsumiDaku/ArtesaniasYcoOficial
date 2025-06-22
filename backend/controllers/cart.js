@@ -5,10 +5,20 @@ const { validationResult } = require('express-validator');
 const getCart = async (req, res) => {
   try {
     const cart = await pool.query(
-      `SELECT ci.id, ci.product_id, ci.quantity, p.name, p.price, p.images, p.stock
+      `SELECT 
+         ci.product_id, 
+         ci.quantity,
+         json_build_object(
+           'id', p.id,
+           'name', p.name,
+           'price', p.price,
+           'images', p.images,
+           'stock', p.stock
+         ) as product
        FROM cart_items ci
        JOIN products p ON ci.product_id = p.id
-       WHERE ci.user_id = $1`,
+       WHERE ci.user_id = $1
+       ORDER BY ci.created_at`,
       [req.user.id]
     );
     res.json(cart.rows);
@@ -21,13 +31,15 @@ const getCart = async (req, res) => {
 // Agregar un producto al carrito
 const addToCart = async (req, res) => {
   try {
+    console.log('[addToCart] Received request body:', req.body); // Log para depuración
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('[addToCart] Validation errors:', errors.array()); // Log para depuración
       return res.status(400).json({ errors: errors.array() });
     }
-    const { productId, quantity = 1 } = req.body;
+    const { product_id, quantity = 1 } = req.body;
     // Verificar producto
-    const product = await pool.query('SELECT * FROM products WHERE id = $1 AND status = $2', [productId, 'active']);
+    const product = await pool.query('SELECT * FROM products WHERE id = $1 AND status = $2', [product_id, 'active']);
     if (product.rows.length === 0) {
       return res.status(400).json({ message: 'Producto no válido' });
     }
@@ -37,7 +49,7 @@ const addToCart = async (req, res) => {
        VALUES ($1, $2, $3)
        ON CONFLICT (user_id, product_id)
        DO UPDATE SET quantity = cart_items.quantity + $3`,
-      [req.user.id, productId, quantity]
+      [req.user.id, product_id, quantity]
     );
     res.status(201).json({ message: 'Producto agregado al carrito' });
   } catch (error) {
@@ -49,14 +61,14 @@ const addToCart = async (req, res) => {
 // Actualizar cantidad de un producto en el carrito
 const updateCartItem = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { product_id } = req.params;
     const { quantity } = req.body;
     if (quantity < 1) {
       return res.status(400).json({ message: 'Cantidad inválida' });
     }
     const updated = await pool.query(
       'UPDATE cart_items SET quantity = $1 WHERE user_id = $2 AND product_id = $3 RETURNING *',
-      [quantity, req.user.id, productId]
+      [quantity, req.user.id, product_id]
     );
     if (updated.rows.length === 0) {
       return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
@@ -71,8 +83,8 @@ const updateCartItem = async (req, res) => {
 // Eliminar un producto del carrito
 const removeFromCart = async (req, res) => {
   try {
-    const { productId } = req.params;
-    await pool.query('DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2', [req.user.id, productId]);
+    const { product_id } = req.params;
+    await pool.query('DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2', [req.user.id, product_id]);
     res.json({ message: 'Producto eliminado del carrito' });
   } catch (error) {
     console.error('Error eliminando del carrito:', error);

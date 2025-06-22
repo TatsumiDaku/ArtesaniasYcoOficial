@@ -1,7 +1,7 @@
 {
   "name": "artesanias-backend",
   "version": "1.0.0",
-  "description": "Backend for Artesanías Ecommerce",
+  "description": "Backend para Artesanías Ecommerce",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,21 +9,21 @@
     "test": "jest"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "pg": "^8.11.5",
-    "bcrypt": "^5.1.1",
-    "jsonwebtoken": "^9.0.2",
-    "cors": "^2.8.5",
-    "multer": "^2.0.2",
-    "helmet": "^7.0.0",
-    "express-rate-limit": "^7.6.0",
-    "express-validator": "^7.0.2",
-    "dotenv": "^16.5.0",
-    "compression": "^1.7.4",
-    "morgan": "^1.10.0"
+    "express": "4.19.2",
+    "pg": "8.11.5",
+    "bcrypt": "5.1.1",
+    "jsonwebtoken": "9.0.2",
+    "cors": "2.8.5",
+    "multer": "2.0.1",
+    "helmet": "7.0.0",
+    "express-rate-limit": "7.5.0",
+    "express-validator": "7.2.1",
+    "dotenv": "16.5.0",
+    "compression": "1.7.4",
+    "morgan": "1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0",
-    "jest": "^29.7.0"
+    "nodemon": "3.1.0",
+    "jest": "29.7.0"
   }
 } 

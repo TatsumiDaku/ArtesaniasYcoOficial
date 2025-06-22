@@ -13,7 +13,7 @@ const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     
     // Verificar si el usuario existe
-    const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
+    const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
     
     if (userResult.rows.length === 0) {
       return res.status(401).json({ message: 'Usuario no válido' });
@@ -35,4 +35,23 @@ const authorizeRoles = (...roles) => {
   };
 };
 
-module.exports = { authenticateToken, authorizeRoles }; 
+const softAuthenticateToken = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+      const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+      if (userResult.rows.length > 0) {
+        req.user = userResult.rows[0];
+      }
+    } catch (error) {
+      // Ignorar token inválido o expirado, simplemente no se establece req.user
+    }
+  }
+  
+  next();
+};
+
+module.exports = { authenticateToken, authorizeRoles, softAuthenticateToken }; 

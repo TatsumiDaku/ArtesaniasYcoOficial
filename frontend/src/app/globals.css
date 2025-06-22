@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-text-primary;
+}
+
+/* Clases de componentes base */
+.btn {
+  @apply py-2 px-4 rounded-md font-semibold transition-colors;
+}
+
+.btn-primary {
+  @apply bg-primary text-text-primary hover:bg-opacity-90;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md;
+}
+
+.input {
+  @apply bg-white border border-gray-300 rounded-md py-2 px-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary;
+}
+
+/* Responsive table hint */
+@media (max-width: 768px) {
+  .table-responsive-hint::after {
+    content: '(Desliza para ver más)';
+    @apply text-xs text-text-secondary italic absolute right-0 -bottom-5;
+  }
+}
