@@ -39,68 +39,8 @@ Este proyecto está construido con una combinación de tecnologías modernas y r
 | **Base de Datos** | <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">              | Almacenamiento de datos fiable y robusto.         |
 | **Despliegue** | <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx">                   | Contenerización para un despliegue consistente.   |
 
-## 📦 Despliegue en Producción
-
-Hemos preparado una guía detallada para llevar este proyecto a la vida en un servidor de producción. ¡Todo está dockerizado para que el proceso sea lo más sencillo posible!
-
-➡️ **Consulta la guía completa aquí:** [`TUTORIAL_DESPLIEGUE.md`](./TUTORIAL_DESPLIEGUE.md)
-
----
+Visita: https://www.artesaniasyco.com
 
 <div align="center">
   <p>Hecho con ❤️ para celebrar el arte y la cultura.</p>
 </div>
-
-## ¿Qué hacer después de reiniciar Ubuntu?
-
-1. Ve a la carpeta del proyecto:
-   ```bash
-   cd /ruta/a/tu/proyecto/EcommersART
-   ```
-2. Levanta todos los servicios con Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
-   > Los contenedores deberían arrancar automáticamente si tienes `restart: unless-stopped` en tu `docker-compose.yml`, pero este comando los fuerza si no arrancan.
-
-3. Verifica el estado de los servicios:
-   ```bash
-   docker ps
-   ```
-
-4. Para ver los logs de un servicio (ejemplo backend):
-   ```bash
-   docker logs artesanias_backend
-   ```
-   Cambia el nombre por el del servicio que quieras revisar (`artesanias_frontend`, `artesanias_nginx`, etc).
-
-5. Para detener todos los servicios:
-   ```bash
-   docker-compose down
-   ```
-
-## ¿Debo usar PM2?
-
-- **En producción con Docker:** NO es necesario usar PM2. Docker ya gestiona el reinicio y persistencia de los procesos.
-- **En desarrollo local (sin Docker):** Puedes usar PM2 para mantener el backend corriendo aunque cierres la terminal.
-
-### Cómo usar PM2 en desarrollo local
-
-1. Instala PM2 globalmente:
-   ```bash
-   npm install -g pm2
-   ```
-2. Desde la carpeta `backend`, ejecuta:
-   ```bash
-   pm2 start server.js --name artesanias_backend
-   ```
-3. Para ver el estado:
-   ```bash
-   pm2 status
-   ```
-4. Para detener:
-   ```bash
-   pm2 stop artesanias_backend
-   ```
-
-**¡Con esto tu proyecto estará siempre listo tras cada reinicio y sabrás cómo gestionarlo tanto en producción como en desarrollo!** 
