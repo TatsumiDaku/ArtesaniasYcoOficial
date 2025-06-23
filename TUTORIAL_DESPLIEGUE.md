@@ -79,40 +79,50 @@ Esta guía detalla los pasos para desplegar la aplicación EcommersART desde cer
         ```
     *   Guarda y cierra el archivo (en `nano`, es `Ctrl+X`, luego `Y`, luego `Enter`).
 
-## Fase 4: Generación de Certificados SSL (HTTPS)
+## Fase 4: Generación de Certificados SSL con Certbot (HTTPS)
 
-1.  **Crear Carpetas para Certbot:**
-    *   El `docker-compose.yml` espera que existan unas carpetas para guardar los certificados. Créalas:
+Para que Let's Encrypt pueda verificar que eres el dueño del dominio, necesitamos responder a su "desafío" a través del puerto 80. Usaremos el modo `standalone` de Certbot, que crea un pequeño servidor web temporal solo para este propósito.
+
+1.  **Asegurarse de que el Puerto 80 esté Libre:**
+    *   Si tienes alguna versión anterior de la aplicación corriendo con `docker-compose`, detenla completamente para liberar los puertos.
+        ```bash
+        docker-compose down
+        ```
+
+2.  **Crear Carpetas para Certbot:**
+    *   El `docker-compose.yml` espera que existan unas carpetas para guardar los certificados. Si no existen, créalas:
         ```bash
         mkdir -p data/certbot/conf
         mkdir -p data/certbot/www
         ```
 
-2.  **Generar los Certificados:**
-    *   Reemplaza `tu-dominio.com` y `tu-email@dominio.com` en el siguiente comando y ejecútalo. Este comando usa Docker para ejecutar Certbot de forma segura.
+3.  **Ejecutar Certbot en Modo Standalone:**
+    *   Este comando le dice a Docker que corra Certbot, le dé acceso al puerto 80 (`-p 80:80`), y use su propio servidor web (`--standalone`) para la validación.
+    *   **Reemplaza `artesaniasyco.com` y el email con tus datos reales.**
         ```bash
         docker run -it --rm \
+        -p 80:80 \
         -v "$(pwd)/data/certbot/conf:/etc/letsencrypt" \
-        -v "$(pwd)/data/certbot/www:/var/www/certbot" \
-        certbot/certbot certonly --webroot -w /var/www/certbot \
+        certbot/certbot certonly --standalone \
         --email somos@artesaniasyco.com -d artesaniasyco.com -d www.artesaniasyco.com \
         --agree-tos --no-eff-email -m "somos@artesaniasyco.com" --keep-until-expiring
         ```
+    *   Si todo va bien, verás un mensaje de felicitaciones indicando que tus certificados han sido guardados en `/etc/letsencrypt/live/`.
 
-## Fase 5: ¡Lanzamiento!
+## Fase 5: ¡Lanzamiento Final!
 
 1.  **Iniciar toda la aplicación:**
-    *   Ahora sí, con los certificados ya generados, levanta todos los servicios.
+    *   Ahora sí, con los certificados ya generados, levanta todos los servicios en segundo plano (`-d`).
         ```bash
         docker-compose up --build -d
         ```
 
 2.  **Verificar el Estado:**
-    *   Espera un minuto y comprueba que todo está corriendo:
+    *   Espera un minuto y comprueba que todo está corriendo.
         ```bash
         docker-compose ps
         ```
-    *   Todos los servicios deberían mostrar el estado `Up`.
+    *   Todos los servicios (postgres, backend, frontend, nginx) deberían mostrar el estado `Up` o `running`.
 
 ¡Y listo! Ahora puedes visitar `https://tu-dominio.com` en tu navegador y deberías ver tu aplicación funcionando de forma segura con HTTPS.
 
