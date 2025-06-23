@@ -65,7 +65,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ./backend/uploads:/var/www/uploads
-    command: /bin/sh -c "echo '--- DEBUGGING NGINX ENV VARS ---' && env && echo '--- END DEBUGGING ---' && sleep 30"
+    command: /bin/sh -c "envsubst '$${DOMAIN_NAME}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
     depends_on:
       - frontend
       - backend
