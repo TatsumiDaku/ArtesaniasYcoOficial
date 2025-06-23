@@ -1,186 +1,134 @@
-# Guía de Despliegue en Producción - Artesanías&Co
+# Tutorial de Despliegue en Servidor Ubuntu Limpio
 
-Esta guía te llevará paso a paso para desplegar la aplicación en un servidor Ubuntu en DigitalOcean, usando Docker y Nginx como proxy inverso con SSL.
+Esta guía detalla los pasos para desplegar la aplicación EcommersART desde cero en un servidor Ubuntu 22.04.
 
-**IP del Servidor:** `157.230.64.136`
-**Dominio:** `artesaniasyco.com`
+## Fase 1: Configuración del Servidor (Droplet de DigitalOcean)
 
----
+1.  **Crear un Droplet:**
+    *   En tu panel de DigitalOcean, haz clic en "Create" -> "Droplets".
+    *   **Imagen:** Elige **Ubuntu 22.04 (LTS) x64**. **NO** elijas un Marketplace App como PENN Stack.
+    *   **Plan:** El plan Básico de $4/mes ("Regular with SSD") es suficiente para empezar.
+    *   **Autenticación:** Selecciona **SSH Keys**. Es mucho más seguro. Añade tu clave pública si no lo has hecho.
+    *   **Nombre de Host:** Dale un nombre descriptivo, como `artesanias-servidor`.
+    *   Crea el Droplet.
 
-### Paso 1: Configuración Inicial del Servidor (Ubuntu)
+2.  **Configurar DNS:**
+    *   Copia la dirección IP de tu nuevo Droplet.
+    *   En el panel de control de tu proveedor de dominio, crea un **registro A** que apunte tu dominio (ej: `artesanias.com`) y un subdominio `www` (ej: `www.artesanias.com`) a la IP de tu servidor.
 
-Estos comandos deben ejecutarse una sola vez al configurar un nuevo Droplet.
+3.  **Conectarse al Servidor:**
+    *   Abre una terminal y conéctate como usuario root:
+        ```bash
+        ssh root@TU_DIRECCION_IP
+        ```
 
-1.  **Actualizar el sistema:**
+## Fase 2: Instalación de Dependencias
+
+1.  **Actualizar el Sistema:**
     ```bash
-    sudo apt update && sudo apt upgrade -y
+    apt update && apt upgrade -y
     ```
 
-2.  **Instalar Docker y Docker Compose:**
+2.  **Instalar Docker:**
     ```bash
-    # Instalar dependencias
-    sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-
-    # Añadir el repositorio oficial de Docker
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-    # Instalar Docker Engine y CLI
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io
-
-    # Instalar Docker Compose V2
-    sudo apt install -y docker-compose-plugin
-    ```
-    *Verifica la instalación con `docker --version` y `docker compose version`.*
-
-3.  **Instalar Git:**
-    ```bash
-    sudo apt install -y git
+    apt install apt-transport-https ca-certificates curl software-properties-common -y
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    apt update
+    apt install docker-ce docker-ce-cli containerd.io -y
     ```
 
-4.  **Clonar el repositorio:**
+3.  **Instalar Docker Compose:**
     ```bash
-    git clone https://github.com/TatsumiDaku/EcommersART.git
+    apt install docker-compose -y
+    ```
+
+4.  **Instalar Git:**
+    ```bash
+    apt install git -y
+    ```
+
+## Fase 3: Despliegue de la Aplicación
+
+
+1.  **Clonar el Repositorio:**
+    ```bash
+    git clone https://github.com/tu-usuario/tu-repositorio.git EcommersART
     cd EcommersART
     ```
 
----
+2.  **Crear el archivo de Entorno:**
+    *   Crea un archivo `.env` para las variables de entorno:
+        ```bash
+        nano .env
+        ```
+    *   Pega el siguiente contenido, **reemplazando los valores de ejemplo con los tuyos**:
 
-### Paso 2: Configuración de Variables de Entorno y Certificados
+        ```env
+        # Dominio
+        DOMAIN_NAME=artesaniasyco.com
 
-Antes de levantar los contenedores, necesitas configurar los secretos y preparar Nginx para SSL.
+        # Base de Datos
+        POSTGRES_DB=artesanias_db
+        POSTGRES_USER=artesano_user
+        POSTGRES_PASSWORD=una_contraseña_muy_segura_y_larga
 
-1.  **Crear el archivo de variables de entorno (`.env`):**
-    
-    Dentro del directorio `EcommersART`, crea un archivo llamado `.env`.
+        # Backend
+        JWT_SECRET=otro_secreto_muy_largo_y_diferente_para_jwt
+        NEXT_PUBLIC_API_URL=https://artesaniasyco.com/api
+        ```
+    *   Guarda y cierra el archivo (en `nano`, es `Ctrl+X`, luego `Y`, luego `Enter`).
+
+## Fase 4: Generación de Certificados SSL (HTTPS)
+
+1.  **Crear Carpetas para Certbot:**
+    *   El `docker-compose.yml` espera que existan unas carpetas para guardar los certificados. Créalas:
+        ```bash
+        mkdir -p data/certbot/conf
+        mkdir -p data/certbot/www
+        ```
+
+2.  **Generar los Certificados:**
+    *   Reemplaza `tu-dominio.com` y `tu-email@dominio.com` en el siguiente comando y ejecútalo. Este comando usa Docker para ejecutar Certbot de forma segura.
+        ```bash
+        docker run -it --rm \
+        -v "$(pwd)/data/certbot/conf:/etc/letsencrypt" \
+        -v "$(pwd)/data/certbot/www:/var/www/certbot" \
+        certbot/certbot certonly --webroot -w /var/www/certbot \
+        --email somos@artesaniasyco.com -d artesaniasyco.com -d www.artesaniasyco.com \
+        --agree-tos --no-eff-email -m "somos@artesaniasyco.com" --keep-until-expiring
+        ```
+
+## Fase 5: ¡Lanzamiento!
+
+1.  **Iniciar toda la aplicación:**
+    *   Ahora sí, con los certificados ya generados, levanta todos los servicios.
+        ```bash
+        docker-compose up --build -d
+        ```
+
+2.  **Verificar el Estado:**
+    *   Espera un minuto y comprueba que todo está corriendo:
+        ```bash
+        docker-compose ps
+        ```
+    *   Todos los servicios deberían mostrar el estado `Up`.
+
+¡Y listo! Ahora puedes visitar `https://tu-dominio.com` en tu navegador y deberías ver tu aplicación funcionando de forma segura con HTTPS.
+
+## Mantenimiento
+
+*   **Para actualizar la aplicación:**
     ```bash
-    nano .env
+    git pull
+    docker-compose up --build -d
     ```
-    
-    Pega el siguiente contenido dentro del archivo. **¡Modifica las contraseñas y secretos por valores únicos y seguros!**
-
-    ```ini
-    # ================================================
-    #      VARIABLES DE ENTORNO PARA PRODUCCIÓN
-    # ================================================
-    # ¡NO SUBIR ESTE ARCHIVO A GITHUB!
-
-    # --- Dominio ---
-    # Cambia esto si usas un dominio diferente en el futuro
-    DOMAIN_NAME=artesaniasyco.com
-
-    # --- Base de Datos (PostgreSQL) ---
-    POSTGRES_DB=artesanias_db
-    POSTGRES_USER=artesano_user
-    # Genera una contraseña segura. Puedes usar: openssl rand -base64 32
-    POSTGRES_PASSWORD=una_contrasena_muy_segura_aqui
-
-    # --- Backend (Node.js) ---
-    # Genera una clave secreta JWT segura. Puedes usar: openssl rand -base64 32
-    JWT_SECRET=un_secreto_jwt_muy_largo_y_seguro_aqui
-
-    # --- Frontend (Next.js) ---
-    # URL pública completa de tu API.
-    # Debe ser HTTPS para producción.
-    NEXT_PUBLIC_API_URL=https://artesaniasyco.com
-    ```
-    Guarda y cierra el editor (`Ctrl+X`, luego `Y`, luego `Enter`).
-
----
-
-### Paso 3: Generar Certificados SSL con Let's Encrypt
-
-Usaremos Certbot para generar los certificados SSL gratuitos. Lo haremos **antes** de iniciar la aplicación completa.
-
-1.  **Crear directorios necesarios para Certbot y Nginx:**
+*   **Para ver los logs:**
     ```bash
-    sudo mkdir -p ./nginx/certs
-    sudo mkdir -p ./nginx/certbot_data
+    docker-compose logs -f            # Todos los logs
+    docker-compose logs -f nginx      # Logs de un servicio específico
     ```
-
-2.  **Solicitar el certificado SSL:**
-    
-    Este comando inicia un contenedor temporal de Nginx, solicita el certificado a Let's Encrypt y lo guarda en los directorios que acabas de crear.
-    
+*   **Para detener la aplicación:**
     ```bash
-    sudo docker compose run --rm --entrypoint "\
-      certbot certonly --webroot -w /var/www/certbot \
-      --email somos@artesaniasyco.com \
-      --agree-tos \
-      --no-eff-email \
-      -d artesaniasyco.com -d www.artesaniasyco.com" nginx
-    ```
-    *Reemplaza `tu-email@dominio.com` con tu correo real.*
-
----
-
-### Paso 4: Construir y Levantar la Aplicación
-
-¡Ahora sí, el gran momento!
-
-1.  **Construir y levantar todos los servicios:**
-    Este comando leerá tu `docker-compose.yml`, construirá las imágenes del frontend y backend, y lanzará todos los contenedores en segundo plano (`-d`).
-    
-    ```bash
-    sudo docker compose up --build -d
-    ```
-
-2.  **Verificar que todo está corriendo:**
-    ```bash
-    docker ps
-    ```
-    Deberías ver 4 contenedores en estado "Up": `artesanias_nginx`, `artesanias_frontend`, `artesanias_backend`, y `artesanias_db`.
-
-3.  **Ver logs (si algo sale mal):**
-    Si un contenedor no levanta, puedes ver sus logs para depurar.
-    ```bash
-    # Ejemplo para el backend
-    docker logs artesanias_backend
-
-    # Ejemplo para el frontend
-    docker logs artesanias_frontend
-    ```
-
-¡Y listo! Tu aplicación debería estar accesible en `https://artesaniasyco.com`.
-
----
-
-### Paso 5: ¿Y si cierro la terminal? (Persistencia del Servicio)
-
-**No te preocupes, la aplicación seguirá funcionando.**
-
-Gracias a la configuración `restart: unless-stopped` en tu archivo `docker-compose.yml`, el servicio de Docker se encargará de mantener tus contenedores activos de forma permanente.
-
-*   **Si cierras la terminal:** Los contenedores seguirán corriendo en segundo plano.
-*   **Si reinicias el servidor (el Droplet):** Docker arrancará automáticamente todos tus contenedores cuando el sistema se inicie.
-
-La aplicación solo se detendrá si tú ejecutas el comando explícito para ello.
-
----
-
-### Mantenimiento y Actualizaciones
-
-1.  **Para actualizar el código:**
-    
-    Si haces cambios en tu repositorio de Git y quieres desplegar la nueva versión:
-    
-    ```bash
-    # 1. Detener los servicios
-    sudo docker compose down
-
-    # 2. Traer los cambios desde Git
-    git pull origin main  # O la rama que uses
-
-    # 3. Reconstruir y levantar de nuevo
-    sudo docker compose up --build -d
-    ```
-
-2.  **Para renovar los certificados SSL:**
-    
-    Let's Encrypt los emite por 90 días. Puedes renovarlos manualmente con:
-    
-    ```bash
-    sudo docker compose run --rm --entrypoint "certbot renew" nginx
-    ```
-    *(Es recomendable automatizar esto con un cron job en el futuro).* 
+    docker-compose down
+    ``` 
