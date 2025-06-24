@@ -11,13 +11,13 @@ const Header = () => {
   const { user, isAuthenticated } = useAuth();
   const { cart } = useCart();
   const navLinks = [
-    { name: 'Inicio', href: '/' },
+    // { name: 'Inicio', href: '/' },
     { name: 'Productos', href: '/products' },
     { name: 'Tiendas', href: '/shops' },
-    { name: 'Blog', href: '/blog' },
+    { name: 'Blogs', href: '/blog' },
     { name: 'Noticias', href: '/noticias' },
-    { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
-    { name: 'Ayuda', href: '/ayuda' },
+    // { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
+    // { name: 'Ayuda', href: '/ayuda' },
   ];
 
   // Función para obtener el color de fondo del indicador según el rol

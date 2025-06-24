@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import PasswordInput from '@/components/ui/PasswordInput';
-import { CheckCircle, AlertCircle, UploadCloud, Image as ImageIcon, UserPlus, ArrowLeft } from 'lucide-react';
+import { CheckCircle, AlertCircle, UploadCloud, Image as ImageIcon, UserPlus, ArrowLeft, Eye } from 'lucide-react';
 import Image from 'next/image';
+import PageLoader from '@/components/ui/PageLoader';
 
 // Componente para la barra de seguridad de la contraseña
 const PasswordStrength = ({ password = '' }) => {
@@ -38,6 +39,7 @@ const RegisterPage = () => {
   const { register: authRegister, loading, error } = useAuth();
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [headerPreview, setHeaderPreview] = useState(null);
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       role: 'cliente',
@@ -47,6 +49,8 @@ const RegisterPage = () => {
   const role = watch('role');
   const password = watch('password');
   const avatarFile = watch('avatar');
+  const headerFile = watch('shop_header_image');
+  const [showLoader, setShowLoader] = useState(false);
 
   useEffect(() => {
     if (avatarFile && avatarFile[0]) {
@@ -59,6 +63,18 @@ const RegisterPage = () => {
   }, [avatarFile]);
 
   useEffect(() => {
+    if (headerFile && headerFile[0]) {
+        const file = headerFile[0];
+        const newPreviewUrl = URL.createObjectURL(file);
+        setHeaderPreview(newPreviewUrl);
+        
+        return () => {
+            URL.revokeObjectURL(newPreviewUrl);
+        };
+    }
+  }, [headerFile]);
+
+  useEffect(() => {
     if (error) {
       toast.error(error);
     }
@@ -69,6 +85,8 @@ const RegisterPage = () => {
     Object.keys(data).forEach(key => {
         if (key === 'avatar' && data.avatar?.[0]) {
             formData.append('avatar', data.avatar[0]);
+        } else if (key === 'shop_header_image' && data.shop_header_image?.[0]) {
+            formData.append('shop_header_image', data.shop_header_image[0]);
         } else {
             formData.append(key, data[key]);
         }
@@ -78,10 +96,20 @@ const RegisterPage = () => {
     if (result?.success) {
       if (result.artisanPending) {
         setRegistrationSuccess(true);
+      } else {
+        toast.success('¡Registro exitoso!');
+        setShowLoader(true);
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1200);
       }
     }
   };
   
+  if (showLoader) {
+    return <PageLoader />;
+  }
+
   if (registrationSuccess) {
     return (
       <div className="min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-green-50 via-teal-50 to-cyan-50 p-4">
@@ -196,6 +224,43 @@ const RegisterPage = () => {
                                     </label>
                                 </div>
                                 {errors.avatar && <span className="text-red-500 text-xs mt-1">{errors.avatar.message}</span>}
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Imagen de Cabecera de la Tienda (Opcional)</label>
+                                <p className="text-xs text-gray-500 mt-1 mb-2">Esta será la imagen principal en tu perfil de tienda. Recomendado: 1500x400px.</p>
+                                <div className="mt-2 w-full aspect-[15/4] bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative">
+                                    {headerPreview ? (
+                                        <Image src={headerPreview} alt="Vista previa de cabecera" layout="fill" objectFit="cover" />
+                                    ) : (
+                                        <div className="text-center text-gray-400">
+                                            <ImageIcon className="h-12 w-12 mx-auto" />
+                                            <p>Vista Previa</p>
+                                        </div>
+                                    )}
+                                </div>
+                                 <label htmlFor="header-upload" className="mt-2 cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-50 transition-colors">
+                                    <UploadCloud className="w-5 h-5"/>
+                                    <span>Subir imagen de cabecera</span>
+                                    <input id="header-upload" type="file" {...register("shop_header_image")} className="hidden" accept="image/*"/>
+                                </label>
+                            </div>
+
+                            <div className="md:col-span-2 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                    <Eye className="w-5 h-5 text-blue-600" />
+                                    <h4 className="font-semibold text-blue-800">Visibilidad Pública</h4>
+                                </div>
+                                <p className="text-sm text-blue-700 mt-1">
+                                    Tu nickname, historia de artesano, imágenes de perfil y cabecera serán visibles públicamente en tu perfil de tienda una vez que tu cuenta sea aprobada.
+                                </p>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label htmlFor="professional_email" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Correo profesional/artesanal de contacto</label>
+                                <input id="professional_email" type="email" {...register("professional_email", { required: "El correo profesional es obligatorio", pattern: { value: /^\S+@\S+\.\S+$/, message: "Correo profesional inválido" } })} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <p className="text-xs text-gray-500 mt-1">Este correo será visible en tu perfil de tienda para contacto profesional.</p>
+                                {errors.professional_email && <span className="text-red-500 text-xs mt-1">{errors.professional_email.message}</span>}
                             </div>
 
                             <legend className="text-xl font-bold text-gray-700 col-span-full mb-2 mt-6">Información de Residencia</legend>

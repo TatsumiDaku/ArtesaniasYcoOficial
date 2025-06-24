@@ -28,6 +28,10 @@ CREATE TABLE users (
     city VARCHAR(100), -- Municipio
     workshop_address TEXT,
 
+    -- Campos para la tienda del artesano
+    shop_header_image TEXT,
+    shop_tagline VARCHAR(150),
+
     -- Nuevos campos para recuperación de contraseña
     reset_password_token VARCHAR(255),
     reset_password_expires TIMESTAMP,
@@ -113,19 +117,101 @@ CREATE TABLE reviews (
     UNIQUE(user_id, product_id)
 );
 
--- Trigger para actualizar updated_at en reviews
-CREATE OR REPLACE FUNCTION update_reviews_updated_at()
+-- =================================================================
+-- Tablas para la funcionalidad de Blog
+-- =================================================================
+
+-- Tabla de categorías de blog
+CREATE TABLE blog_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de blogs
+CREATE TABLE blogs (
+    id SERIAL PRIMARY KEY,
+    author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL CHECK (char_length(content) <= 1500),
+    image_url_1 TEXT,
+    image_url_2 TEXT,
+   status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'inactive')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de unión para posts y categorías de blog
+CREATE TABLE blog_post_to_category (
+    blog_id INTEGER REFERENCES blogs(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES blog_categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (blog_id, category_id)
+);
+
+-- Tabla de comentarios de blog
+CREATE TABLE blog_comments (
+    id SERIAL PRIMARY KEY,
+    blog_id INTEGER REFERENCES blogs(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de calificaciones de blog
+CREATE TABLE blog_ratings (
+    id SERIAL PRIMARY KEY,
+    blog_id INTEGER REFERENCES blogs(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(blog_id, user_id)
+);
+
+-- =================================================================
+-- Triggers para actualizar automáticamente los timestamps
+-- =================================================================
+
+-- Función genérica para actualizar la columna updated_at
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
+  NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_reviews_updated_at
+-- Aplicar el trigger a todas las tablas con la columna updated_at, usando nombres únicos
+CREATE TRIGGER set_users_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_products_timestamp
+BEFORE UPDATE ON products
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_orders_timestamp
+BEFORE UPDATE ON orders
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_reviews_timestamp
     BEFORE UPDATE ON reviews
     FOR EACH ROW
-    EXECUTE FUNCTION update_reviews_updated_at();
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_blogs_timestamp
+BEFORE UPDATE ON blogs
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_blog_comments_timestamp
+BEFORE UPDATE ON blog_comments
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
 
 
 -- Insertar datos iniciales
@@ -140,4 +226,12 @@ INSERT INTO categories (name, description) VALUES
 -- IMPORTANTE: La contraseña debe ser hasheada.
 -- Ejecuta `node generate-hash.js` en la raíz del proyecto para generar el hash.
 INSERT INTO users (email, password, name, role, status) VALUES 
-('Admin0Secret-admin@artesanias.com', '$2b$10$LemgY71wQx3AgWGoyTneGe7w5toOoUNDATtpfIas7plDFu7T8d8DC', 'Administrador Principal', 'admin', 'active'); 
+('Admin0Secret-admin@artesanias.com', '$2b$10$LemgY71wQx3AgWGoyTneGe7w5toOoUNDATtpfIas7plDFu7T8d8DC', 'Administrador Principal', 'admin', 'active');
+
+-- Categorías iniciales para blogs
+INSERT INTO blog_categories (name, description) VALUES
+('Técnicas', 'Técnicas artesanales y procesos'),
+('Historias', 'Historias de vida y tradición'),
+('Materiales', 'Materiales y herramientas'),
+('Eventos', 'Ferias, exposiciones y eventos'),
+('Inspiración', 'Fuentes de inspiración y creatividad'); 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/utils/api';
 import { toast } from 'react-hot-toast';
 import withAuthProtection from '@/components/auth/withAuthProtection';
-import { User, Phone, MapPin, Mail, Calendar, Shield, Edit3, Save, UserCheck, ArrowLeft } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Calendar, Shield, Edit3, Save, UserCheck, ArrowLeft, MessageSquare, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const ProfilePage = () => {
@@ -14,7 +14,23 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState(null); // Estado para la data fresca de la API
   const [userStats, setUserStats] = useState({ favorites: 0, orders: 0 });
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsPagination, setCommentsPagination] = useState(null);
   const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm();
+
+  const fetchComments = useCallback(async (page = 1) => {
+    setCommentsLoading(true);
+    try {
+      const res = await api.get('/users/me/comments', { params: { page, limit: 5 } });
+      setComments(prev => page === 1 ? res.data.comments : [...prev, ...res.data.comments]);
+      setCommentsPagination(res.data.pagination);
+    } catch (error) {
+      toast.error('No se pudieron cargar tus comentarios.');
+    } finally {
+      setCommentsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -30,14 +46,21 @@ const ProfilePage = () => {
         reset(userRes.data);
 
       } catch (error) {
-        toast.error('No se pudo cargar tu información.');
+        toast.error('No se pudo cargar tu información de perfil.');
       } finally {
         setLoading(false);
       }
     };
+    
     fetchInitialData();
-  }, [reset]);
+    fetchComments(1);
+  }, [reset, fetchComments]);
 
+  const fetchMoreComments = () => {
+    if (commentsPagination && commentsPagination.page < commentsPagination.pages) {
+      fetchComments(commentsPagination.page + 1);
+    }
+  }
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -161,6 +184,45 @@ const ProfilePage = () => {
             </form>
           </div>
         </div>
+
+        {/* Sección de Comentarios */}
+        <div className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <MessageSquare className="w-6 h-6 text-purple-500" />
+                    Mi Actividad de Comentarios
+                </h2>
+            </div>
+            <div className="p-6 space-y-4">
+                {commentsLoading ? (
+                    <div className="text-center py-8">
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-400" />
+                        <p className="mt-2 text-gray-500">Cargando comentarios...</p>
+                    </div>
+                ) : comments.length > 0 ? (
+                    comments.map(comment => (
+                        <div key={comment.id} className="p-4 border rounded-lg bg-gray-50/50">
+                            <div className="flex justify-between items-start">
+                                <p className="text-gray-700 italic">{`"${comment.content}"`}</p>
+                            </div>
+                            <div className="text-xs text-gray-400 mt-2">
+                                {new Date(comment.created_at).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' })}
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-center text-gray-500 py-8">Aún no has hecho ningún comentario.</p>
+                )}
+            </div>
+            {commentsPagination && commentsPagination.page < commentsPagination.pages && (
+                <div className="px-6 pb-6 text-center">
+                    <button onClick={fetchMoreComments} className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors">
+                        Cargar más comentarios
+                    </button>
+                </div>
+            )}
+        </div>
+
       </div>
     </div>
   );

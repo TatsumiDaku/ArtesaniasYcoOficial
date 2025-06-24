@@ -50,6 +50,33 @@ const getUsers = async (req, res) => {
   }
 };
 
+// Obtener estadísticas de usuarios
+const getUserStats = async (req, res) => {
+  try {
+    const totalQuery = pool.query('SELECT COUNT(id) FROM users');
+    const clientesQuery = pool.query("SELECT COUNT(id) FROM users WHERE role = 'cliente'");
+    const artesanosQuery = pool.query("SELECT COUNT(id) FROM users WHERE role = 'artesano'");
+    const adminsQuery = pool.query("SELECT COUNT(id) FROM users WHERE role = 'admin'");
+
+    const [totalRes, clientesRes, artesanosRes, adminsRes] = await Promise.all([
+      totalQuery,
+      clientesQuery,
+      artesanosQuery,
+      adminsQuery,
+    ]);
+
+    res.json({
+      total: parseInt(totalRes.rows[0].count, 10),
+      clientes: parseInt(clientesRes.rows[0].count, 10),
+      artesanos: parseInt(artesanosRes.rows[0].count, 10),
+      admins: parseInt(adminsRes.rows[0].count, 10),
+    });
+  } catch (error) {
+    console.error('Error obteniendo estadísticas de usuarios:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 // Obtener un usuario por ID (admin o el propio usuario)
 const getUser = async (req, res) => {
   try {
@@ -103,7 +130,8 @@ const updateUser = async (req, res) => {
         state,
         city,
         workshop_address,
-        password
+        password,
+        shop_tagline
     } = req.body;
 
     // Obtener datos actuales del usuario
@@ -113,10 +141,14 @@ const updateUser = async (req, res) => {
     }
     const currentUser = userResult.rows[0];
 
-    // Procesar nuevo avatar si se subió uno
-    const newAvatarPath = req.file 
-        ? req.file.path.replace(/\\\\/g, "/").replace("uploads/", "/uploads/") 
+    // Procesar nuevos archivos si se subieron
+    const newAvatarPath = req.files && req.files.avatar 
+        ? req.files.avatar[0].path.replace(/\\/g, "/")
         : currentUser.avatar;
+    
+    const newShopHeaderPath = req.files && req.files.shop_header_image
+        ? req.files.shop_header_image[0].path.replace(/\\/g, "/")
+        : currentUser.shop_header_image;
 
     // Hashear la nueva contraseña si se proporcionó una
     let passwordHash = currentUser.password;
@@ -124,31 +156,43 @@ const updateUser = async (req, res) => {
         passwordHash = await bcrypt.hash(password, 10);
     }
 
-    // Construir la consulta de actualización dinámicamente
-    const fieldsToUpdate = {
-        name: name || currentUser.name,
-        phone: phone || currentUser.phone,
-        country: country || currentUser.country,
-        state: state || currentUser.state,
-        city: city || currentUser.city,
-        avatar: newAvatarPath,
-        // Campos de artesano (solo se actualizan si el usuario es artesano)
-        nickname: req.user.role === 'artesano' ? (nickname || currentUser.nickname) : currentUser.nickname,
-        professional_email: req.user.role === 'artesano' ? (professional_email || currentUser.professional_email) : currentUser.professional_email,
-        workshop_address: req.user.role === 'artesano' ? (workshop_address || currentUser.workshop_address) : currentUser.workshop_address,
+    // Campos de artesano (solo se actualizan si el usuario es artesano)
+    const artisanFields = req.user.role === 'artesano' ? {
+        nickname: nickname !== undefined ? nickname : currentUser.nickname,
+        professional_email: professional_email !== undefined ? professional_email : currentUser.professional_email,
+        workshop_address: workshop_address !== undefined ? workshop_address : currentUser.workshop_address,
+        shop_tagline: shop_tagline !== undefined ? shop_tagline : currentUser.shop_tagline,
+        shop_header_image: newShopHeaderPath,
+    } : {
+        nickname: currentUser.nickname,
+        professional_email: currentUser.professional_email,
+        workshop_address: currentUser.workshop_address,
+        shop_tagline: currentUser.shop_tagline,
+        shop_header_image: currentUser.shop_header_image,
     };
-
+    
     const updated = await pool.query(
       `UPDATE users SET 
-        name = $1, phone = $2, avatar = $3, nickname = $4, professional_email = $5, 
-        country = $6, state = $7, city = $8, workshop_address = $9, password = $10,
+        name = $1, phone = $2, avatar = $3, country = $4, state = $5, city = $6, 
+        password = $7, nickname = $8, professional_email = $9, workshop_address = $10,
+        shop_tagline = $11, shop_header_image = $12,
         updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $11 
+       WHERE id = $13
        RETURNING *`,
       [
-        fieldsToUpdate.name, fieldsToUpdate.phone, fieldsToUpdate.avatar, fieldsToUpdate.nickname,
-        fieldsToUpdate.professional_email, fieldsToUpdate.country, fieldsToUpdate.state,
-        fieldsToUpdate.city, fieldsToUpdate.workshop_address, passwordHash, id
+        name !== undefined ? name : currentUser.name, 
+        phone !== undefined ? phone : currentUser.phone, 
+        newAvatarPath, 
+        country !== undefined ? country : currentUser.country,
+        state !== undefined ? state : currentUser.state, 
+        city !== undefined ? city : currentUser.city, 
+        passwordHash,
+        artisanFields.nickname, 
+        artisanFields.professional_email, 
+        artisanFields.workshop_address,
+        artisanFields.shop_tagline, 
+        artisanFields.shop_header_image,
+        id
       ]
     );
 
@@ -160,32 +204,18 @@ const updateUser = async (req, res) => {
         name: updatedUser.name,
         role: updatedUser.role,
         avatar: updatedUser.avatar,
-        ...(updatedUser.role === 'artesano' && { nickname: updatedUser.nickname })
+        status: updatedUser.status,
+        ...(updatedUser.role === 'artesano' && { 
+            nickname: updatedUser.nickname,
+            shop_tagline: updatedUser.shop_tagline,
+            shop_header_image: updatedUser.shop_header_image
+        })
     };
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '24h' });
     
-    // Devolvemos el usuario completo y el nuevo token
-    const userResponse = {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        role: updatedUser.role,
-        avatar: updatedUser.avatar,
-        phone: updatedUser.phone,
-        // ... y el resto de campos que quieras devolver al frontend
-        ...(updatedUser.role === 'artesano' && { 
-            nickname: updatedUser.nickname,
-            professional_email: updatedUser.professional_email,
-            artisan_story: updatedUser.artisan_story,
-            id_document: updatedUser.id_document,
-            country: updatedUser.country,
-            state: updatedUser.state,
-            city: updatedUser.city,
-            workshop_address: updatedUser.workshop_address,
-        })
-    };
+    delete updatedUser.password;
 
-    res.json({ message: 'Perfil actualizado exitosamente', user: userResponse, token });
+    res.json({ message: 'Perfil actualizado exitosamente', user: updatedUser, token });
   } catch (error) {
     console.error('Error actualizando usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -198,8 +228,13 @@ const adminUpdateUser = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
-    if (req.file) {
-        updates.avatar = req.file.path.replace(/\\\\/g, "/").replace("uploads/", "/uploads/");
+    if (req.files) {
+        if (req.files.avatar) {
+            updates.avatar = req.files.avatar[0].path.replace(/\\/g, "/");
+        }
+        if (req.files.shop_header_image) {
+            updates.shop_header_image = req.files.shop_header_image[0].path.replace(/\\/g, "/");
+        }
     }
     
     if (updates.password && updates.password.trim() !== '') {
@@ -208,39 +243,41 @@ const adminUpdateUser = async (req, res) => {
         delete updates.password;
     }
 
+    // Validar el campo status si se va a actualizar
+    if (updates.status !== undefined) {
+      const validStatuses = ['active', 'pending', 'rejected', 'banned'];
+      if (!validStatuses.includes(updates.status)) {
+        return res.status(400).json({ message: `El estado '${updates.status}' no es válido. Debe ser uno de: ${validStatuses.join(', ')}` });
+      }
+    }
+
     const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
     if (userResult.rows.length === 0) {
         return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
     const fields = Object.keys(updates);
-    const values = Object.values(updates);
     
-    if (fields.length === 0) {
+    if (fields.length === 0 && !req.files) {
         return res.status(400).json({ message: 'No hay campos para actualizar.' });
     }
 
+    const values = Object.values(updates);
     const setClause = fields.map((field, index) => `"${field}" = $${index + 1}`).join(', ');
+    const query = `UPDATE users SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *`;
+    const queryParams = [...values, id];
 
-    const query = `
-        UPDATE users 
-        SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
-        WHERE id = $${fields.length + 1} 
-        RETURNING *`;
-    
-    const updated = await pool.query(query, [...values, id]);
+    const updated = await pool.query(query, queryParams);
 
     const updatedUser = updated.rows[0];
     delete updatedUser.password;
 
-    res.json({ message: 'Usuario actualizado por el administrador', user: updatedUser });
-
+    res.json({ message: 'Usuario actualizado exitosamente por el administrador.', user: updatedUser });
   } catch (error) {
-    console.error('Error actualizando usuario (admin):', error);
+    console.error('Error actualizando usuario por admin:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
-
 
 // Eliminar usuario (soft delete: solo admin)
 const deleteUser = async (req, res) => {
@@ -300,5 +337,6 @@ module.exports = {
   updateUser,
   adminUpdateUser,
   deleteUser,
-  approveArtisan
+  approveArtisan,
+  getUserStats
 }; 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { Users, Package, ShoppingCart, Clock, ArrowRight, ExternalLink, Store, Settings, ListOrdered, ShieldCheck, RefreshCw, Crown, TrendingUp, AlertTriangle, ArrowLeft, UserCheck } from 'lucide-react';
+import { Users, Package, ShoppingCart, Clock, ArrowRight, ExternalLink, Store, Settings, ListOrdered, ShieldCheck, RefreshCw, Crown, UserCheck, AlertTriangle, ArrowLeft, UserX } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -27,29 +27,43 @@ const StatCard = ({ icon, title, value, color, description }) => (
   </div>
 );
 
+const AdminDashboardCard = ({ icon: Icon, title, description, link, gradient }) => (
+  <Link href={link} className="block group">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden h-full flex flex-col hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300">
+      <div className={`bg-gradient-to-r ${gradient} p-6 text-white`}>
+        <div className="flex items-center gap-4">
+          <div className="bg-white/20 backdrop-blur-sm rounded-full p-3">
+            <Icon className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold">{title}</h2>
+        </div>
+      </div>
+      <div className="p-6 flex-grow flex flex-col">
+        <p className="text-gray-600 leading-relaxed flex-grow">{description}</p>
+        <div className="mt-4 flex items-center justify-end text-sm font-medium text-emerald-600 group-hover:text-emerald-500 transition-colors">
+          <span className="font-bold">Ir a la sección</span>
+          <ArrowRight className="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" />
+        </div>
+      </div>
+    </div>
+  </Link>
+);
+
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
-  const [pendingArtisans, setPendingArtisans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingArtisans, setLoadingArtisans] = useState(true);
   const router = useRouter();
 
   const fetchAllData = useCallback(async () => {
     setLoading(true);
-    setLoadingArtisans(true);
     try {
-      const [statsRes, artisansRes] = await Promise.all([
-        api.get('/stats/dashboard'),
-        api.get('/users', { params: { role: 'artesano', status: 'pending_approval' } })
-      ]);
+      const statsRes = await api.get('/stats/dashboard');
       setStats(statsRes.data);
-      setPendingArtisans(artisansRes.data);
     } catch (error) {
-      toast.error("No se pudieron cargar todos los datos del dashboard.");
+      toast.error("No se pudieron cargar los datos del dashboard.");
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
-      setLoadingArtisans(false);
     }
   }, []);
 
@@ -63,18 +77,14 @@ const AdminDashboardPage = () => {
       await api.put(`/products/${productId}/approve`);
       toast.dismiss();
       toast.success('Producto aprobado y hecho público.');
-      // Actualizar el estado para reflejar el cambio en la UI
-      setStats(prevStats => ({
-        ...prevStats,
-        pendingProductsCount: prevStats.pendingProductsCount - 1,
-        recentPendingProducts: prevStats.recentPendingProducts.filter(p => p.id !== productId),
-      }));
+      // Recargar todos los datos para mantener la consistencia
+      fetchAllData();
     } catch (error) {
       toast.dismiss();
       toast.error('Error al aprobar el producto.');
       console.error("Failed to approve product:", error);
     }
-  }, []);
+  }, [fetchAllData]);
 
   const handleApproveArtisan = useCallback(async (artisanId) => {
     toast.loading('Aprobando artesano...');
@@ -82,13 +92,27 @@ const AdminDashboardPage = () => {
       await api.put(`/users/${artisanId}/approve-artisan`);
       toast.dismiss();
       toast.success('Artesano aprobado y notificado.');
-      setPendingArtisans(prev => prev.filter(a => a.id !== artisanId));
-       // Opcional: Recargar estadísticas si el conteo de artesanos activos debe cambiar
+       // Recargar todos los datos para mantener la consistencia
       fetchAllData();
     } catch (error) {
       toast.dismiss();
       toast.error('Error al aprobar al artesano.');
       console.error("Failed to approve artisan:", error);
+    }
+  }, [fetchAllData]);
+
+  const handleApproveBlog = useCallback(async (blogId) => {
+    toast.loading('Aprobando blog...');
+    try {
+      await api.put(`/blogs/${blogId}/approve`);
+      toast.dismiss();
+      toast.success('Blog aprobado y hecho público.');
+      // Recargar todos los datos para mantener la consistencia
+      fetchAllData();
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Error al aprobar el blog.');
+      console.error("Failed to approve blog:", error);
     }
   }, [fetchAllData]);
 
@@ -114,18 +138,6 @@ const AdminDashboardPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Botón Volver */}
-        <div className="mb-6">
-          <Link 
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl text-gray-700 font-medium border border-gray-200"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al Dashboard
-          </Link>
-        </div>
-
-        {/* Header con gradiente */}
         <div className="mb-8">
           <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-8 text-white shadow-2xl">
             <div className="flex items-center gap-4 mb-4">
@@ -144,214 +156,277 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard 
             icon={<Users size={24} />} 
             title="Total Clientes" 
-            value={stats.totalClients} 
+            value={stats.users.totalClients} 
             color="from-blue-500 to-indigo-500"
             description="Usuarios registrados"
           />
           <StatCard 
             icon={<Store size={24} />} 
             title="Total Artesanos" 
-            value={stats.totalArtisans} 
+            value={stats.users.totalArtisans} 
             color="from-orange-500 to-red-500"
-            description="Creadores activos"
+            description="Creadores en la plataforma"
+          />
+           <StatCard 
+            icon={<ShieldCheck size={24} />} 
+            title="Total Admins" 
+            value={stats.users.totalAdmins} 
+            color="from-emerald-500 to-teal-500"
+            description="Equipo de gestión"
           />
           <StatCard 
             icon={<Package size={24} />} 
             title="Total Productos" 
-            value={stats.totalProducts} 
+            value={stats.products.total} 
             color="from-purple-500 to-pink-500"
             description="En el catálogo"
           />
           <StatCard 
-            icon={<ShoppingCart size={24} />} 
-            title="Total Pedidos" 
-            value={stats.totalOrders} 
-            color="from-green-500 to-emerald-500"
-            description="Transacciones"
+            icon={<AlertTriangle size={24} />} 
+            title="Productos Pendientes" 
+            value={stats.products.pending} 
+            color="from-yellow-500 to-amber-500"
+            description="Esperando aprobación"
           />
-          <StatCard 
-            icon={<Clock size={24} />} 
-            title="Pendientes" 
-            value={stats.pendingProductsCount} 
-            color="from-yellow-500 to-orange-500"
-            description="Por aprobar"
+           <StatCard 
+            icon={<UserX size={24} />} 
+            title="Artesanos Pendientes" 
+            value={stats.users.pendingApproval} 
+            color="from-rose-500 to-red-500"
+            description="Esperando aprobación"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6">
-                <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full p-2">
-                    <Settings className="w-6 h-6" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-800">Accesos Rápidos</h2>
-                </div>
-              </div>
-              <div className="p-6 space-y-4">
-                <Link href="/admin/products" className="flex items-center p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border border-transparent hover:border-blue-200">
-                  <Package className="w-6 h-6 mr-4 text-blue-600" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">Gestionar Productos</p>
-                    <p className="text-sm text-gray-600">Aprobar, editar o eliminar</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                </Link>
-                <Link href="/admin/users" className="flex items-center p-4 rounded-xl hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-all duration-200 border border-transparent hover:border-green-200">
-                  <Users className="w-6 h-6 mr-4 text-green-600" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">Gestionar Usuarios</p>
-                    <p className="text-sm text-gray-600">Ver clientes y artesanos</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                </Link>
-                <Link href="/admin/orders" className="flex items-center p-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200 border border-transparent hover:border-purple-200">
-                  <ListOrdered className="w-6 h-6 mr-4 text-purple-600" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">Gestionar Pedidos</p>
-                    <p className="text-sm text-gray-600">Revisar estado de compras</p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                </Link>
-              </div>
+        {/* Areas de gestion */}
+        <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Áreas de Gestión</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <AdminDashboardCard 
+                    icon={Store}
+                    title="Gestionar Tiendas"
+                    description="Aprueba, rechaza o banea artesanos. Edita perfiles y revisa la información de las tiendas."
+                    link="/admin/shops"
+                    gradient="from-orange-500 to-red-500"
+                />
+                <AdminDashboardCard 
+                    icon={Users}
+                    title="Gestionar Usuarios"
+                    description="Administra todos los perfiles de usuario, incluyendo clientes, artesanos y otros administradores."
+                    link="/admin/users"
+                    gradient="from-blue-500 to-cyan-500"
+                />
+                <AdminDashboardCard 
+                    icon={ListOrdered}
+                    title="Gestionar Blogs"
+                    description="Aprueba, edita o elimina blogs publicados por los artesanos. Supervisa el contenido y comentarios."
+                    link="/admin/blogs"
+                    gradient="from-pink-500 to-rose-500"
+                />
+                <AdminDashboardCard
+                    icon={Package}
+                    title="Gestionar Productos"
+                    description="Supervisa el catálogo completo de productos, edita detalles y gestiona el inventario."
+                    link="/admin/products"
+                    gradient="from-purple-500 to-indigo-500"
+                />
+                <AdminDashboardCard
+                    icon={ListOrdered}
+                    title="Gestionar Pedidos"
+                    description="Revisa el historial de pedidos, estados de entrega y detalles de las transacciones."
+                    link="/admin/orders"
+                    gradient="from-sky-500 to-blue-500"
+                />
             </div>
-          </div>
+        </div>
 
-          <div className="lg:col-span-2 space-y-8">
-            {/* Recent Pending Products */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                      <AlertTriangle className="w-6 h-6" />
-                    </div>
-                    <h2 className="text-xl font-bold">Productos Pendientes</h2>
-                  </div>
-                  <button 
-                    onClick={fetchAllData} 
-                    className="bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-200 rounded-lg px-4 py-2 text-sm font-medium"
-                    title="Recargar todo" 
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  </button>
-                </div>
-              </div>
-              <div className="p-6">
-                {stats.recentPendingProducts.length > 0 ? (
-                  <ul className="space-y-4">
-                    {stats.recentPendingProducts.map(product => (
-                      <li key={product.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200">
-                        <div className="flex items-center">
-                          <Image 
-                            src={`${API_BASE_URL}${product.images[0]}`} 
-                            alt={product.name}
-                            width={48}
-                            height={48}
-                            className="rounded-lg object-cover mr-4 border border-gray-200"
-                          />
-                          <div>
-                            <p className="font-semibold text-gray-800">{product.name}</p>
-                            <p className="text-sm text-gray-600">por {product.artisan_name || 'Desconocido'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => handleApproveProduct(product.id)} 
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                            title="Aprobar producto"
-                          >
-                            <ShieldCheck className="w-4 h-4" />
-                            Aprobar
-                          </button>
-                           <Link href={`/products/${product.id}`} className="p-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg" title="Ver producto">
-                              <ExternalLink className="w-4 h-4 text-gray-600"/>
-                          </Link>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-center text-gray-500 py-4">No hay productos pendientes de aprobación.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Pending Artisans */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-sky-500 to-blue-500 p-6 text-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Pending Products */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-6 text-white">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                    <UserCheck className="w-6 h-6" />
+                    <AlertTriangle className="w-6 h-6" />
                   </div>
-                  <h2 className="text-xl font-bold">Artesanos Pendientes de Aprobación</h2>
+                  <h2 className="text-xl font-bold">Productos Pendientes</h2>
                 </div>
+                <button 
+                  onClick={fetchAllData} 
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-200 rounded-lg px-4 py-2 text-sm font-medium"
+                  title="Recargar todo" 
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                </button>
               </div>
-              <div className="p-6">
-                {loadingArtisans ? (
-                  <p className="text-center text-gray-500 py-4">Cargando artesanos...</p>
-                ) : pendingArtisans.length > 0 ? (
-                  <ul className="space-y-4">
-                    {pendingArtisans.map(artisan => (
-                      <li key={artisan.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-sky-50 to-blue-50 rounded-xl border border-sky-200">
-                        <div>
-                          <p className="font-semibold text-gray-800">{artisan.name}</p>
-                          <p className="text-sm text-gray-600">{artisan.email}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => handleApproveArtisan(artisan.id)} 
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-200 text-sm font-medium"
-                            title="Aprobar artesano"
-                          >
-                            <ShieldCheck className="w-4 h-4" />
-                            Aprobar
-                          </button>
-                          <Link href={`/admin/users/${artisan.id}`} className="p-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg" title="Ver perfil completo">
-                              <ExternalLink className="w-4 h-4 text-gray-600"/>
-                          </Link>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-center text-gray-500 py-4">No hay artesanos pendientes de aprobación.</p>
-                )}
-              </div>
-            </div>
-            
-          </div>
-        </div>
-
-        {/* Información adicional para administradores */}
-        <div className="mt-12">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 p-6 text-white">
-              <h3 className="text-xl font-bold">Herramientas de Administración</h3>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl">
-                  <div className="text-2xl font-bold text-emerald-600">📊</div>
-                  <div className="text-sm text-gray-600 mt-2">Análisis completo</div>
+              {stats.recentPendingProducts.length > 0 ? (
+                <ul className="space-y-4">
+                  {stats.recentPendingProducts.map(product => (
+                    <li key={product.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Image 
+                        src={`${API_BASE_URL}${product.images[0]}`} 
+                        alt={product.name}
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-lg object-cover border"
+                      />
+                      <div className="flex-1">
+                        <Link href={`/products/${product.id}`} className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
+                          {product.name}
+                        </Link>
+                        <p className="text-sm text-gray-500">por {product.artisan_name}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleApproveProduct(product.id)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-all"
+                          title="Aprobar producto"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                        <Link href={`/artisan/products/edit/${product.id}`}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                          title="Ver y editar detalles del producto"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500 py-4">No hay productos pendientes de aprobación.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Pending Artisans */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-rose-500 to-red-500 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                    <UserX className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold">Artesanos Pendientes</h2>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                  <div className="text-2xl font-bold text-blue-600">🔧</div>
-                  <div className="text-sm text-gray-600 mt-2">Control total</div>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
-                  <div className="text-2xl font-bold text-purple-600">⚡</div>
-                  <div className="text-sm text-gray-600 mt-2">Gestión rápida</div>
-                </div>
+                <button 
+                  onClick={fetchAllData} 
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-200 rounded-lg px-4 py-2 text-sm font-medium"
+                  title="Recargar todo" 
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                </button>
               </div>
+            </div>
+            <div className="p-6">
+              {stats.recentPendingArtisans.length > 0 ? (
+                <ul className="space-y-4">
+                  {stats.recentPendingArtisans.map(artisan => (
+                    <li key={artisan.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Image 
+                        src={artisan.avatar_url ? `${API_BASE_URL}${artisan.avatar_url}` : '/static/default-avatar.png'}
+                        alt={artisan.name}
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-full object-cover border"
+                      />
+                      <div className="flex-1">
+                        <Link href={`/admin/users/${artisan.id}`} className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
+                          {artisan.name}
+                        </Link>
+                        <p className="text-sm text-gray-500">{artisan.email}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleApproveArtisan(artisan.id)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-all"
+                          title="Aprobar artesano"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                        <Link href={`/admin/users/${artisan.id}`}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                          title="Ver perfil del artesano"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500 py-4">No hay artesanos pendientes de aprobación.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Pending Blogs */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                    <ListOrdered className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-bold">Blogs Pendientes</h2>
+                </div>
+                <button 
+                  onClick={fetchAllData} 
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-200 rounded-lg px-4 py-2 text-sm font-medium"
+                  title="Recargar todo" 
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              {stats.recentPendingBlogs && stats.recentPendingBlogs.length > 0 ? (
+                <ul className="space-y-4">
+                  {stats.recentPendingBlogs.map(blog => (
+                    <li key={blog.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Image 
+                        src={blog.image_url_1 ? `${API_BASE_URL}${blog.image_url_1}` : '/static/default-avatar.png'}
+                        alt={blog.title}
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-lg object-cover border"
+                      />
+                      <div className="flex-1">
+                        <Link href={`/blog/${blog.id}`} className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
+                          {blog.title}
+                        </Link>
+                        <p className="text-sm text-gray-500">por {blog.author_name}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => handleApproveBlog(blog.id)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-all"
+                          title="Aprobar blog"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </button>
+                        <Link href={`/artisan/blog/edit/${blog.id}`}
+                          className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                          title="Ver y editar detalles del blog"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Link>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-gray-500 py-4">No hay blogs pendientes de aprobación.</p>
+              )}
             </div>
           </div>
         </div>

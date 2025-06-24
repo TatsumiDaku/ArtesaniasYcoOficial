@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Thumbs } from 'swiper/modules';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getImageUrl } from '@/utils/imageUrl';
 
 import 'swiper/css/bundle';
 
@@ -42,7 +43,7 @@ const ProductImageGallery = ({ images, productName, stock }) => {
         {images.map((image, index) => (
           <SwiperSlide key={index}>
             <Image
-              src={image}
+              src={getImageUrl(image)}
               alt={`${productName} - Imagen ${index + 1}`}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -82,7 +83,7 @@ const ProductImageGallery = ({ images, productName, stock }) => {
               <SwiperSlide key={index} className="cursor-pointer">
                 <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-400 transition-all duration-200">
                    <Image
-                      src={image}
+                      src={getImageUrl(image)}
                       alt={`${productName} - Miniatura ${index + 1}`}
                       fill
                       sizes="25vw"

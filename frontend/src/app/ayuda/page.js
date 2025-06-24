@@ -47,7 +47,7 @@ const Ayuda = () => {
       },
       {
         pregunta: "¿Cómo puedo contactar al soporte?",
-        respuesta: "Puedes contactarnos a través de nuestro chat en vivo, enviando un email a soporte@artesaniasyco.com, o llamando al +1-800-ARTESANIAS. Nuestro equipo está disponible 24/7 para ayudarte."
+        respuesta: "Puedes contactarnos a través de nuestro chat en vivo, enviando un email a somos@artesaniasyco.com, o llamando al +1-800-ARTESANIAS. Nuestro equipo está disponible 24/7 para ayudarte."
       },
       {
         pregunta: "¿Los productos son auténticos?",
@@ -322,11 +322,11 @@ const Ayuda = () => {
             </p>
             <div className="mt-8 max-w-xl mx-auto relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                    type="text"
+              <input
+                type="text"
                     placeholder="Busca por palabra clave (ej. 'envío', 'pago')"
-                    value={searchTerm}
-                    onChange={handleSearch}
+                value={searchTerm}
+                onChange={handleSearch}
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all"
                 />
             </div>
@@ -342,30 +342,30 @@ const Ayuda = () => {
                             <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
                                 <h3 className="font-semibold text-orange-600">{faq.pregunta}</h3>
                                 <p className="text-gray-600 mt-2">{faq.respuesta}</p>
-                            </div>
-                        ))}
+                        </div>
+                      ))}
                     </div>
                 ) : (
                     <p className="text-gray-600">No se encontraron resultados. Intenta con otra búsqueda.</p>
                 )}
-            </section>
+      </section>
         ) : (
             <>
                 {/* Categorías */}
                 <section className="mb-16">
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         {categorias.map(cat => (
-                            <button
+              <button
                                 key={cat.id}
                                 onClick={() => setActiveTab(cat.id)}
                                 className={`flex flex-col items-center justify-center text-center p-4 rounded-xl transition-all duration-300 ${activeTab === cat.id ? 'bg-orange-500 text-white shadow-lg' : 'bg-white hover:bg-orange-100'}`}
                             >
                                 <cat.icon className="w-8 h-8 mb-2" />
                                 <span className="font-semibold">{cat.nombre}</span>
-                            </button>
-                        ))}
-                    </div>
-                </section>
+              </button>
+            ))}
+        </div>
+      </section>
 
                 {/* FAQs */}
                 <section>
@@ -373,23 +373,23 @@ const Ayuda = () => {
                         <div className="space-y-4 max-w-4xl mx-auto">
                             {faqs[activeTab].map((faq, index) => (
                                 <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                    <button
-                                        onClick={() => toggleFaq(index)}
+                <button
+                  onClick={() => toggleFaq(index)}
                                         className="w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-50 focus:outline-none"
                                     >
                                         <span>{faq.pregunta}</span>
                                         {expandedFaq === index ? <ChevronUp /> : <ChevronDown />}
-                                    </button>
-                                    {expandedFaq === index && (
+                </button>
+                {expandedFaq === index && (
                                         <div className="p-5 pt-0 text-gray-600">
                                             <p>{faq.respuesta}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
                     )}
-                </section>
+      </section>
 
                 {/* Contacto y Videos */}
                 <section className="mt-20">
@@ -402,15 +402,15 @@ const Ayuda = () => {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4 text-gray-700">
                                     <Mail className="w-5 h-5 text-orange-500" />
-                                    <a href="mailto:soporte@artesaniasyco.com" className="hover:underline">soporte@artesaniasyco.com</a>
-                                </div>
+                                    <a href="mailto:somos@artesaniasyco.com" className="hover:underline">somos@artesaniasyco.com</a>
+          </div>
                                 <div className="flex items-center gap-4 text-gray-700">
                                     <Phone className="w-5 h-5 text-orange-500" />
                                     <span>+1-800-ARTESANIAS (L-V, 9am - 6pm)</span>
-                                </div>
-                            </div>
-                        </div>
-                        
+                    </div>
+                  </div>
+                </div>
+                
                         <div className="bg-white rounded-xl p-8 shadow-lg">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">Tutoriales en Video</h3>
                             <p className="text-gray-600 mb-6">
@@ -422,19 +422,19 @@ const Ayuda = () => {
                                     <div>
                                         <p className="font-semibold text-gray-800">&quot;Cómo hacer tu primera compra&quot;</p>
                                         <p className="text-sm text-gray-500">Duración: 5:30 min</p>
-                                    </div>
+                  </div>
                                 </a>
                                 <a href="#" className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                     <Play className="w-8 h-8 text-orange-500" />
                                     <div>
                                         <p className="font-semibold text-gray-800">&quot;Gestionando tu perfil de artesano&quot;</p>
                                         <p className="text-sm text-gray-500">Duración: 12:15 min</p>
-                                    </div>
+                </div>
                                 </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            </div>
+          </div>
+        </div>
+      </section>
             </>
         )}
       </main>

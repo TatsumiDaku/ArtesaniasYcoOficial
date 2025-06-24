@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/utils/api';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { ArrowLeft, Save, Image as ImageIcon, Trash2, Plus } from 'lucide-react';
+import AuthContext from '@/context/AuthContext';
+import { getImageUrl } from '@/utils/imageUrl';
 
 const EditProductPage = () => {
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -22,10 +25,12 @@ const EditProductPage = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { id } = useParams();
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const fetchProductData = async () => {
+      if (!user) return; // Esperar a que el usuario esté disponible
+
       try {
         const [productRes, categoriesRes] = await Promise.all([
           api.get(`/products/${id}`),
@@ -33,6 +38,14 @@ const EditProductPage = () => {
         ]);
 
         const product = productRes.data;
+
+        // Comprobación de permisos
+        if (user.role !== 'admin' && user.id !== product.artisan_id) {
+          toast.error('No tienes permiso para editar este producto.');
+          router.push('/dashboard'); // Redirigir a una página segura
+          return;
+        }
+
         setFormData({
           name: product.name || '',
           description: product.description || '',
@@ -45,13 +58,14 @@ const EditProductPage = () => {
       } catch (error) {
         toast.error('No se pudieron cargar los datos del producto.');
         console.error(error);
+        router.push('/dashboard');
       } finally {
         setLoading(false);
       }
     };
     
     fetchProductData();
-  }, [id]);
+  }, [id, user, router]);
   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -126,11 +140,11 @@ const EditProductPage = () => {
         {/* Header con botón volver */}
         <div className="mb-8">
           <button
-            onClick={() => router.push('/artisan/products')}
+            onClick={() => user?.role === 'admin' ? router.push('/admin/dashboard') : router.push('/artisan/products')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl text-gray-700 mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Mis Productos
+            {user?.role === 'admin' ? 'Volver al Dashboard de Admin' : 'Volver a Mis Productos'}
           </button>
           
           <div className="bg-white rounded-2xl shadow-xl p-6">
@@ -278,10 +292,10 @@ const EditProductPage = () => {
                     Imágenes Actuales
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {existingImageUrls.map((url) => (
-                      <div key={url} className="relative group">
+                    {existingImageUrls.map((url, idx) => (
+                      <div key={url + '-' + idx} className="relative group">
                         <Image 
-                          src={`${API_BASE_URL}${url}`} 
+                          src={getImageUrl(url)} 
                           alt="Imagen existente" 
                           width={200} 
                           height={200} 

@@ -9,7 +9,8 @@ const {
     updateProduct, 
     deleteProduct,
     approveProduct,
-    getCategories
+    getCategories,
+    revertToPending
 } = require('../controllers/products');
 const { authenticateToken, softAuthenticateToken } = require('../middleware/auth'); // CORRECTED IMPORT
 const { param, body } = require('express-validator');
@@ -48,6 +49,7 @@ router.post(
 );
 router.put('/:id', authenticateToken, param('id').isInt(), upload.array('images', 5), updateProduct);
 router.put('/:id/approve', authenticateToken, param('id').isInt(), approveProduct);
+router.put('/:id/revert', authenticateToken, param('id').isInt(), revertToPending);
 router.delete('/:id', authenticateToken, param('id').isInt(), deleteProduct);
 
 // Rutas para reseñas

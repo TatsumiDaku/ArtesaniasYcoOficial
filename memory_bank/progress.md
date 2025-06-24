@@ -12,6 +12,15 @@
 - Implementada página de edición de perfil de artesano.
 - Corregidos errores de carga de datos, subida de imágenes y caché de frontend.
 - Fase actual: Pulido, mejoras de UI/UX y corrección de errores.
+- [Abril 2024] Corrección de bug en edición de perfil de artesano: tras guardar cambios (incluida la contraseña), el sistema cierra sesión automáticamente y redirige a login, mostrando un mensaje claro. Esto evita errores de estado inconsistente y asegura que el usuario siempre vuelva a ingresar con los datos actualizados.
+- [Abril 2024] Registro de artesanos ahora exige correo profesional/artesanal obligatorio, validado en frontend y backend.
+- [Abril 2024] El correo profesional/artesanal se muestra destacado en la tienda pública y puede editarse desde la gestión de tienda.
+- [Abril 2024] Añadido botón para copiar el correo profesional/artesanal en la tienda, con feedback visual.
+- [Abril 2024] Mensajes explicativos sobre visibilidad pública añadidos en el perfil de artesano y formularios.
+- [Abril 2024] Corrección de bug al cambiar la contraseña: ahora el sistema cierra sesión y redirige a login tras guardar cambios, evitando errores de estado inconsistente.
+- [Abril 2024] Mejoras visuales en la página de tienda: header más limpio, avatar destacado, nombre más visible, layout y tarjetas modernizadas.
+- [Abril 2024] Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
+- [Abril 2024] Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema.
 
 # Historial de Progreso del Proyecto
 

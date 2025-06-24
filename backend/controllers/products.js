@@ -239,6 +239,32 @@ const approveProduct = async (req, res) => {
   }
 };
 
+const revertToPending = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Acceso denegado. Solo los administradores pueden realizar esta acción.' });
+    }
+
+    const { id } = req.params;
+    const updatedProduct = await pool.query(
+      "UPDATE products SET status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (updatedProduct.rows.length === 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    res.json({
+      message: 'Producto devuelto a estado pendiente.',
+      product: updatedProduct.rows[0],
+    });
+  } catch (error) {
+    console.error('Error revirtiendo producto:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 const getCategories = async (req, res) => {
   try {
     const categories = await pool.query('SELECT * FROM categories ORDER BY name');
@@ -273,14 +299,21 @@ const createProductReview = async (req, res) => {
     const { rating, comment } = req.body;
     const user_id = req.user.id; 
 
+    // Verificar si ya existe una reseña de este usuario para este producto
+    const existingReview = await pool.query(
+      'SELECT id FROM reviews WHERE product_id = $1 AND user_id = $2',
+      [id, user_id]
+    );
+    if (existingReview.rows.length > 0) {
+      return res.status(409).json({ message: 'Ya has enviado una reseña para este producto.' });
+    }
+
     const newReview = await pool.query(
       'INSERT INTO reviews (product_id, user_id, rating, comment) VALUES ($1, $2, $3, $4) RETURNING *',
       [id, user_id, rating, comment]
     );
-    
     // Devolver la nueva reseña junto con el nombre del usuario
     const finalReview = { ...newReview.rows[0], user_name: req.user.name };
-
     res.status(201).json(finalReview);
   } catch (error) {
     console.error('Error creando reseña:', error);
@@ -298,6 +331,7 @@ module.exports = {
   updateProduct,
   deleteProduct,
   approveProduct,
+  revertToPending,
   getCategories,
   getProductReviews,
   createProductReview,

@@ -25,12 +25,16 @@ const register = async (req, res) => {
 
     // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
-    const avatarPath = req.file ? req.file.path.replace(/\\/g, "/").replace("uploads/", "/uploads/") : null;
+    const avatarPath = req.files && req.files.avatar ? req.files.avatar[0].path.replace(/\\/g, "/").replace("uploads/", "/uploads/") : null;
+    const shopHeaderPath = req.files && req.files.shop_header_image ? req.files.shop_header_image[0].path.replace(/\\/g, "/").replace("uploads/", "/uploads/") : null;
 
     let newUser;
     if (role === 'artesano') {
-        if (!req.file) {
+        if (!req.files || !req.files.avatar) {
             return res.status(400).json({ message: 'La imagen de perfil es obligatoria para los artesanos.' });
+        }
+        if (!professional_email || !/^\S+@\S+\.\S+$/.test(professional_email)) {
+            return res.status(400).json({ message: 'El correo profesional/artesanal de contacto es obligatorio y debe ser válido.' });
         }
         // Verificar si el nickname ya existe
         const existingNickname = await pool.query('SELECT * FROM users WHERE nickname = $1', [nickname]);
@@ -41,9 +45,9 @@ const register = async (req, res) => {
         // Crear artesano con estado pendiente
         const artisanStatus = 'pending_approval';
         newUser = await pool.query(
-            `INSERT INTO users (email, password, name, role, status, phone, avatar, nickname, professional_email, artisan_story, id_document, country, state, city, workshop_address)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id, email, name, role`,
-            [email, hashedPassword, name, role, artisanStatus, phone, avatarPath, nickname, professional_email, artisan_story, id_document, country, state, city, workshop_address]
+            `INSERT INTO users (email, password, name, role, status, phone, avatar, nickname, professional_email, artisan_story, id_document, country, state, city, workshop_address, shop_header_image)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id, email, name, role`,
+            [email, hashedPassword, name, role, artisanStatus, phone, avatarPath, nickname, professional_email, artisan_story, id_document, country, state, city, workshop_address, shopHeaderPath]
         );
       
         // No se genera token, se envía mensaje de pendiente de aprobación

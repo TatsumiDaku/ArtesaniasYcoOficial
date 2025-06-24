@@ -275,6 +275,7 @@ const AdminProductsPage = () => {
   const [pagination, setPagination] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, inactive: 0, lowStock: 0 });
   const router = useRouter();
 
   const fetchProducts = useCallback(async (page = 1, search = searchTerm, status = statusFilter) => {
@@ -309,13 +310,33 @@ const AdminProductsPage = () => {
     }
   }, [searchTerm, statusFilter]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await api.get('/stats/dashboard');
+      if (res.data && res.data.products) {
+        setStats(res.data.products);
+      }
+    } catch (err) {
+      toast.error('No se pudieron cargar las estadísticas de productos.');
+      console.error('Error al cargar estadísticas:', err);
+    }
+  }, []);
+  
+  const handleRefresh = useCallback(() => {
+    fetchProducts(1);
+    fetchStats();
+  }, [fetchProducts, fetchStats]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchProducts(1, searchTerm, statusFilter);
-    }, 300); // debounce para no llamar a la API en cada pulsación
-
+    }, 300);
     return () => clearTimeout(handler);
-  }, [fetchProducts, searchTerm, statusFilter]);
+  }, [fetchProducts]);
 
   const handleLoadMore = () => {
     if (pagination && pagination.page < pagination.pages) {
@@ -324,21 +345,35 @@ const AdminProductsPage = () => {
   };
 
   const handleApprove = useCallback(async (productId) => {
-    toast.loading('Aprobando producto...');
-    try {
-      await api.put(`/products/${productId}/approve`);
-      toast.dismiss();
-      toast.success('Producto aprobado y hecho público.');
-      setProducts(prev => prev.map(p => p.id === productId ? { ...p, is_public: true } : p));
-    } catch (error) {
-      toast.dismiss();
-      toast.error('Error al aprobar el producto.');
-      console.error("Failed to approve product:", error);
-    }
-  }, []);
+    toast.promise(
+      api.put(`/products/${productId}/approve`),
+      {
+        loading: 'Aprobando producto...',
+        success: (data) => {
+          handleRefresh();
+          return 'Producto aprobado con éxito';
+        },
+        error: 'No se pudo aprobar el producto',
+      }
+    );
+  }, [handleRefresh]);
+
+  const handleRevert = async (productId) => {
+    toast.promise(
+      api.put(`/products/${productId}/revert`),
+      {
+        loading: 'Cambiando a pendiente...',
+        success: () => {
+          handleRefresh();
+          return 'Producto marcado como pendiente.';
+        },
+        error: 'No se pudo cambiar el estado del producto.',
+      }
+    );
+  };
 
   const handleDelete = useCallback(async (productId) => {
-    if (window.confirm('¿Seguro que quieres ELIMINAR este producto? Esta acción es PERMANENTE.')) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')) {
       toast.loading('Eliminando producto...');
       try {
         await api.delete(`/products/${productId}`);
@@ -364,6 +399,8 @@ const AdminProductsPage = () => {
   }, [products, searchTerm, statusFilter]);
 
   // Estadísticas
+  // This is removed because stats are now fetched from the API
+  /*
   const stats = useMemo(() => {
     const total = products.length;
     const active = products.filter(p => p.status === 'active').length;
@@ -371,6 +408,7 @@ const AdminProductsPage = () => {
     const inactive = products.filter(p => p.status === 'inactive').length;
     return { total, active, pending, inactive };
   }, [products]);
+  */
   
   const columns = useMemo(() => [
     {
@@ -448,19 +486,28 @@ const AdminProductsPage = () => {
       id: 'actions',
       cell: ({ row }) => (
         <div className="flex items-center space-x-2">
-          {row.original.status === 'pending' && (
+          {row.original.status === 'pending' ? (
             <button
               onClick={() => handleApprove(row.original.id)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
               title="Aprobar Producto"
             >
-              <ShieldCheck className="w-3 h-3" />
+              <CheckCircle className="w-4 h-4" />
               Aprobar
+            </button>
+          ) : (
+            <button
+              onClick={() => handleRevert(row.original.id)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+              title="Marcar como Pendiente"
+            >
+              <Clock className="w-4 h-4" />
+              Pendiente
             </button>
           )}
           <button
             onClick={() => router.push(`/artisan/products/edit/${row.original.id}`)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
             title="Editar Producto"
           >
             <Edit className="w-3 h-3" />
@@ -468,7 +515,7 @@ const AdminProductsPage = () => {
           </button>
           <button
             onClick={() => handleDelete(row.original.id)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
             title="Eliminar Producto"
           >
             <Trash2 className="w-3 h-3" />
@@ -477,8 +524,24 @@ const AdminProductsPage = () => {
         </div>
       ),
     },
-  ], [router, handleApprove, handleDelete]);
+  ], [router, handleApprove, handleRevert, handleDelete]);
 
+  const StatCard = ({ icon, label, value, colorClass, loading }) => (
+    <div className="bg-white rounded-2xl shadow-lg p-5 border border-gray-200/80 flex items-center gap-4">
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${colorClass}`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        {loading ? (
+          <div className="h-7 w-12 bg-gray-200 rounded animate-pulse mt-1"></div>
+        ) : (
+          <p className="text-2xl font-bold text-gray-800">{value}</p>
+        )}
+      </div>
+    </div>
+  );
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -515,64 +578,13 @@ const AdminProductsPage = () => {
         {/* Gestor de Categorías */}
         <CategoryManager />
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                  <Package className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold">Total</h3>
-              </div>
-            </div>
-            <div className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-              <div className="text-sm text-gray-600">Productos</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                  <CheckCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold">Activos</h3>
-              </div>
-            </div>
-            <div className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-900">{stats.active}</div>
-              <div className="text-sm text-gray-600">Publicados</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold">Pendientes</h3>
-              </div>
-            </div>
-            <div className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-900">{stats.pending}</div>
-              <div className="text-sm text-gray-600">Por aprobar</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-red-500 to-pink-500 p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                  <Trash2 className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold">Inactivos</h3>
-              </div>
-            </div>
-            <div className="p-6 text-center">
-              <div className="text-3xl font-bold text-gray-900">{stats.inactive}</div>
-              <div className="text-sm text-gray-600">Eliminados</div>
-            </div>
-          </div>
+        {/* Sección de Estadísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
+          <StatCard icon={<Package className="w-6 h-6 text-white"/>} label="Total" value={stats.total} colorClass="bg-blue-500" loading={loading} />
+          <StatCard icon={<ShieldCheck className="w-6 h-6 text-white"/>} label="Activos" value={stats.active} colorClass="bg-green-500" loading={loading} />
+          <StatCard icon={<Clock className="w-6 h-6 text-white"/>} label="Pendientes" value={stats.pending} colorClass="bg-yellow-500" loading={loading} />
+          <StatCard icon={<X className="w-6 h-6 text-white"/>} label="Inactivos" value={stats.inactive} colorClass="bg-red-500" loading={loading} />
+          <StatCard icon={<AlertTriangle className="w-6 h-6 text-white"/>} label="Stock Bajo" value={stats.lowStock} colorClass="bg-orange-500" loading={loading} />
         </div>
 
         {/* Filtros y búsqueda */}
@@ -600,14 +612,16 @@ const AdminProductsPage = () => {
                 <option value="inactive">Inactivos</option>
               </select>
             </div>
-            <button
-              onClick={fetchProducts}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:from-emerald-600 hover:to-teal-700"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Recargar
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="p-2.5 bg-white text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 disabled:opacity-50"
+                title="Recargar lista"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 

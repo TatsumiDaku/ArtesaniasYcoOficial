@@ -37,24 +37,27 @@ const HomePage = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center justify-center text-white">
+      <section className="relative h-[70vh] md:h-[80vh] flex items-center justify-center text-white bg-black">
           <Image 
               src="/static/artesanias-Inicio.jpg"
               alt="Fondo de artesanías colombianas"
               fill
-              className="object-cover"
+              className="object-cover opacity-60"
               priority
           />
-          <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 text-center px-4">
-              <h1 className="text-5xl md:text-7xl font-pacifico text-white drop-shadow-lg mb-4 py-8">
-                  El Alma en tus Manos
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-pacifico bg-gradient-to-r from-amber-200 via-white to-orange-200 bg-clip-text text-transparent drop-shadow-2xl mb-4 py-4 animate-fade-in-down">
+                  El Alma de la Tierra en tus Manos
               </h1>
-              <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-8">
-                  Descubre piezas únicas que cuentan una historia. Conecta con la tradición.
+              <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-6 animate-fade-in-up animation-delay-300">
+                  Descubre piezas únicas que narran la historia de nuestra cultura. Conecta con el corazón de la tradición.
               </p>
-              <Link href="/products" className="btn btn-primary bg-gradient-to-r from-amber-500 to-red-600 border-none text-white text-lg px-8 py-3 rounded-lg shadow-lg hover:scale-105 transition-transform">
-                  Explorar Colección
+               <div className="w-24 h-px bg-white/50 mx-auto mb-8 animate-fade-in-up animation-delay-500"></div>
+              <Link 
+                href="/products" 
+                className="inline-block bg-white/20 backdrop-blur-sm border border-white/30 text-white text-lg font-bold px-10 py-4 rounded-lg shadow-lg hover:bg-white/30 transition-all duration-300 transform hover:scale-105 animate-fade-in-up animation-delay-700"
+              >
+                  Explorar la Colección
               </Link>
           </div>
       </section>

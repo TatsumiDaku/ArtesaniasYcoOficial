@@ -12,6 +12,7 @@ import DataTable from '@/components/ui/DataTable';
 
 const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
+  const [stats, setStats] = useState({ total: 0, clientes: 0, artesanos: 0, admins: 0 });
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [pagination, setPagination] = useState(null);
@@ -52,6 +53,19 @@ const AdminUsersPage = () => {
     }
   }, [activeTab, searchTerm]);
 
+  const fetchStats = useCallback(async () => {
+    try {
+      const { data } = await api.get('/users/stats');
+      setStats(data);
+    } catch (error) {
+      console.error("Failed to fetch user stats:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       fetchUsers(1);
@@ -66,6 +80,12 @@ const AdminUsersPage = () => {
     }
   };
 
+  const handleRefresh = () => {
+    setUsers([]); 
+    fetchUsers(1);
+    fetchStats(); // También recargamos las estadísticas por si acaso
+  };
+
   const handleDelete = useCallback(async (userId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar a este usuario?')) {
       toast.loading('Eliminando usuario...');
@@ -74,23 +94,14 @@ const AdminUsersPage = () => {
         toast.dismiss();
         toast.success('Usuario eliminado correctamente.');
         setUsers(prev => prev.filter(u => u.id !== userId));
+        fetchStats(); // Actualizar stats después de eliminar
       } catch (error) {
         toast.dismiss();
         toast.error('Error al eliminar el usuario.');
         console.error("Failed to delete user:", error);
       }
     }
-  }, []);
-
-  // Las estadísticas ahora se basan en los totales de la paginación si están disponibles
-  const stats = useMemo(() => {
-    // Esta parte podría necesitar una llamada a un endpoint de estadísticas separado
-    // para ser 100% precisa con los filtros aplicados, pero por ahora es una aproximación.
-    const clientes = users.filter(u => u.role === 'cliente').length;
-    const artesanos = users.filter(u => u.role === 'artesano').length;
-    const admins = users.filter(u => u.role === 'admin').length;
-    return { clientes, artesanos, admins, total: pagination?.total || users.length };
-  }, [users, pagination]);
+  }, [fetchStats]);
   
   const columns = useMemo(() => [
     { 
@@ -252,81 +263,82 @@ const AdminUsersPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Filtros y búsqueda */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8">
+        
+        {/* Controles y Pestañas */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 mb-8">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Buscar usuarios por nombre o email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeTab === 'cliente' 
-                      ? 'bg-blue-500 text-white shadow-lg' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+            {/* Pestañas */}
+            <div className="flex-shrink-0">
+              <div className="p-1.5 bg-gray-200/50 rounded-lg flex items-center gap-2">
+                <button
                   onClick={() => setActiveTab('cliente')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${activeTab === 'cliente' ? 'bg-white text-emerald-700 shadow-md' : 'text-gray-600 hover:bg-white/50'}`}
                 >
-                  <User className="w-4 h-4 inline mr-2" />
-                  Clientes ({users.filter(u => u.role === 'cliente').length})
-                </button> 
-                <button 
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeTab === 'artesano' 
-                      ? 'bg-orange-500 text-white shadow-lg' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  <User className="w-4 h-4" />
+                  Clientes
+                  <span className="bg-emerald-600/20 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">{stats.clientes}</span>
+                </button>
+                <button
                   onClick={() => setActiveTab('artesano')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${activeTab === 'artesano' ? 'bg-white text-emerald-700 shadow-md' : 'text-gray-600 hover:bg-white/50'}`}
                 >
-                  <Store className="w-4 h-4 inline mr-2" />
+                  <Store className="w-4 h-4" />
                   Artesanos
+                  <span className="bg-emerald-600/20 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">{stats.artesanos}</span>
                 </button>
               </div>
             </div>
-            <button
-              onClick={fetchUsers}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:from-emerald-600 hover:to-teal-700"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Recargar
-            </button>
+
+            {/* Controles: Búsqueda y Recarga */}
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={`Buscar en ${activeTab === 'cliente' ? 'clientes' : 'artesanos'}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg shadow-inner focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                />
+              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="p-2.5 bg-white text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 disabled:opacity-50"
+                title="Recargar lista"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Tabla de datos */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-          <DataTable
-            columns={columns}
-            data={users} // Ya no se usa filteredUsers
-            loading={loading}
-          />
-          {pagination && pagination.page < pagination.pages && !loading && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="inline-flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loadingMore ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Cargando...
-                  </>
-                ) : (
-                  'Cargar Más Usuarios'
-                )}
-              </button>
+        {/* Tabla de Datos */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {loading && users.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-emerald-600" />
+              <p>Cargando usuarios...</p>
             </div>
+          ) : (
+            <>
+              <DataTable
+                columns={columns}
+                data={users}
+                loading={loading}
+              />
+              {pagination && pagination.page < pagination.pages && (
+                <div className="p-4 text-center">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                  >
+                    {loadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Cargar más usuarios'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

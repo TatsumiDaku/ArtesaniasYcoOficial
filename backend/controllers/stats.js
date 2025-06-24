@@ -9,37 +9,84 @@ const getDashboardStats = async (req, res) => {
 
   try {
     const queries = [
-      pool.query("SELECT COUNT(*) FROM users WHERE role = 'cliente'"),
-      pool.query("SELECT COUNT(*) FROM users WHERE role = 'artesano'"),
-      pool.query("SELECT COUNT(*) FROM products"),
-      pool.query("SELECT COUNT(*) FROM orders"),
-      pool.query("SELECT COUNT(*) FROM products WHERE status = 'pending'"), // Total de pendientes
+      // User stats
+      pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'cliente'"),
+      pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'artesano'"),
+      pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'"),
+      pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'artesano' AND status = 'pending_approval'"),
+
+      // Product stats
+      pool.query("SELECT COUNT(*) as total FROM products"),
+      pool.query("SELECT COUNT(*) as active FROM products WHERE status = 'active'"),
+      pool.query("SELECT COUNT(*) as pending FROM products WHERE status = 'pending'"),
+      pool.query("SELECT COUNT(*) as inactive FROM products WHERE status = 'inactive'"),
+      pool.query("SELECT COUNT(*) as low_stock FROM products WHERE stock > 0 AND stock <= 5"),
+
+      // Order stats
+      pool.query("SELECT COUNT(*) as count FROM orders"),
+      
+      // Recent items for dashboard
       pool.query(`
-        SELECT p.id, p.name, p.images, u.name as artisan_name 
+        SELECT p.id, p.name, p.images, u.nickname as artisan_name
         FROM products p
         LEFT JOIN users u ON p.artisan_id = u.id
         WHERE p.status = 'pending' 
         ORDER BY p.created_at DESC 
         LIMIT 5
-      `) // 5 más recientes
+      `),
+      pool.query(`
+        SELECT id, name, email, avatar as avatar_url, created_at
+        FROM users
+        WHERE role = 'artesano' AND status = 'pending_approval'
+        ORDER BY created_at DESC
+        LIMIT 5
+      `),
+      pool.query(`
+        SELECT b.id, b.title, b.image_url_1, u.nickname as author_name, b.created_at
+        FROM blogs b
+        LEFT JOIN users u ON b.author_id = u.id
+        WHERE b.status = 'pending'
+        ORDER BY b.created_at DESC
+        LIMIT 5
+      `)
     ];
 
     const [
       clientCountRes,
       artisanCountRes,
-      productCountRes,
+      adminCountRes,
+      pendingArtisansCountRes,
+      productStatsRes,
+      productActiveRes,
+      productPendingRes,
+      productInactiveRes,
+      productLowStockRes,
       orderCountRes,
-      pendingCountRes,
-      recentPendingRes
+      recentPendingProductsRes,
+      recentPendingArtisansRes,
+      recentPendingBlogsRes
     ] = await Promise.all(queries);
 
     const stats = {
-      totalClients: parseInt(clientCountRes.rows[0]?.count || 0, 10),
-      totalArtisans: parseInt(artisanCountRes.rows[0]?.count || 0, 10),
-      totalProducts: parseInt(productCountRes.rows[0]?.count || 0, 10),
-      totalOrders: parseInt(orderCountRes.rows[0]?.count || 0, 10),
-      pendingProductsCount: parseInt(pendingCountRes.rows[0]?.count || 0, 10),
-      recentPendingProducts: recentPendingRes.rows
+      users: {
+        totalClients: parseInt(clientCountRes.rows[0]?.count || 0, 10),
+        totalArtisans: parseInt(artisanCountRes.rows[0]?.count || 0, 10),
+        totalAdmins: parseInt(adminCountRes.rows[0]?.count || 0, 10),
+        pendingApproval: parseInt(pendingArtisansCountRes.rows[0]?.count || 0, 10),
+      },
+      products: {
+        total: parseInt(productStatsRes.rows[0]?.total || 0, 10),
+        active: parseInt(productActiveRes.rows[0]?.active || 0, 10),
+        pending: parseInt(productPendingRes.rows[0]?.pending || 0, 10),
+        inactive: parseInt(productInactiveRes.rows[0]?.inactive || 0, 10),
+        lowStock: parseInt(productLowStockRes.rows[0]?.low_stock || 0, 10),
+      },
+      orders: {
+        total: parseInt(orderCountRes.rows[0]?.count || 0, 10),
+      },
+      recentPendingProducts: recentPendingProductsRes.rows,
+      recentPendingArtisans: recentPendingArtisansRes.rows,
+      recentPendingBlogs: recentPendingBlogsRes.rows
     };
 
     res.json(stats);
@@ -74,13 +121,36 @@ const getUserStats = async (req, res) => {
     let productsCount = 0;
     let salesCount = 0;
     let reviewsStats = null;
+    let productStats = {
+      total: 0,
+      active: 0,
+      pending: 0,
+      inactive: 0,
+    };
     
     if (req.user.role === 'artesano') {
+      // Conteo total
       const productsResult = await pool.query(
         'SELECT COUNT(*) as count FROM products WHERE artisan_id = $1',
         [userId]
       );
-      productsCount = parseInt(productsResult.rows[0].count);
+      productStats.total = parseInt(productsResult.rows[0].count);
+
+      // Conteo por estado
+      const statusResult = await pool.query(`
+        SELECT
+          SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+          SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+          SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive
+        FROM products
+        WHERE artisan_id = $1
+      `, [userId]);
+
+      if (statusResult.rows.length > 0) {
+        productStats.active = parseInt(statusResult.rows[0].active || 0);
+        productStats.pending = parseInt(statusResult.rows[0].pending || 0);
+        productStats.inactive = parseInt(statusResult.rows[0].inactive || 0);
+      }
 
       const salesResult = await pool.query(
         `SELECT COUNT(DISTINCT o.id) as count 
@@ -120,7 +190,7 @@ const getUserStats = async (req, res) => {
     res.json({
       favorites: parseInt(favoritesCount.rows[0].count),
       orders: parseInt(ordersCount.rows[0].count),
-      products: productsCount,
+      products: productStats,
       sales: salesCount,
       reviews: reviewsStats
     });

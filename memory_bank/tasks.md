@@ -30,4 +30,5 @@
   - [x] Añadido toggle para ver/ocultar contraseñas
   - [x] Mejoras visuales y de UX en todos los paneles
   - [x] Componentes responsivos (Header, Grids, etc.)
-  - [x] Micro-interacciones y transiciones sutiles (hover effects, etc.) 
+  - [x] Micro-interacciones y transiciones sutiles (hover effects, etc.)
+- [x] Limpieza total de la lógica de blogs en backend y frontend (eliminación de rutas, controladores, páginas, componentes y referencias) 

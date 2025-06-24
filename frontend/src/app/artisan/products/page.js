@@ -21,9 +21,10 @@ const ArtisanProductsPage = () => {
   const { user } = useAuth();
   const router = useRouter();
 
-  const fetchProducts = useCallback(async (page = 1) => {
+  const fetchArtisanData = useCallback(async (page = 1) => {
     if (!user) return;
     const isInitialLoad = page === 1;
+
     if (isInitialLoad) {
       setLoading(true);
     } else {
@@ -31,28 +32,26 @@ const ArtisanProductsPage = () => {
     }
 
     try {
-      const res = await api.get('/products', { 
+      const productsPromise = api.get('/products', { 
         params: { from: 'dashboard', page, limit: 10 } 
       });
-      const { products: productsData, pagination: paginationData } = res.data;
+      
+      const statsPromise = isInitialLoad ? api.get('/stats/user') : Promise.resolve(null);
+
+      const [productsRes, statsRes] = await Promise.all([productsPromise, statsPromise]);
+
+      const { products: productsData, pagination: paginationData } = productsRes.data;
       
       setProducts(prev => isInitialLoad ? productsData : [...prev, ...productsData]);
       setPagination(paginationData);
 
-      if (isInitialLoad) {
-        // Para las estadísticas, necesitaríamos un endpoint separado o calcular sobre todos los productos.
-        // Por ahora, actualizamos con el total de la paginación.
-        // Una mejor solución sería tener un endpoint /stats/artisan/:id
-        setStats({
-          products: paginationData.total,
-          active: productsData.filter(p => p.status === 'active').length, // Esto es solo de la página actual
-          pending: productsData.filter(p => p.status === 'pending').length, // Esto es solo de la página actual
-          inactive: productsData.filter(p => p.status === 'inactive').length // Esto es solo de la página actual
-        });
+      if (statsRes) {
+        setStats(statsRes.data.products || { products: 0, active: 0, pending: 0, inactive: 0 });
       }
+
     } catch (error) {
-      toast.error('No se pudieron cargar tus productos.');
-      console.error("Failed to fetch products:", error);
+      toast.error('No se pudieron cargar tus datos.');
+      console.error("Failed to fetch artisan data:", error);
     } finally {
       if (isInitialLoad) {
         setLoading(false);
@@ -63,13 +62,17 @@ const ArtisanProductsPage = () => {
   }, [user]);
 
   useEffect(() => {
-    fetchProducts(1);
-  }, [fetchProducts]);
+    fetchArtisanData(1);
+  }, [fetchArtisanData]);
 
   const handleLoadMore = () => {
     if (pagination && pagination.page < pagination.pages) {
-      fetchProducts(pagination.page + 1);
+      fetchArtisanData(pagination.page + 1);
     }
+  };
+
+  const handleRefresh = () => {
+    fetchArtisanData(1);
   };
 
   const handleDelete = useCallback(async (productId) => {
@@ -77,13 +80,13 @@ const ArtisanProductsPage = () => {
       try {
         await api.delete(`/products/${productId}`);
         toast.success('Producto eliminado con éxito.');
-        fetchProducts(1); // Recargar desde el principio
+        fetchArtisanData(1); // Recargar desde el principio
       } catch (error) {
         toast.error('Error al eliminar el producto.');
         console.error("Failed to delete product:", error);
       }
     }
-  }, [fetchProducts]);
+  }, [fetchArtisanData]);
 
   const columns = useMemo(() => [
     {
@@ -254,34 +257,23 @@ const ArtisanProductsPage = () => {
         {/* Panel de control */}
         <div className="mb-8">
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full p-3">
-                    <Settings className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">Gestión de Productos</h2>
-                    <p className="text-gray-600">Administra tu catálogo artesanal</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button 
-                    onClick={() => router.refresh()} 
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl text-gray-700 font-medium border border-gray-200"
-                    aria-label="Recargar productos"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Actualizar
-                  </button>
-                  <Link 
-                    href="/artisan/products/new" 
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:from-orange-600 hover:to-red-700"
-                  >
-                    <PlusCircle className="w-5 h-5" />
-                    Añadir Producto
-                  </Link>
-                </div>
+            <div className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <h2 className="text-2xl font-bold text-gray-800">Tu Catálogo</h2>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleRefresh}
+                  className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-colors"
+                  title="Actualizar lista"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+                <Link 
+                  href="/artisan/products/new"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg"
+                >
+                  <PlusCircle className="w-5 h-5" />
+                  <span>Añadir Producto</span>
+                </Link>
               </div>
             </div>
           </div>

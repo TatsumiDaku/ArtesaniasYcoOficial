@@ -7,7 +7,10 @@ const upload = require('../middleware/upload');
 // Registro de usuario
 router.post(
   '/register',
-  upload.single('avatar'), // Middleware para procesar la subida del avatar
+  upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'shop_header_image', maxCount: 1 }
+  ]),
   body('email').isEmail().withMessage('Email inválido'),
   body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
   body('name').notEmpty().withMessage('El nombre es obligatorio'),

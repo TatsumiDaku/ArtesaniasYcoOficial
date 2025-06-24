@@ -102,116 +102,136 @@
 
 Este documento refleja el estado actual y robusto de la aplicación, incluyendo las nuevas funcionalidades de branding dinámico y sistema de ayuda completo, sirviendo como una guía precisa para el mantenimiento y desarrollo futuro.
 
-# Plan de Reconstrucción: Funcionalidades de Tiendas y Blogs
+# REBUILD: Estado Final de Limpieza y Guía para la Reconstrucción de Blogs
 
-## Objetivo Principal
-Transformar la plataforma en un ecosistema más interactivo y rico en contenido, introduciendo perfiles de "Tienda" para cada artesano y un sistema de "Blog" para que compartan sus historias y conocimientos. Esto aumentará el engagement, mejorará el SEO y fortalecerá la comunidad.
+## Estado Final de Limpieza
 
----
-
-## Fase 0: Cambios en la Base de Datos (Schema)
-
-**Esencial empezar aquí. Se requieren modificaciones estructurales.**
-
--   **Tabla `users`:**
-    -   Añadir columna `shop_header_image` (TEXT) para la imagen de cabecera de la tienda.
-    -   Añadir columna `shop_tagline` (VARCHAR(150)) para una breve descripción de la tienda.
-
--   **NUEVA Tabla `blogs`:**
-    -   `id` (SERIAL PRIMARY KEY)
-    -   `author_id` (INTEGER, REFERENCES users(id))
-    -   `title` (VARCHAR(255))
-    -   `content` (TEXT, max 1500 caracteres)
-    -   `image_url_1` (TEXT)
-    -   `image_url_2` (TEXT, opcional)
-    -   `status` (VARCHAR(50), ej: 'draft', 'published')
-    -   `created_at`, `updated_at` (TIMESTAMPS)
-
--   **NUEVA Tabla `blog_categories`:**
-    -   `id` (SERIAL PRIMARY KEY)
-    -   `name` (VARCHAR(100), UNIQUE)
-    -   `description` (TEXT)
-
--   **NUEVA Tabla de Unión `blog_post_to_category`:**
-    -   `blog_id` (INTEGER, REFERENCES blogs(id))
-    -   `category_id` (INTEGER, REFERENCES blog_categories(id))
-
--   **NUEVA Tabla `blog_comments`:**
-    -   `id` (SERIAL PRIMARY KEY)
-    -   `blog_id` (INTEGER, REFERENCES blogs(id))
-    -   `user_id` (INTEGER, REFERENCES users(id))
-    -   `comment` (TEXT)
-    -   `created_at` (TIMESTAMP)
-
--   **NUEVA Tabla `blog_ratings`:**
-    -   `id` (SERIAL PRIMARY KEY)
-    -   `blog_id` (INTEGER, REFERENCES blogs(id))
-    -   `user_id` (INTEGER, REFERENCES users(id))
-    -   `rating` (INTEGER, 1-5)
-    -   UNIQUE (`blog_id`, `user_id`)
+- Se ha eliminado completamente toda la lógica, rutas, controladores, páginas, componentes y referencias a blogs en backend y frontend.
+- No quedan endpoints, imports, ni lógica activa de blogs en ningún archivo del backend ni frontend.
+- Solo permanece la estructura de base de datos de blogs, comentarios y ratings definida en `database/init.sql`.
+- El sistema está listo para una reconstrucción limpia y moderna del sistema de blogs.
 
 ---
 
-## Fase 1: Desarrollo del Backend (API)
+## Guía para la Reconstrucción del Sistema de Blogs
 
--   **Controlador `shops.js` (Actualizar):**
-    -   `getShops`: Devolverá la lista de artesanos activos con su info de tienda (`nickname`, `avatar`, `shop_tagline`).
-    -   `getShopById`: Devolverá el perfil completo de la tienda (`nickname`, `avatar`, `shop_header_image`, `artisan_story`) y además:
-        -   Una lista paginada de sus productos.
-        -   Una lista paginada (3 últimos) de los títulos de sus blogs.
-        -   Una lista paginada (3 últimos) de comentarios recibidos en todos sus productos.
+### 1. **Base de la lógica: la base de datos**
+- Toda la lógica y endpoints del nuevo sistema de blogs debe construirse tomando como referencia y punto de partida la estructura de base de datos definida en `database/init.sql`.
+- Las relaciones, restricciones y entidades (blogs, blog_comments, blog_ratings, blog_categories, blog_post_to_category) deben ser la base para la API y la lógica de negocio.
 
--   **NUEVO Controlador `blogs.js`:**
-    -   `createBlog`: Lógica para que un artesano/admin cree un post.
-    -   `updateBlog`: Editar un post propio.
-    -   `getBlogs`: Listar todos los blogs publicados con paginación (5 por página). Soportará filtro por categoría y orden por rating.
-    -   `getBlogById`: Ver un blog específico con sus comentarios (paginados).
-    -   `createBlogComment`: Añadir un comentario a un blog (solo usuarios autenticados).
-    -   `rateBlog`: Dar una calificación a un blog.
+### 2. **Patrones de diseño y experiencia de usuario**
+- El diseño visual, la experiencia de usuario y los componentes deben seguir los patrones definidos en `memory_bank/systemPatterns.md`.
+- Utilizar Tailwind CSS, daisyUI y los estilos, layouts y componentes recomendados en el documento de patrones del sistema.
 
--   **Controlador `users.js` (Actualizar):**
-    -   Añadir endpoint `GET /api/users/me/comments`: Devolverá una lista paginada de todos los comentarios que el usuario ha hecho, tanto en productos (`reviews`) como en blogs (`blog_comments`).
-    -   `updateUser`/`adminUpdateUser`: Modificar para que se pueda actualizar la `shop_header_image` y `shop_tagline`.
+### 3. **Referencias y documentación clave**
+- **Base de datos:** `database/init.sql`
+- **Patrones visuales y de UX:** `memory_bank/systemPatterns.md`
+- **Plan general y requisitos:** `REBUILD_PLAN.md`
 
----
-
-## Fase 2: Desarrollo del Frontend (UI/UX)
-
--   **Dashboard del Artesano (`/artisan/...`):**
-    -   **Nueva Pestaña "Mi Tienda":**
-        -   Formulario para subir/cambiar imagen de cabecera.
-        -   Campo para editar el "tagline" de la tienda.
-    -   **Nueva Pestaña "Mis Blogs":**
-        -   Interfaz para Crear, Ver, Editar y Eliminar sus propios posts de blog.
-
--   **Dashboard de Admin (`/admin/...`):**
-    -   **Nueva Página "Gestión de Tiendas":** Lista de todas las tiendas, con enlaces a ellas.
-    -   **Nueva Página "Gestión de Blogs":** Lista de todos los posts de blog, con capacidad para moderar/eliminar.
-
--   **Páginas Públicas:**
-    -   **Página de Tiendas (`/shops`):** Grid de todas las tiendas de artesanos con paginación.
-    -   **Página Detalle de Tienda (`/shops/[id]`):**
-        -   Banner con imagen de cabecera, avatar y nickname grande.
-        -   Sección de productos del artesano (paginada).
-        -   Sección de últimos blogs del artesano (3 blogs, enlace a ver todos).
-        -   Sección de últimos comentarios recibidos (3 comentarios, botón "Ver más").
-    -   **Página de Blog (`/blog`):**
-        -   Listado de 5 posts de blog con paginación "Cargar más".
-        -   Filtros por categorías y por "mejor valorados".
-    -   **Página Detalle de Blog (`/blog/[id]`):**
-        -   Muestra el post con sus 2 imágenes y texto.
-        -   Sistema de calificación por estrellas.
-        -   Sección de comentarios con paginación.
-        -   Formulario para comentar (solo para usuarios logueados).
-
--   **Dashboard del Cliente (`/dashboard`):**
-    -   **Nueva Pestaña "Mi Actividad" / "Mis Comentarios":**
-        -   Mostrará una lista unificada de los comentarios que el cliente ha dejado en productos y en blogs.
+### 4. **Metodología recomendada**
+- Construir primero los endpoints RESTful en backend, asegurando que cada uno respete la estructura y relaciones de la base de datos.
+- Implementar la lógica de frontend consumiendo estos endpoints, siguiendo los patrones de diseño y experiencia definidos.
+- Validar cada paso con pruebas y feedback visual claro.
 
 ---
 
-## Fase 3: Integración y Pruebas
--   Verificar todos los flujos de creación, edición y visualización para todos los roles (admin, artesano, cliente).
--   Asegurar que la paginación funciona en todas las secciones nuevas.
--   Probar la subida de imágenes para blogs y cabeceras de tienda.
--   Validar que solo usuarios autenticados pueden comentar/calificar. 
+**Nota:**
+> La reconstrucción del sistema de blogs debe ser modular, escalable y alineada a la base de datos y los patrones de diseño del sistema. No reintroducir lógica antigua ni atajos; todo debe partir de la estructura de datos y los patrones visuales/documentales actuales.
+
+---
+
+**Documentación actualizada a la fecha de limpieza total.**
+
+# REBUILD: Plan de Reconstrucción de Blogs
+
+## Objetivo Principal: Limpieza Total de Lógica de Blogs
+
+- Eliminar completamente toda la lógica, rutas, controladores, páginas, componentes y referencias a blogs en **backend** y **frontend** (excepto la estructura de base de datos, que ya está implementada y es correcta).
+- Eliminar:
+  - Todas las rutas y controladores de blogs, ratings y comentarios de blog en el backend.
+  - Todos los endpoints, middlewares y referencias a blogs en cualquier otro controlador o flujo backend.
+  - Todas las páginas, componentes, formularios, menús, enlaces, cards y llamadas a la API de blogs en el frontend (público, admin, artesano, dashboard, menús, etc.).
+  - Todo lo relacionado a comentarios, ratings, imágenes de blog y categorías de blog en el frontend.
+  - Cualquier referencia a blogs en dashboards, menús, cards, paneles de admin y artesano, etc.
+- El objetivo es dejar el sistema completamente limpio de cualquier rastro de la lógica anterior de blogs, asegurando que no haya rutas, páginas, componentes ni llamadas residuales.
+- **No se elimina la estructura de base de datos de blogs, comentarios, ratings ni categorías, ya que es la base para la nueva implementación.**
+
+## Segundo Objetivo: Reconstrucción Integral del Sistema de Blogs
+
+- Crear desde cero un sistema de blogs moderno, robusto y alineado a los siguientes flujos y permisos:
+
+### Público/Clientes
+- Solo pueden ver blogs en estado **activo**.
+- Acceso a `/blog` y `/blog/[id]` para ver listado y detalle de blogs activos.
+
+### Artesano
+- Puede crear nuevos blogs desde su dashboard.
+- Al crear un blog, este queda en estado **pendiente** hasta que el admin lo apruebe.
+- Puede ver y editar sus propios blogs en cualquier estado (pendiente, activo, inactivo).
+- Puede eliminar sus propios blogs.
+- Puede ver en tiempo real los cambios al editar.
+- Puede ver quién ha comentado en sus blogs.
+- Puede editar la categoría de su blog y agregar nuevos blogs.
+- No puede activar su propio blog, solo el admin puede.
+
+### Administrador
+- Puede ver, filtrar, aprobar (activar) o poner en pendiente cualquier blog desde su dashboard.
+- Puede editar, eliminar cualquier blog de cualquier artesano.
+- Puede ver y gestionar los ratings y comentarios de cualquier blog.
+- Puede cambiar el estado de cualquier blog (activo, pendiente, inactivo).
+- Puede ver quién ha calificado o comentado en cualquier blog.
+
+### Requisitos Técnicos
+- **Comentarios y ratings**: Solo en blogs activos y gestionados por los endpoints nuevos.
+- **Imágenes de blog**: Subida y gestión robusta, con rutas y almacenamiento flexible en `/uploads`.
+- **Categorías**: Gestión y edición desde el dashboard de artesano y admin.
+- **Estados**: `pending` (pendiente), `active` (aprobado/publicado), `inactive` (eliminado/no visible al público).
+- **UX**: Feedback visual claro, validaciones, paginación, edición/borrado de comentarios, gestión de ratings.
+
+---
+
+# REBUILD: Documentación de gestión de imágenes
+
+## Carpeta de almacenamiento de imágenes
+
+Todas las imágenes del sistema (avatares de usuario, imágenes de blogs, imágenes de productos, cabeceras de tiendas, etc.) se guardan y se sirven desde la carpeta:
+
+```
+/uploads
+```
+
+- El middleware de subida de archivos detecta el tipo de recurso (avatar, blog, producto, tienda) y guarda la imagen en la subcarpeta correspondiente dentro de `/uploads`.
+- Ejemplos de rutas:
+  - Avatares: `/uploads/avatars/avatar-<timestamp>.png`
+  - Imágenes de blog: `/uploads/blogs/blog-<timestamp>.jpg`
+  - Imágenes de productos: `/uploads/products/product-<timestamp>.jpg`
+  - Cabeceras de tienda: `/uploads/shops/shop_header_image-<timestamp>.jpg`
+- Todas las rutas públicas de imágenes en el frontend y backend deben apuntar a `/uploads/...`.
+
+**Nota:** El sistema crea automáticamente las subcarpetas necesarias si no existen. 
+
+# REBUILD: Corrección de flujo en edición de perfil de artesano (Abril 2024)
+
+## Problema detectado
+Al actualizar la contraseña u otros datos del perfil de artesano, el frontend intentaba re-hidratar el formulario y el contexto de usuario tras recibir el usuario actualizado y el nuevo token. Esto provocaba un error de tipo (`TypeError: Overload resolution failed.`) y un estado inconsistente, donde la pantalla quedaba en blanco o era necesario recargar manualmente para ver los datos.
+
+## Solución aplicada
+- Se eliminó el intento de re-hidratar el formulario tras guardar cambios.
+- Ahora, tras guardar cambios exitosamente, se muestra un mensaje claro: "Por favor, al guardar los cambios cierre sesión y vuelva a ingresar."
+- El sistema cierra la sesión automáticamente usando el método `logout()` del contexto de autenticación y redirige a la página de login.
+- Esto asegura que el usuario siempre vuelva a ingresar con el estado actualizado y evita errores de renderizado o contexto.
+
+## Estado actual
+- El flujo de edición de perfil de artesano es robusto y no genera errores tras cambiar la contraseña u otros datos sensibles.
+- El usuario debe iniciar sesión de nuevo tras guardar cambios, garantizando la consistencia del estado global.
+
+# Resumen de Avances Abril 2024
+
+- Registro de artesanos ahora exige correo profesional/artesanal obligatorio, validado en frontend y backend.
+- El correo profesional/artesanal se muestra destacado en la tienda pública y puede editarse desde la gestión de tienda.
+- Añadido botón para copiar el correo profesional/artesanal en la tienda, con feedback visual.
+- Mensajes explicativos sobre visibilidad pública añadidos en el perfil de artesano y formularios.
+- Corrección de bug al cambiar la contraseña: ahora el sistema cierra sesión y redirige a login tras guardar cambios, evitando errores de estado inconsistente.
+- Mejoras visuales en la página de tienda: header más limpio, avatar destacado, nombre más visible, layout y tarjetas modernizadas.
+- Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
+- Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema. 

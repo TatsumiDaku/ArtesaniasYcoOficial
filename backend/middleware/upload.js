@@ -2,20 +2,22 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = 'uploads/avatars/';
-
-// Asegurarse de que el directorio de subida exista
-fs.mkdirSync(uploadDir, { recursive: true });
-
-// Configuración de almacenamiento para Multer
+// Configuración de almacenamiento dinámica
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, uploadDir); // Directorio donde se guardarán los avatares
+        let dest = 'uploads/avatars/';
+        if (req.baseUrl.includes('products')) dest = 'uploads/products/';
+        else if (req.baseUrl.includes('shops')) dest = 'uploads/shops/';
+        // Puedes agregar más casos según tus rutas
+        fs.mkdirSync(dest, { recursive: true });
+        cb(null, dest);
     },
     filename: function (req, file, cb) {
-        // Crear un nombre de archivo único para evitar colisiones
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname));
+        let prefix = 'avatar-';
+        if (req.baseUrl.includes('products')) prefix = 'product-';
+        else if (req.baseUrl.includes('shops')) prefix = 'shop_header_image-';
+        cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
     }
 });
 

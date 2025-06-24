@@ -7,6 +7,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '@/utils/imageUrl';
 
 const StarRating = ({ rating, className }) => {
   const totalStars = 5;
@@ -37,7 +38,7 @@ const ProductCard = ({ product }) => {
   
   const API_BASE_URL = 'http://localhost:5000';
   const imageUrl = product.images && product.images.length > 0 
-    ? `${API_BASE_URL}${product.images[0]}`
+    ? getImageUrl(product.images[0])
     : '/static/LogoIncial.png';
 
   const handleFavoriteClick = (e) => {
@@ -102,7 +103,7 @@ const ProductCard = ({ product }) => {
             </span>
             <div className="flex items-center gap-2 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
-                    <StarRating rating={averageRating} />
+                <StarRating rating={averageRating} />
                     <span className="font-medium">{averageRating.toFixed(1)}</span>
                 </div>
                 <div className="flex items-center gap-1">

@@ -1,7 +1,17 @@
 import axios from 'axios';
 
+const getApiBaseUrl = () => {
+  // Cuando se construye para producción, NODE_ENV es 'production'.
+  if (process.env.NODE_ENV === 'production') {
+    // En producción, SIEMPRE usamos la variable de entorno del despliegue.
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // En cualquier otro caso (desarrollo local), SIEMPRE apuntamos a localhost.
+  return 'http://localhost:5000/api';
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseUrl(),
   // No establecer Content-Type aquí para permitir que FormData funcione.
   timeout: 10000, // 10 segundos de timeout
 });

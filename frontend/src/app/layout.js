@@ -6,6 +6,8 @@ import { FavoritesProvider } from '@/context/FavoritesContext';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
 import PendingApprovalModal from "@/components/ui/PendingApprovalModal";
+import { Suspense } from 'react';
+import PageLoader from '@/components/ui/PageLoader';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -40,7 +42,9 @@ export default function RootLayout({ children }) {
               <Toaster position="bottom-right" reverseOrder={false} />
               <PendingApprovalModal />
               <Layout>
-                {children}
+                <Suspense fallback={<PageLoader />}>
+                  {children}
+                </Suspense>
               </Layout>
             </FavoritesProvider>
           </CartProvider>

@@ -6,13 +6,14 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 import Image from 'next/image';
-import { User, Edit3, Save, AlertTriangle, RefreshCw, PenSquare, Phone, MapPin, KeyRound, ArrowLeft } from 'lucide-react';
+import { User, Edit3, Save, AlertTriangle, RefreshCw, PenSquare, Phone, MapPin, KeyRound, ArrowLeft, Store, Mail } from 'lucide-react';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import PasswordInput from '@/components/ui/PasswordInput';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const ArtisanProfilePage = () => {
-  const { user, updateUser: updateAuthContext, loading: authLoading } = useAuth();
+  const { user, updateUser: updateAuthContext, loading: authLoading, logout } = useAuth();
   const { register, handleSubmit, watch, reset, formState: { errors, isDirty } } = useForm();
   
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -20,10 +21,23 @@ const ArtisanProfilePage = () => {
   
   const avatarFile = watch('avatar');
   const passwordValue = watch('password');
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
-      reset(user);
+      const profileData = {
+        name: user.name || '',
+        nickname: user.nickname || '',
+        artisan_story: user.artisan_story || '',
+        professional_email: user.professional_email || '',
+        phone: user.phone || '',
+        country: user.country || '',
+        state: user.state || '',
+        city: user.city || '',
+        workshop_address: user.workshop_address || '',
+      };
+      reset(profileData);
+      
       if (user.avatar) {
         setAvatarPreview(`${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`);
       }
@@ -66,10 +80,10 @@ const ArtisanProfilePage = () => {
     setIsSubmitting(true);
     try {
       const res = await api.put('/users/me', formData);
-      const { token: newToken, user: updatedUser } = res.data;
-      updateAuthContext(newToken, updatedUser);
-      reset(updatedUser); // Reset form to new state
       toast.success('¡Perfil actualizado con éxito!');
+      setTimeout(() => {
+        logout(false);
+      }, 1200);
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Error al actualizar el perfil.';
       toast.error(errorMessage);
@@ -108,16 +122,25 @@ const ArtisanProfilePage = () => {
 
   const hasFormChanges = isDirty || (passwordValue && passwordValue.trim() !== '');
 
+  // Mensaje si el usuario está vacío o faltan datos clave
+  const isUserDataBlank = !user || !user.name || !user.nickname;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {isUserDataBlank && (
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            Si la información está en blanco por favor inicie sesión de nuevo
+          </div>
+        )}
          <div className="mb-6">
           <Link 
-            href="/artisan/products"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl text-gray-700 font-medium border border-gray-200"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Mis Productos
+            Volver al Dashboard
           </Link>
         </div>
 
@@ -149,16 +172,28 @@ const ArtisanProfilePage = () => {
             </div>
           </header>
 
-          <FormSection title="Información Pública" icon={<PenSquare className="w-6 h-6 text-orange-600"/>}>
+          {/* Texto explicativo sobre visibilidad pública */}
+          <p className="mb-2 text-sm text-orange-700 bg-orange-50 border-l-4 border-orange-400 rounded px-4 py-2 flex items-center gap-2">
+            <Store className="w-4 h-4 text-orange-500" />
+            Esta información será visible públicamente en tu tienda para todos los visitantes.
+          </p>
+          <FormSection title="Información Pública de Perfil" icon={<PenSquare className="w-6 h-6 text-orange-600"/>}>
             <FormInput id="name" label="Nombre Completo" register={register} error={errors.name} requiredMsg="El nombre es obligatorio" />
             <FormInput id="nickname" label="Nickname" register={register} error={errors.nickname} requiredMsg="El nickname es obligatorio" />
             <div className="md:col-span-2">
-              <label htmlFor="artisan_story" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Tu Historia</label>
+              <label htmlFor="artisan_story" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Tu Historia (Pública)</label>
               <textarea id="artisan_story" {...register('artisan_story', {maxLength: 300})} rows="5" className="mt-1 block w-full px-4 py-3 bg-white rounded-xl border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           </FormSection>
 
-          <FormSection title="Contacto y Taller" icon={<Phone className="w-6 h-6 text-blue-600"/>}>
+          <FormSection title="Contacto y Dirección (Privado)" icon={<Phone className="w-6 h-6 text-blue-600"/>}>
+            {/* Texto explicativo sobre el correo profesional */}
+            <div className="md:col-span-2 mb-2">
+              <span className="inline-flex items-center gap-2 text-sm text-indigo-700 bg-indigo-50 border-l-4 border-indigo-400 rounded px-4 py-2">
+                <Mail className="w-4 h-4 text-indigo-500" />
+                Este correo será visible en tu tienda para que los clientes puedan contactarte directamente.
+              </span>
+            </div>
             <FormInput id="professional_email" label="Correo Profesional" register={register} error={errors.professional_email} type="email" />
             <FormInput id="phone" label="Teléfono" register={register} error={errors.phone} />
             <FormInput id="country" label="País" register={register} error={errors.country} />
@@ -176,6 +211,10 @@ const ArtisanProfilePage = () => {
           </FormSection>
 
           <footer className="sticky bottom-0 py-4">
+            <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Por favor, al guardar los cambios cierre sesión y vuelva a ingresar.
+            </div>
              <div className={`transition-transform duration-300 ${hasFormChanges ? 'translate-y-0' : 'translate-y-24'}`}>
                 <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-4 flex items-center justify-between">
                     <p className="text-sm font-semibold text-gray-700">

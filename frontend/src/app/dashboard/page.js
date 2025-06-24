@@ -4,14 +4,16 @@ import { useState, useEffect } from 'react';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { User, ShoppingBag, Heart, Package, Users, Shield, Home, Settings, Star, TrendingUp, AlertTriangle } from 'lucide-react';
+import { User, ShoppingBag, Heart, Package, Users, Shield, Home, Settings, Star, TrendingUp, AlertTriangle, BookOpen, Store } from 'lucide-react';
 import api from '@/utils/api';
 import StarRating from '@/components/ui/StarRating';
+import { useRouter } from 'next/navigation';
 
 const DashboardPage = () => {
     const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -29,6 +31,12 @@ const DashboardPage = () => {
             fetchStats();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (user?.role === 'admin') {
+            router.replace('/admin/dashboard');
+        }
+    }, [user, router]);
 
     const getRoleName = (role) => {
         switch (role) {
@@ -83,7 +91,9 @@ const DashboardPage = () => {
     
     const artisanOptions = [
         { href: '/artisan/products', title: 'Gestionar Productos', description: 'Añade, edita y administra tus creaciones artesanales.', icon: Package, role: 'artesano', color: 'from-orange-500 to-red-500' },
-        { href: '/artisan/profile', title: 'Mi Perfil', description: 'Gestiona tu información personal y profesional.', icon: User, role: 'artesano', color: 'from-red-500 to-pink-500' },
+        { href: '/artisan/blog', title: 'Gestionar Blogs', description: 'Crea, edita y administra tus publicaciones de blog artesanales.', icon: BookOpen, role: 'artesano', color: 'from-yellow-500 to-orange-500' },
+        { href: '/artisan/shop', title: 'Gestionar Mi Tienda', description: 'Actualiza el lema e imagen de cabecera de tu tienda.', icon: Store, role: 'artesano', color: 'from-red-500 to-pink-500' },
+        { href: '/artisan/profile', title: 'Mi Perfil', description: 'Gestiona tu información personal y datos de la cuenta.', icon: User, role: 'artesano', color: 'from-blue-500 to-indigo-500' },
     ];
 
     const adminOptions = [
@@ -123,6 +133,9 @@ const DashboardPage = () => {
         return [];
     };
 
+    if (user?.role === 'admin') {
+        return null;
+    }
     return (
         <div className={`min-h-screen bg-gradient-to-br ${getRoleBgColor(user?.role)}`}>
             <div className="container mx-auto px-4 py-8 max-w-6xl">

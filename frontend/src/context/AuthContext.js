@@ -93,6 +93,17 @@ export const AuthProvider = ({ children }) => {
         toast.success('¡Registro casi listo!');
         return { success: true, artisanPending: true };
       }
+      // Detectar si es cliente (userData es FormData y/o no tiene nickname)
+      let isCliente = false;
+      if (userData instanceof FormData) {
+        isCliente = userData.get('role') === 'cliente';
+      } else {
+        isCliente = userData.role === 'cliente';
+      }
+      if (isCliente) {
+        // No mostrar toast, no login automático
+        return { success: true };
+      }
       toast.success('¡Registro exitoso!');
       const { email, password } = userData;
       await login(email, password);

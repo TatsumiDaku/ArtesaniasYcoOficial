@@ -52,8 +52,8 @@ const Reviews = ({ productId }) => {
         rating: rating,
         comment: comment.trim(),
       });
-      
-      // Actualizar la lista de reseñas
+      if (res.status === 201) {
+        // Actualizar la lista de reseñas solo si la creación fue exitosa
       setReviews(prevReviews => {
         const existingIndex = prevReviews.findIndex(r => r.usuario_id === user.id);
         if (existingIndex >= 0) {
@@ -66,13 +66,17 @@ const Reviews = ({ productId }) => {
           return [res.data, ...prevReviews];
         }
       });
-      
       setComment('');
       setRating(0);
       toast.success('¡Gracias por tu reseña!');
+      }
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('Error submitting review:', error, error.response);
+      if (error.response?.status === 409) {
+        toast.error(error.response?.data?.message || 'Solo puedes dejar una reseña por producto.');
+      } else {
       toast.error(error.response?.data?.message || 'No se pudo enviar la reseña.');
+      }
     } finally {
       setSubmitting(false);
     }

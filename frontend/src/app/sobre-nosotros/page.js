@@ -1,56 +1,57 @@
 'use client';
 
-import { Heart, Users, Award, Globe, Shield, Truck, Clock, Star } from 'lucide-react';
+import { Heart, Users, Award, Globe, BookOpen, Hand, Sprout } from 'lucide-react';
+import Image from 'next/image';
 
 const SobreNosotros = () => {
     const valores = [
         {
             icon: Heart,
-            titulo: "Pasión por lo Artesanal",
-            descripcion: "Cada producto en nuestra plataforma cuenta una historia única, creada con amor y dedicación por artesanos que preservan técnicas ancestrales."
+            titulo: "Pasión por lo Genuino",
+            descripcion: "Cada pieza en nuestra plataforma es un testimonio de amor y dedicación. Apoyamos a artesanos que infunden su alma en cada creación."
         },
         {
             icon: Users,
-            titulo: "Comunidad Sostenible",
-            descripcion: "Construimos una red de apoyo entre artesanos y clientes, promoviendo el comercio justo y el desarrollo económico local."
+            titulo: "Comunidad y Colaboración",
+            descripcion: "Fomentamos una red de apoyo mutuo entre artesanos y clientes, promoviendo el comercio justo y la sostenibilidad cultural y económica."
         },
         {
             icon: Award,
-            titulo: "Calidad Garantizada",
-            descripcion: "Cada artesano es verificado y sus productos son evaluados para asegurar la más alta calidad y autenticidad."
+            titulo: "Calidad y Autenticidad",
+            descripcion: "Verificamos a cada artesano y evaluamos cada producto para garantizar una calidad excepcional y una autenticidad incuestionable."
         },
         {
             icon: Globe,
-            titulo: "Impacto Global",
-            descripcion: "Conectamos artesanos locales con clientes de todo el mundo, expandiendo el alcance de sus creaciones únicas."
+            titulo: "Conexión Sin Fronteras",
+            descripcion: "Derribamos barreras geográficas, llevando el talento local a un escenario global y conectando culturas a través del arte."
         }
     ];
 
     const estadisticas = [
-        { numero: "500+", descripcion: "Artesanos Registrados", icon: Users },
-        { numero: "10,000+", descripcion: "Productos Únicos", icon: Award },
-        { numero: "50,000+", descripcion: "Clientes Satisfechos", icon: Heart },
-        { numero: "25+", descripcion: "Países Alcanzados", icon: Globe }
+        { numero: "500+", descripcion: "Artesanos Verificados", icon: Users },
+        { numero: "10,000+", descripcion: "Tesoros Únicos", icon: Award },
+        { numero: "50,000+", descripcion: "Historias Compartidas", icon: Heart },
+        { numero: "25+", descripcion: "Países Conectados", icon: Globe }
     ];
 
     const equipo = [
         {
-            nombre: "María González",
-            cargo: "Fundadora & CEO",
-            descripcion: "Apasionada por preservar las tradiciones artesanales y conectar culturas a través del arte.",
-            imagen: "/static/team/maria.jpg"
+            nombre: "Tatsumi Bernal",
+            cargo: "Frontend & Idea Original",
+            descripcion: "Como artesano, Tatsumi sintió la necesidad de un espacio digital justo y bello. Es el visionario que dio vida a la interfaz y la experiencia de usuario.",
+            imagen: "/static/team/tatsumi.jpg" // Asegúrate de tener estas imágenes
         },
         {
-            nombre: "Carlos Rodríguez",
-            cargo: "Director de Tecnología",
-            descripcion: "Experto en desarrollo de plataformas digitales que facilitan el comercio artesanal global.",
-            imagen: "/static/team/carlos.jpg"
+            nombre: "Nicolas Ortiz",
+            cargo: "Backend & Marketing",
+            descripcion: "Nicolas construye la sólida infraestructura que soporta la plataforma y diseña las estrategias para que las historias de los artesanos lleguen al mundo.",
+            imagen: "/static/team/nicolas.jpg"
         },
         {
-            nombre: "Ana Martínez",
-            cargo: "Directora de Relaciones con Artesanos",
-            descripcion: "Especialista en identificar y apoyar talentos artesanales emergentes en comunidades locales.",
-            imagen: "/static/team/ana.jpg"
+            nombre: "Ericck",
+            cargo: "Backend & Scrum Master",
+            descripcion: "Ericck no solo aporta su talento en el desarrollo del backend, sino que también orquesta el ritmo del equipo, asegurando una colaboración ágil y efectiva.",
+            imagen: "/static/team/erick.jpg" // Asegúrate de tener estas imágenes
         }
     ];
 
@@ -61,12 +62,10 @@ const SobreNosotros = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center">
                         <h1 className="text-3xl md:text-5xl lg:text-6xl font-pacifico bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent mb-8 leading-relaxed py-4">
-                            Sobre ArtesaníasYCo
+                            El Alma Detrás del Arte
                         </h1>
                         <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-                            Somos una plataforma que conecta artesanos talentosos con amantes del arte único. 
-                            Nuestra misión es preservar las tradiciones artesanales mientras creamos oportunidades 
-                            económicas sostenibles para comunidades locales.
+                            ArtesaníasYCo no es solo un marketplace. Es un puente digital construido con pasión, código y un profundo respeto por la tradición artesanal.
                         </p>
                     </div>
                 </div>
@@ -77,163 +76,110 @@ const SobreNosotros = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-800 mb-6">Nuestra Historia</h2>
+                            <h2 className="text-3xl font-bold text-gray-800 mb-6">Nuestra Historia: De la Idea a la Realidad</h2>
                             <div className="space-y-4 text-gray-600 leading-relaxed">
                                 <p>
-                                    ArtesaníasYCo nació en 2020 de la visión de conectar el mundo digital con las 
-                                    tradiciones artesanales más auténticas. Todo comenzó cuando nuestra fundadora, 
-                                    María González, descubrió la dificultad que tenían los artesanos locales para 
-                                    llegar a un público más amplio.
+                                    ArtesaníasYCo nació de una necesidad sentida en carne propia. <strong>Tatsumi Bernal</strong>, siendo artesano, experimentó de primera mano la frustración de crear piezas únicas y hermosas que rara vez encontraban un público más allá de su taller local. Veía un mundo digital lleno de oportunidades, pero carente de una plataforma que realmente entendiera y valorara el alma del trabajo hecho a mano.
                                 </p>
                                 <p>
-                                    Lo que empezó como un pequeño proyecto para ayudar a 10 artesanos de su comunidad, 
-                                    se ha convertido en una plataforma global que conecta a más de 500 artesanos con 
-                                    clientes de 25 países diferentes.
+                                    Impulsado por esta visión, se unió a <strong>Nicolas Ortiz</strong> y <strong>Ericck</strong>, dos mentes apasionadas por la tecnología con un deseo compartido de construir algo con propósito. Juntos, se propusieron crear más que una tienda online: querían forjar una comunidad.
                                 </p>
                                 <p>
-                                    Hoy, cada producto en nuestra plataforma cuenta una historia única, preservando 
-                                    técnicas ancestrales y creando un puente entre el pasado y el futuro del arte artesanal.
+                                    Lo que comenzó como bocetos en una libreta se ha transformado en un ecosistema vibrante que hoy apoya a cientos de artesanos, permitiéndoles no solo vender sus creaciones, sino también contar sus historias y preservar su legado cultural en un mundo cada vez más conectado.
                                 </p>
                             </div>
                         </div>
                         <div className="relative">
-                            <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-8 text-white">
+                            <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-8 text-white shadow-lg">
                                 <h3 className="text-2xl font-bold mb-4">Nuestra Misión</h3>
                                 <p className="text-lg leading-relaxed">
-                                    &quot;Preservar y promover las tradiciones artesanales mientras creamos oportunidades 
-                                    económicas sostenibles para artesanos de todo el mundo, conectando culturas a 
-                                    través del arte único y auténtico.&quot;
+                                    &quot;Empoderar a los artesanos del mundo, ofreciéndoles una plataforma digital digna y eficaz para que su talento trascienda fronteras, y conectando a los amantes del arte con historias y creaciones auténticas que enriquecen la vida.&quot;
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Nuestros Valores */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Nuestros Valores</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            Estos principios guían cada decisión que tomamos y cada acción que realizamos.
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {valores.map((valor, index) => (
-                            <div key={index} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-orange-500 rounded-lg flex items-center justify-center mb-4">
-                                    <valor.icon className="w-6 h-6 text-white" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-gray-800 mb-3">{valor.titulo}</h3>
-                                <p className="text-gray-600 leading-relaxed">{valor.descripcion}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Estadísticas */}
-            <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-amber-500 to-orange-600">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-white mb-4">Nuestro Impacto</h2>
-                        <p className="text-amber-100 max-w-2xl mx-auto">
-                            Números que demuestran el crecimiento y el impacto positivo en la comunidad artesanal.
-                        </p>
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {estadisticas.map((stat, index) => (
-                            <div key={index} className="text-center">
-                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <stat.icon className="w-8 h-8 text-white" />
-                                </div>
-                                <div className="text-4xl font-bold text-white mb-2">{stat.numero}</div>
-                                <div className="text-amber-100">{stat.descripcion}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
+            
             {/* Nuestro Equipo */}
             <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Nuestro Equipo</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">El Equipo Fundador</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto">
-                            Conoce a las personas apasionadas que hacen posible ArtesaníasYCo.
+                            Las mentes y manos que convirtieron una idea en una realidad.
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
                         {equipo.map((miembro, index) => (
-                            <div key={index} className="bg-white rounded-xl p-6 shadow-lg text-center">
-                                <div className="w-24 h-24 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                                    <span className="text-2xl font-bold text-white">{miembro.nombre.charAt(0)}</span>
-                                </div>
+                             <div key={index} className="bg-white rounded-xl p-8 shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
+                                <Image
+                                    src={miembro.imagen}
+                                    alt={`Foto de ${miembro.nombre}`}
+                                    width={120}
+                                    height={120}
+                                    className="w-32 h-32 object-cover rounded-full mx-auto mb-6 shadow-xl border-4 border-white"
+                                />
                                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{miembro.nombre}</h3>
-                                <p className="text-orange-600 font-medium mb-3">{miembro.cargo}</p>
-                                <p className="text-gray-600 leading-relaxed">{miembro.descripcion}</p>
+                                <p className="text-orange-600 font-medium mb-4">{miembro.cargo}</p>
+                                <p className="text-gray-600 leading-relaxed text-sm">{miembro.descripcion}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Compromiso con la Calidad */}
+            {/* Filosofía de Vida - Nueva Sección */}
             <section className="py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        <div className="bg-white rounded-xl p-6 shadow-lg">
-                            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4">
-                                <Shield className="w-6 h-6 text-white" />
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Nuestra Filosofía</h2>
+                        <p className="text-gray-600 max-w-2xl mx-auto">
+                            Creemos que en cada objeto hecho a mano reside una verdad profunda sobre quiénes somos y de dónde venimos.
+                        </p>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg flex items-center justify-center mb-4">
+                                <BookOpen className="w-6 h-6 text-white" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-3">Calidad Garantizada</h3>
-                            <p className="text-gray-600">
-                                Cada producto pasa por un riguroso proceso de verificación para asegurar 
-                                la más alta calidad y autenticidad.
-                            </p>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-3">Un Legado en Cada Hilo</h3>
+                            <p className="text-gray-600 leading-relaxed">Cada pieza artesanal es un libro abierto a nuestro pasado. En sus texturas y formas, leemos las historias, las técnicas y la sabiduría que nuestros ancestros nos legaron. Honramos esa herencia.</p>
                         </div>
-                        <div className="bg-white rounded-xl p-6 shadow-lg">
-                            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
-                                <Truck className="w-6 h-6 text-white" />
+                        <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <div className="w-12 h-12 bg-gradient-to-r from-rose-500 to-red-600 rounded-lg flex items-center justify-center mb-4">
+                                <Hand className="w-6 h-6 text-white" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-3">Envío Seguro</h3>
-                            <p className="text-gray-600">
-                                Empaquetamos cada producto con cuidado especial para garantizar que llegue 
-                                en perfectas condiciones a su destino.
-                            </p>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-3">La Belleza de lo Humano</h3>
+                            <p className="text-gray-600 leading-relaxed">En un mundo de producción en masa, celebramos la singularidad. La huella del artesano, la pequeña &quot;imperfección&quot; perfecta, es lo que transforma un objeto en un tesoro invaluable.</p>
                         </div>
-                        <div className="bg-white rounded-xl p-6 shadow-lg">
-                            <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4">
-                                <Clock className="w-6 h-6 text-white" />
+                        <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                            <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
+                                <Sprout className="w-6 h-6 text-white" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-3">Soporte 24/7</h3>
-                            <p className="text-gray-600">
-                                Nuestro equipo de soporte está disponible para ayudarte en cualquier momento 
-                                con cualquier pregunta o inquietud.
-                            </p>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-3">Raíces que Nutren el Futuro</h3>
+                            <p className="text-gray-600 leading-relaxed">Mirar hacia atrás no es retroceder, es tomar impulso. Al apoyar el arte tradicional, sembramos las semillas para un futuro más consciente, sostenible y conectado con nuestro origen.</p>
                         </div>
                     </div>
                 </div>
             </section>
+
 
             {/* CTA Final */}
             <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-amber-500 to-orange-600">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold text-white mb-6">
-                        Únete a Nuestra Comunidad Artesanal
+                        Sé Parte de Nuestra Historia
                     </h2>
                     <p className="text-xl text-amber-100 mb-8">
-                        Descubre productos únicos, conoce historias fascinantes y apoya a artesanos 
-                        talentosos de todo el mundo.
+                        Descubre productos que cuentan un relato, apoya el talento local y únete a una comunidad que celebra el arte de crear.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-300">
                             Explorar Productos
                         </button>
                         <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-orange-600 transition-colors duration-300">
-                            Contactar Equipo
+                            Conviértete en Artesano
                         </button>
                     </div>
                 </div>

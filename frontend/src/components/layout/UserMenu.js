@@ -8,13 +8,14 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { Heart, UserCircle } from 'lucide-react';
+import { getImageUrl } from '@/utils/imageUrl';
 
 // Helper para unir clases
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXTlo_PUBLIC_API_URL || 'http://localhost:5000';
 
 const UserMenu = () => {
   const auth = useAuth();
@@ -32,11 +33,21 @@ const UserMenu = () => {
             <>
               {auth.user.avatar ? (
                 <Image 
-                  src={`${API_BASE_URL}${auth.user.avatar}`} 
+                  src={getImageUrl(auth.user.avatar)} 
                   alt="Avatar"
                   width={24}
                   height={24}
-                  className="rounded-full object-cover w-6 h-6"
+                  className="rounded-full object-cover"
+                  style={{ width: '24px', height: '24px' }}
+                />
+              ) : auth.user.role === 'cliente' ? (
+                <Image
+                  src="/static/default-avatar.png"
+                  alt="Avatar por defecto"
+                  width={24}
+                  height={24}
+                  className="rounded-full object-cover"
+                  style={{ width: '24px', height: '24px' }}
                 />
               ) : (
                 <UserCircle className="w-6 h-6 text-gray-400" />
