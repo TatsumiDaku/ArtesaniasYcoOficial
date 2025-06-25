@@ -1,10 +1,25 @@
 const pool = require('../config/database');
 const { validationResult } = require('express-validator');
+const redis = require('../config/redis');
 
 // Obtener todos los productos
 const getProducts = async (req, res) => {
   try {
     const { page = 1, limit = 12, category, search, from, artisan_id, category_id, exclude, sortBy } = req.query;
+    let cacheKey;
+    let cached = null;
+    // Solo cachear si es vista pública (no admin/artesano dashboard)
+    if (!req.user && !from && !artisan_id) {
+      cacheKey = `products_${page}_${limit}_${category || ''}_${search || ''}_${category_id || ''}_${exclude || ''}_${sortBy || ''}`;
+      try {
+        cached = await redis.get(cacheKey);
+      } catch (err) {
+        console.error('Error accediendo a Redis (get):', err);
+      }
+      if (cached) {
+        return res.json(JSON.parse(cached));
+      }
+    }
     const offset = (page - 1) * limit;
 
     let queryParams = [];
@@ -84,7 +99,7 @@ const getProducts = async (req, res) => {
     
     const productsResult = await pool.query(mainQuery, queryParamsWithPagination);
     
-    res.json({
+    const response = {
       products: productsResult.rows,
       pagination: {
         page: parseInt(page, 10),
@@ -92,10 +107,18 @@ const getProducts = async (req, res) => {
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+    if (cacheKey) {
+      try {
+        await redis.set(cacheKey, JSON.stringify(response), 'EX', 30);
+      } catch (err) {
+        console.error('Error accediendo a Redis (set):', err);
+      }
+    }
+    return res.json(response);
   } catch (error) {
-    console.error('Error obteniendo productos:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error obteniendo productos:', error, error.stack);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
 

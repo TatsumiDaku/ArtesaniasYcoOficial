@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { getImageUrl } from '@/utils/imageUrl';
+import Image from 'next/image';
 
 const BlogListPage = () => {
   const [blogs, setBlogs] = useState([]);
@@ -91,12 +92,12 @@ const BlogListPage = () => {
           {blogs.map((blog) => (
             <Link key={blog.id} href={`/blog/${blog.id}`} className="block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-200 overflow-hidden">
               {blog.image_url_1 && (
-                <img src={getImageUrl(blog.image_url_1)} alt={blog.title} className="w-full h-48 object-cover" />
+                <Image src={getImageUrl(blog.image_url_1)} alt={blog.title} width={600} height={192} className="w-full h-48 object-cover" />
               )}
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-2 text-orange-700 line-clamp-2">{blog.title}</h2>
                 <div className="flex items-center gap-2 mb-2">
-                  {blog.author_avatar && <img src={getImageUrl(blog.author_avatar)} alt="avatar" className="w-7 h-7 rounded-full" />}
+                  {blog.author_avatar && <Image src={getImageUrl(blog.author_avatar)} alt="avatar" width={28} height={28} className="w-7 h-7 rounded-full" />}
                   <span className="text-sm font-semibold text-gray-700">{blog.author_name}</span>
                   <span className="text-xs text-gray-400">{new Date(blog.created_at).toLocaleDateString()}</span>
                 </div>

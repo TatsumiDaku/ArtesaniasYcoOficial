@@ -14,6 +14,11 @@
 - **Notificaciones:** **`react-hot-toast`** para feedback no intrusivo al usuario.
 - **Iconos:** **`lucide-react`** para un conjunto de iconos SVG limpio y consistente.
 - **Tipografía:** **Google Fonts Pacifico** para títulos artísticos y branding.
+- **Rate limit:**
+  - Ajustado el límite de peticiones en el backend para soportar al menos 1000 usuarios simultáneos.
+  - Documentado el uso de `express-rate-limit` y su configuración.
+  - Límite de peticiones duplicado: ahora 2400 en producción y 4000 en desarrollo (15 min).
+  - Implementado feedback visual global en frontend: toast con react-hot-toast cuando se alcanza el límite (error 429).
 
 ## 2. Estructura de Archivos Clave (`/src`)
 
@@ -248,6 +253,24 @@ Al actualizar la contraseña u otros datos del perfil de artesano, el frontend i
 - Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
 - Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema.
 
+# Objetivo Principal Próximo: Escalabilidad y Rendimiento
+
+Para garantizar que la plataforma soporte un alto volumen de usuarios y mantenga una experiencia óptima, se priorizarán las siguientes acciones en todo el proyecto (backend y frontend):
+
+## Backend
+- Implementar caché (por ejemplo, con Redis) para endpoints de estadísticas y listados que reciben muchas peticiones.
+- Ajustar el rate limit por endpoint y, si es posible, por usuario autenticado además de por IP.
+- Optimizar las consultas SQL y asegurar el uso eficiente del pool de conexiones de PostgreSQL.
+- Considerar clusterizar la app Node.js para aprovechar todos los núcleos del servidor y mejorar la tolerancia a fallos.
+- Realizar pruebas de carga periódicas y monitorear el sistema (logs, alertas, métricas) para anticipar cuellos de botella.
+
+## Frontend
+- Usar debounce en inputs de búsqueda y filtros para evitar peticiones innecesarias al backend.
+- Revisar y optimizar los hooks y efectos para que no generen llamadas duplicadas o excesivas.
+- Implementar feedback visual claro cuando se limite la frecuencia de peticiones (por ejemplo, mostrar un spinner o mensaje de espera).
+
+Estas acciones permitirán escalar el sistema para soportar cientos o miles de usuarios concurrentes, mejorar la experiencia de usuario y reducir la carga en el backend y la base de datos.
+
 ### Objetivo Principal Próximo
 
 - Corregir los errores de carga y visualización de imágenes que funcionan en local pero fallan en despliegue (producción). 
@@ -274,3 +297,27 @@ Al actualizar la contraseña u otros datos del perfil de artesano, el frontend i
 - Usar rutas relativas y/o mover imágenes a `/public` si es posible.
 - Configurar correctamente el servidor para servir la ruta `/uploads`.
 - Usar el prop `unoptimized` en `<Image />` para imágenes que no pueden ser optimizadas por Next.js. 
+
+## Estado del Sistema de Blogs (Actualizado)
+
+- [x] Sistema de blogs reconstruido desde cero, alineado a la base de datos y patrones de diseño.
+- [x] Endpoints RESTful para blogs, comentarios, ratings y categorías implementados en backend.
+- [x] Listado público de blogs (`/blog`) y detalle (`/blog/[id]`) funcionales en frontend.
+- [x] CRUD de blogs para artesanos desde su dashboard.
+- [x] Moderación y gestión de blogs para admin (aprobación, edición, eliminación, cambio de estado).
+- [x] Sistema de comentarios y ratings en blogs activos.
+- [x] Subida y gestión de imágenes de blog.
+- [x] Gestión de categorías de blog.
+- [x] Estados de blog: `pending`, `active`, `inactive`.
+- [x] Todo alineado a los patrones visuales y de UX definidos en systemPatterns.md.
+
+## Escalabilidad: Clusterización Node.js (Actualizado)
+
+- [x] El backend ahora soporta clusterización usando el módulo `cluster` de Node.js.
+- [x] El proceso master lanza un worker por cada CPU disponible (o configurable con CLUSTER_CPUS).
+- [x] Si un worker muere, el master lo reinicia automáticamente.
+- [x] Cada worker levanta una instancia de Express en el mismo puerto.
+- [x] Esto permite manejar más conexiones concurrentes, aprovechar todos los núcleos y mejorar la tolerancia a fallos. 
+
+- [JUN 2024] ✅ Integración de CI/CD documentada y recomendada (GitHub Actions). Ejemplo de workflow incluido en README.md. No se requiere integración de PM2 por decisión del usuario.
+- [JUN 2024] ✅ Documentación y REBUILD completamente actualizados hasta la fecha, incluyendo todos los cambios recientes de escalabilidad, rendimiento, feedback visual y automatización. 

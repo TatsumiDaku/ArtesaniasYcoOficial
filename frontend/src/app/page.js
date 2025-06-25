@@ -78,7 +78,7 @@ const HomePage = () => {
           <div className="flex flex-col md:flex-row items-center gap-12 max-w-6xl mx-auto">
             <div className="w-full md:w-1/3 flex justify-center text-amber-500">
               {/* Este icono puede ser reemplazado por una imagen */}
-              <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-hand-heart"><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.7-2.9l-4.1 4.1c-.2.2-.5.2-.7 0L9 10.5_M18 22l-3-3-3 3"/><path d="M19 14c1.2 0 2.4-1.4 2.4-3s-1.2-3-2.4-3-2.4 1.4-2.4 3 1.2 3 2.4 3Z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-hand-heart"><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.7-2.9l-4.1 4.1c-.2.2-.5.2-.7 0L9 10.5 M18 22l-3-3-3 3"/><path d="M19 14c1.2 0 2.4-1.4 2.4-3s-1.2-3-2.4-3-2.4 1.4-2.4 3 1.2 3 2.4 3Z"/></svg>
             </div>
             <div className="w-full md:w-2/3 text-center md:text-left">
               <h2 className="text-4xl font-bold text-gray-800 mb-4">Un Legado en Cada Hilo</h2>
@@ -131,7 +131,7 @@ const HomePage = () => {
       {/* New Section: Connect with the Creator */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-hand-heart w-16 h-16 text-red-500 mx-auto mb-4"><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"></path><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.7-2.9l-4.1 4.1c-.2.2-.5.2-.7 0L9 10.5_M18 22l-3-3-3 3"></path><path d="M19 14c1.2 0 2.4-1.4 2.4-3s-1.2-3-2.4-3-2.4 1.4-2.4 3 1.2 3 2.4 3Z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-hand-heart w-16 h-16 text-red-500 mx-auto mb-4"><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.7-2.9l-4.1 4.1c-.2.2-.5.2-.7 0L9 10.5 M18 22l-3-3-3 3"/><path d="M19 14c1.2 0 2.4-1.4 2.4-3s-1.2-3-2.4-3-2.4 1.4-2.4 3 1.2 3 2.4 3Z"/></svg>
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Conecta con el Creador</h2>
           <p className="text-lg text-gray-600 leading-relaxed">
             Detrás de cada obra hay un rostro, una familia y un sueño. En nuestra plataforma, no solo compras un producto, estableces un puente directo con el artesano. Conoce sus talleres, sus inspiraciones y sé parte de una comunidad que valora el talento humano.

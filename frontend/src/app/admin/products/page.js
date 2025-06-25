@@ -336,7 +336,7 @@ const AdminProductsPage = () => {
       fetchProducts(1, searchTerm, statusFilter);
     }, 300);
     return () => clearTimeout(handler);
-  }, [fetchProducts]);
+  }, [fetchProducts, searchTerm, statusFilter]);
 
   const handleLoadMore = () => {
     if (pagination && pagination.page < pagination.pages) {
@@ -358,7 +358,7 @@ const AdminProductsPage = () => {
     );
   }, [handleRefresh]);
 
-  const handleRevert = async (productId) => {
+  const handleRevert = useCallback(async (productId) => {
     toast.promise(
       api.put(`/products/${productId}/revert`),
       {
@@ -370,7 +370,7 @@ const AdminProductsPage = () => {
         error: 'No se pudo cambiar el estado del producto.',
       }
     );
-  };
+  }, [handleRefresh]);
 
   const handleDelete = useCallback(async (productId) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.')) {

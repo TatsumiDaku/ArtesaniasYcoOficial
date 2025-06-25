@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const redis = require('../config/redis');
 
 /**
  * @description Obtener todas las tiendas (artesanos activos) con paginación.
@@ -8,6 +9,16 @@ const pool = require('../config/database');
 const getShops = async (req, res) => {
   try {
     const { page = 1, limit = 12 } = req.query;
+    const cacheKey = `shops_${page}_${limit}`;
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     const offset = (page - 1) * limit;
 
     const baseQuery = `FROM users WHERE role = 'artesano' AND status = 'active'`;
@@ -33,7 +44,7 @@ const getShops = async (req, res) => {
     
     const shopsResult = await pool.query(dataQuery, [limit, offset]);
     
-    res.json({
+    const response = {
       data: shopsResult.rows,
       pagination: {
         page: parseInt(page, 10),
@@ -41,10 +52,16 @@ const getShops = async (req, res) => {
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+    try {
+      await redis.set(cacheKey, JSON.stringify(response), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
+    res.json(response);
   } catch (error) {
-    console.error('Error obteniendo tiendas:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error obteniendo tiendas:', error, error.stack);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
 

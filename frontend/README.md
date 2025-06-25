@@ -34,3 +34,24 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Notificación de Cookies
+
+El componente `CookieNotification` muestra un aviso de cookies en la parte inferior de la pantalla para cumplir con la normativa y mejorar la experiencia del usuario.
+
+- El aviso aparece si el usuario no ha aceptado previamente las cookies (se guarda en `localStorage` con la clave `cookie-accepted`).
+- El usuario puede cerrar el aviso manualmente (botón X) o esperar 10 segundos para que desaparezca automáticamente.
+- Una vez aceptado, no se vuelve a mostrar hasta que se borre el `localStorage`.
+
+### Logs de consola para depuración
+
+- Cuando la cookie se lee correctamente (ya existe o se muestra el aviso), aparece en la consola:
+  ```
+  cookie inicia
+  ```
+- Si ocurre un error al leer o escribir en `localStorage`, aparece:
+  ```
+  cookie error <detalle del error>
+  ```
+
+Esto permite verificar fácilmente si la lógica de cookies está funcionando correctamente en desarrollo.

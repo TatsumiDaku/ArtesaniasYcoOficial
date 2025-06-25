@@ -41,6 +41,60 @@ Este proyecto está construido con una combinación de tecnologías modernas y r
 
 Visita: https://www.artesaniasyco.com
 
+## 🚀 CI/CD recomendado
+
+Se recomienda utilizar **GitHub Actions** para automatizar el build, test y despliegue del sistema. Ejemplo básico de workflow:
+
+```yaml
+name: CI/CD Pipeline
+on:
+  push:
+    branches: [main, Home]
+  pull_request:
+    branches: [main, Home]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: artesanias_db
+          POSTGRES_USER: artesano_user
+          POSTGRES_PASSWORD: testpassword
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+      # Agrega aquí tus tests si existen
+      # - name: Run backend tests
+      #   run: |
+      #     cd backend
+      #     npm test
+      # - name: Run frontend tests
+      #   run: |
+      #     cd frontend
+      #     npm test
+```
+
 <div align="center">
   <p>Hecho con ❤️ para celebrar el arte y la cultura.</p>
 </div>

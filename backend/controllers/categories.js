@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const redis = require('../config/redis');
 
 // Obtener todas las categorías con estadísticas (solo para admin)
 const getCategoriesWithStats = async (req, res) => {
@@ -42,11 +43,26 @@ const getCategoriesWithStats = async (req, res) => {
 // Obtener todas las categorías (para uso público/general, sin estadísticas)
 const getAllCategories = async (req, res) => {
   try {
+    const cacheKey = 'categories_all';
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     const allCategories = await pool.query('SELECT * FROM categories ORDER BY name ASC');
+    try {
+      await redis.set(cacheKey, JSON.stringify(allCategories.rows), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
     res.json(allCategories.rows);
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error fetching categories:', error, error.stack);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
 

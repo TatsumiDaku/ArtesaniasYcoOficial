@@ -32,4 +32,10 @@ docker-compose.override.yml
 # Misc
 .DS_Store
 *.pem
-*.swp 
+*.swp
+
+# GitHub Actions
+.github/
+
+# Logs de CI/CD
+ci-logs/ 

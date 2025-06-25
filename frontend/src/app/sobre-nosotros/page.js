@@ -39,19 +39,19 @@ const SobreNosotros = () => {
             nombre: "Tatsumi Bernal",
             cargo: "Frontend & Idea Original",
             descripcion: "Como artesano, Tatsumi sintió la necesidad de un espacio digital justo y bello. Es el visionario que dio vida a la interfaz y la experiencia de usuario.",
-            imagen: "/static/team/tatsumi.jpg" // Asegúrate de tener estas imágenes
+            imagen: "/static/tatsumi.jpg"
         },
         {
             nombre: "Nicolas Ortiz",
             cargo: "Backend & Marketing",
             descripcion: "Nicolas construye la sólida infraestructura que soporta la plataforma y diseña las estrategias para que las historias de los artesanos lleguen al mundo.",
-            imagen: "/static/team/nicolas.jpg"
+            imagen: "/static/nico.jpg"
         },
         {
-            nombre: "Ericck",
+            nombre: "Erick Villamil",
             cargo: "Backend & Scrum Master",
-            descripcion: "Ericck no solo aporta su talento en el desarrollo del backend, sino que también orquesta el ritmo del equipo, asegurando una colaboración ágil y efectiva.",
-            imagen: "/static/team/erick.jpg" // Asegúrate de tener estas imágenes
+            descripcion: "Erick no solo aporta su talento en el desarrollo del backend, sino que también orquesta el ritmo del equipo, asegurando una colaboración ágil y efectiva.",
+            imagen: "/static/erick.jpg"
         }
     ];
 
@@ -82,7 +82,7 @@ const SobreNosotros = () => {
                                     ArtesaníasYCo nació de una necesidad sentida en carne propia. <strong>Tatsumi Bernal</strong>, siendo artesano, experimentó de primera mano la frustración de crear piezas únicas y hermosas que rara vez encontraban un público más allá de su taller local. Veía un mundo digital lleno de oportunidades, pero carente de una plataforma que realmente entendiera y valorara el alma del trabajo hecho a mano.
                                 </p>
                                 <p>
-                                    Impulsado por esta visión, se unió a <strong>Nicolas Ortiz</strong> y <strong>Ericck</strong>, dos mentes apasionadas por la tecnología con un deseo compartido de construir algo con propósito. Juntos, se propusieron crear más que una tienda online: querían forjar una comunidad.
+                                    Impulsado por esta visión, se unió a <strong>Nicolas Ortiz</strong> y <strong>Erick Villamil</strong>, dos mentes apasionadas por la tecnología con un deseo compartido de construir algo con propósito. Juntos, se propusieron crear más que una tienda online: querían forjar una comunidad.
                                 </p>
                                 <p>
                                     Lo que comenzó como bocetos en una libreta se ha transformado en un ecosistema vibrante que hoy apoya a cientos de artesanos, permitiéndoles no solo vender sus creaciones, sino también contar sus historias y preservar su legado cultural en un mundo cada vez más conectado.

@@ -319,12 +319,12 @@ export default function ShopDetailPage() {
                                     {blogs.map(blog => (
                                         <Link key={blog.id} href={`/blog/${blog.id}`} className="block bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border border-yellow-100">
                                             {blog.image_url_1 && (
-                                                <img src={getImageUrl(blog.image_url_1)} alt={blog.title} className="w-full h-40 object-cover" />
+                                                <Image src={getImageUrl(blog.image_url_1)} alt={blog.title} width={400} height={160} className="w-full h-40 object-cover" />
                                             )}
                                             <div className="p-4">
                                                 <h3 className="text-lg font-bold text-orange-700 line-clamp-2 mb-1">{blog.title}</h3>
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    {blog.author_avatar && <img src={getImageUrl(blog.author_avatar)} alt="avatar" className="w-6 h-6 rounded-full" />}
+                                                    {blog.author_avatar && <Image src={getImageUrl(blog.author_avatar)} alt="avatar" width={24} height={24} className="w-6 h-6 rounded-full" />}
                                                     <span className="text-sm font-semibold text-gray-700">{blog.author_name}</span>
                                                 </div>
                                                 <span className="text-xs text-gray-400">{new Date(blog.created_at).toLocaleDateString()}</span>

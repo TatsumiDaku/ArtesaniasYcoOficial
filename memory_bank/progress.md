@@ -21,6 +21,9 @@
 - [Abril 2024] Mejoras visuales en la página de tienda: header más limpio, avatar destacado, nombre más visible, layout y tarjetas modernizadas.
 - [Abril 2024] Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
 - [Abril 2024] Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema.
+- Se implementó clusterización en el backend usando el módulo cluster de Node.js. El proceso master lanza un worker por cada CPU y los reinicia si fallan. Esto permite máxima concurrencia y tolerancia a fallos en producción.
+- [JUN 2024] Rate limit duplicado: ahora 2400 peticiones/15min en producción, 4000 en desarrollo. Implementado feedback visual global (toast) en frontend para errores 429 (demasiadas peticiones).
+- [JUN 2024] ✅ Integración de CI/CD (GitHub Actions) documentada y recomendada. Documentación y REBUILD actualizados al 100%.
 
 # Historial de Progreso del Proyecto
 

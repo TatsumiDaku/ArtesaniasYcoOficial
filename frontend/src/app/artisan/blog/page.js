@@ -7,6 +7,7 @@ import api from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { getImageUrl } from '@/utils/imageUrl';
+import Image from 'next/image';
 
 const ArtisanBlogPage = () => {
   const [blogs, setBlogs] = useState([]);
@@ -145,13 +146,13 @@ const ArtisanBlogPage = () => {
                     <tr key={blog.id} className="hover:bg-orange-50/40 transition-all align-middle">
                       <td className="px-4 py-3 align-middle">
                         {blog.image_url_1 ? (
-                          <img src={getImageUrl(blog.image_url_1)} alt="Blog" className="w-16 h-16 object-cover rounded-xl border" />
+                          <Image src={getImageUrl(blog.image_url_1)} alt="Blog" width={64} height={64} className="w-16 h-16 object-cover rounded-xl border" />
                         ) : (
                           <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center text-xs text-gray-400">Sin imagen</div>
                         )}
                       </td>
                       <td className="px-4 py-3 flex items-center gap-2 align-middle min-w-[120px]">
-                        {blog.author_avatar && <img src={getImageUrl(blog.author_avatar)} alt="avatar" className="w-8 h-8 rounded-full border" />}
+                        {blog.author_avatar && <Image src={getImageUrl(blog.author_avatar)} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full border" />}
                         <span className="text-sm font-semibold text-gray-700 truncate">{blog.author_name}</span>
                       </td>
                       <td className="px-4 py-3 font-semibold text-gray-800 max-w-xs truncate align-middle">{blog.title}</td>

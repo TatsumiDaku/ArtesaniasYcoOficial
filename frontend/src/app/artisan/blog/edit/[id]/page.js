@@ -6,6 +6,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { BookOpen, ArrowLeft, Loader2, Upload, XCircle } from "lucide-react";
 import { getImageUrl } from '@/utils/imageUrl';
+import Image from 'next/image';
 
 const EditBlogPage = () => {
   const router = useRouter();
@@ -208,7 +209,7 @@ const EditBlogPage = () => {
             <label className="block text-sm font-semibold mb-2">Imagen 1</label>
             {existingImages.image_url_1 && (
               <div className="mb-2 flex items-center gap-2">
-                <img src={getImageUrl(existingImages.image_url_1)} alt="Imagen 1" className="h-24 rounded" />
+                <Image src={getImageUrl(existingImages.image_url_1)} alt="Imagen 1" width={96} height={96} className="h-24 rounded" />
                 <button
                   type="button"
                   onClick={() => handleRemoveExistingImage("image_url_1")}
@@ -224,7 +225,7 @@ const EditBlogPage = () => {
             <label className="block text-sm font-semibold mb-2">Imagen 2</label>
             {existingImages.image_url_2 && (
               <div className="mb-2 flex items-center gap-2">
-                <img src={getImageUrl(existingImages.image_url_2)} alt="Imagen 2" className="h-24 rounded" />
+                <Image src={getImageUrl(existingImages.image_url_2)} alt="Imagen 2" width={96} height={96} className="h-24 rounded" />
                 <button
                   type="button"
                   onClick={() => handleRemoveExistingImage("image_url_2")}

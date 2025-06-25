@@ -31,4 +31,7 @@
   - [x] Mejoras visuales y de UX en todos los paneles
   - [x] Componentes responsivos (Header, Grids, etc.)
   - [x] Micro-interacciones y transiciones sutiles (hover effects, etc.)
-- [x] Limpieza total de la lógica de blogs en backend y frontend (eliminación de rutas, controladores, páginas, componentes y referencias) 
+- [x] Limpieza total de la lógica de blogs en backend y frontend (eliminación de rutas, controladores, páginas, componentes y referencias)
+- [x] Reconstrucción integral del sistema de blogs (endpoints, frontend, comentarios, ratings, imágenes, categorías, flujos admin/artesano/público)
+- [JUN 2024] Rate limit duplicado (2400 prod, 4000 dev) y feedback visual (toast) para errores 429 implementado en frontend.
+- [JUN 2024] ✅ Monitoreo/logs avanzados y automatización (CI/CD) documentados y completados. Documentación al día. 

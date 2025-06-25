@@ -2,6 +2,7 @@ const pool = require('../config/database');
 const { validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const redis = require('../config/redis');
 
 // Obtener todos los usuarios (solo admin)
 const getUsers = async (req, res) => {
@@ -53,6 +54,16 @@ const getUsers = async (req, res) => {
 // Obtener estadísticas de usuarios
 const getUserStats = async (req, res) => {
   try {
+    const cacheKey = 'users_stats';
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     const totalQuery = pool.query('SELECT COUNT(id) FROM users');
     const clientesQuery = pool.query("SELECT COUNT(id) FROM users WHERE role = 'cliente'");
     const artesanosQuery = pool.query("SELECT COUNT(id) FROM users WHERE role = 'artesano'");
@@ -65,15 +76,21 @@ const getUserStats = async (req, res) => {
       adminsQuery,
     ]);
 
-    res.json({
+    const stats = {
       total: parseInt(totalRes.rows[0].count, 10),
       clientes: parseInt(clientesRes.rows[0].count, 10),
       artesanos: parseInt(artesanosRes.rows[0].count, 10),
       admins: parseInt(adminsRes.rows[0].count, 10),
-    });
+    };
+    try {
+      await redis.set(cacheKey, JSON.stringify(stats), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
+    res.json(stats);
   } catch (error) {
-    console.error('Error obteniendo estadísticas de usuarios:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error obteniendo estadísticas de usuarios:', error, error.stack);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
 

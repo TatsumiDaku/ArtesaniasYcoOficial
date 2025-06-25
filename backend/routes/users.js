@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const usersController = require('../controllers/users');
 const { authenticateToken } = require('../middleware/auth');
+const { rateLimit } = require('express-rate-limit');
 
 // --- Multer Setup for User Profile Images ---
 const userUploadsDir = 'uploads/users/';
@@ -31,6 +32,16 @@ const profileImageUpload = upload.fields([
 ]);
 // ---------------------------------------------
 
+const statsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 1200, // permite hasta 1200 peticiones por 15min por IP
+  message: {
+    error: 'Demasiadas peticiones a estadísticas, intenta de nuevo en unos minutos.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Listar usuarios (solo admin)
 router.get('/', authenticateToken, (req, res, next) => {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Acceso denegado' });
@@ -38,7 +49,7 @@ router.get('/', authenticateToken, (req, res, next) => {
 }, usersController.getUsers);
 
 // Obtener estadísticas de usuarios (solo admin)
-router.get('/stats', authenticateToken, (req, res, next) => {
+router.get('/stats', authenticateToken, statsLimiter, (req, res, next) => {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Acceso denegado' });
     next();
 }, usersController.getUserStats);

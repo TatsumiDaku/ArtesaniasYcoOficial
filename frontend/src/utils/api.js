@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const getApiBaseUrl = () => {
   // Cuando se construye para producción, NODE_ENV es 'production'.
@@ -66,6 +67,14 @@ api.interceptors.response.use(
     // Si es un error de red, mostrar información específica
     if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
       console.error('🌐 Network Error - Verificar que el backend esté ejecutándose en http://localhost:5000');
+    }
+    
+    // Feedback visual para rate limit
+    if (error.response?.status === 429) {
+      toast.error('❌Has realizado demasiadas peticiones. Por favor, espera unos segundos e inténtalo de nuevo.', {
+        duration: 6000,
+        icon: '🚦',
+      });
     }
     
     return Promise.reject(error);

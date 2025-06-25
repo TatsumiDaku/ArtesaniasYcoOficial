@@ -8,6 +8,7 @@ import './globals.css';
 import PendingApprovalModal from "@/components/ui/PendingApprovalModal";
 import { Suspense } from 'react';
 import PageLoader from '@/components/ui/PageLoader';
+import CookieNotification from '@/components/ui/CookieNotification';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -30,17 +31,14 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${inter.variable} ${pacifico.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet" />
-      </head>
+      {/* Fuentes personalizadas gestionadas por next/font/google en la App Router. Eliminada carga manual para evitar warning. */}
       <body>
         <AuthProvider>
           <CartProvider>
             <FavoritesProvider>
               <Toaster position="bottom-right" reverseOrder={false} />
               <PendingApprovalModal />
+              <CookieNotification />
               <Layout>
                 <Suspense fallback={<PageLoader />}>
                   {children}

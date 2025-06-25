@@ -2,11 +2,22 @@
 // Estructura inicial para endpoints públicos y de artesano
 
 const pool = require('../config/database');
+const redis = require('../config/redis');
 
 // Listar blogs activos (público)
 const getPublicBlogs = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', category_id } = req.query;
+    const cacheKey = `blogs_${page}_${limit}_${search}_${category_id || ''}`;
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     const offset = (page - 1) * limit;
     let queryParams = [];
     let whereClauses = ["b.status = 'active'"];
@@ -46,7 +57,7 @@ const getPublicBlogs = async (req, res) => {
     `;
     const blogsResult = await pool.query(mainQuery, [...queryParams, limit, offset]);
 
-    res.json({
+    const response = {
       blogs: blogsResult.rows,
       pagination: {
         page: parseInt(page, 10),
@@ -54,10 +65,16 @@ const getPublicBlogs = async (req, res) => {
         total,
         pages: Math.ceil(total / limit),
       },
-    });
+    };
+    try {
+      await redis.set(cacheKey, JSON.stringify(response), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
+    res.json(response);
   } catch (error) {
-    console.error('Error obteniendo blogs públicos:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Error obteniendo blogs públicos:', error, error.stack);
+    res.status(500).json({ message: 'Error interno del servidor', error: error.message });
   }
 };
 

@@ -49,7 +49,7 @@ const AdminShopsPage = () => {
     } finally {
       if (isInitialLoad) setLoading(false);
     }
-  }, []);
+  }, [artisans]);
 
   useEffect(() => {
     fetchArtisans(1);
@@ -59,12 +59,10 @@ const AdminShopsPage = () => {
     fetchArtisans(1);
   };
 
-  const handleStatusChange = async (userId, newStatus) => {
+  const handleStatusChange = useCallback(async (userId, newStatus) => {
     const originalArtisans = [...artisans];
-    
     // Optimistic update
     setArtisans(prev => prev.map(a => a.id === userId ? { ...a, status: newStatus } : a));
-
     try {
       await api.put(`/users/admin/${userId}`, { status: newStatus });
       toast.success('Estado del artesano actualizado.');
@@ -74,7 +72,7 @@ const AdminShopsPage = () => {
       const msg = error.response?.data?.message || 'No se pudo actualizar el estado. Intenta de nuevo o revisa la consola.';
       toast.error(msg);
     }
-  };
+  }, [artisans]);
 
   const columns = useMemo(() => [
     {
@@ -138,7 +136,7 @@ const AdminShopsPage = () => {
         </div>
       ),
     },
-  ], [router, handleStatusChange]);
+  ], [router, handleStatusChange, API_BASE_URL]);
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">

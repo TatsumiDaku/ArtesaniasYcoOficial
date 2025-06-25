@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const redis = require('../config/redis');
 
 // Obtener estadísticas del dashboard (solo admin)
 const getDashboardStats = async (req, res) => {
@@ -8,6 +9,16 @@ const getDashboardStats = async (req, res) => {
   }
 
   try {
+    const cacheKey = 'dashboard_stats';
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     const queries = [
       // User stats
       pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'cliente'"),
@@ -88,7 +99,11 @@ const getDashboardStats = async (req, res) => {
       recentPendingArtisans: recentPendingArtisansRes.rows,
       recentPendingBlogs: recentPendingBlogsRes.rows
     };
-
+    try {
+      await redis.set(cacheKey, JSON.stringify(stats), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
     res.json(stats);
 
   } catch (error) {
@@ -104,7 +119,16 @@ const getDashboardStats = async (req, res) => {
 const getUserStats = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+    const cacheKey = `user_stats_${userId}`;
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     // Contar favoritos
     const favoritesCount = await pool.query(
       'SELECT COUNT(*) as count FROM favorites WHERE user_id = $1',
@@ -187,13 +211,19 @@ const getUserStats = async (req, res) => {
       };
     }
 
-    res.json({
+    const result = {
       favorites: parseInt(favoritesCount.rows[0].count),
       orders: parseInt(ordersCount.rows[0].count),
       products: productStats,
       sales: salesCount,
       reviews: reviewsStats
-    });
+    };
+    try {
+      await redis.set(cacheKey, JSON.stringify(result), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
+    res.json(result);
 
   } catch (error) {
     console.error('Error obteniendo estadísticas del usuario:', error);
@@ -215,7 +245,17 @@ const getUserStatsById = async (req, res) => {
       return res.status(403).json({ message: 'Acceso denegado' });
     }
 
-    const { userId } = req.params;
+    const userId = req.params.userId;
+    const cacheKey = `user_stats_${userId}`;
+    let cached = null;
+    try {
+      cached = await redis.get(cacheKey);
+    } catch (err) {
+      console.error('Error accediendo a Redis (get):', err);
+    }
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
     
     // Contar favoritos
     const favoritesCount = await pool.query(
@@ -257,15 +297,21 @@ const getUserStatsById = async (req, res) => {
       salesCount = parseInt(salesResult.rows[0].count);
     }
 
-    res.json({
+    const result = {
       favorites: parseInt(favoritesCount.rows[0].count),
       orders: parseInt(ordersCount.rows[0].count),
       products: productsCount,
       sales: salesCount
-    });
+    };
+    try {
+      await redis.set(cacheKey, JSON.stringify(result), 'EX', 30);
+    } catch (err) {
+      console.error('Error accediendo a Redis (set):', err);
+    }
+    res.json(result);
 
   } catch (error) {
-    console.error('Error obteniendo estadísticas del usuario:', error);
+    console.error('Error obteniendo estadísticas del usuario por ID:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };

@@ -6,6 +6,7 @@ import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { getImageUrl } from '@/utils/imageUrl';
+import Image from 'next/image';
 
 const BlogDetailPage = () => {
   const { id } = useParams();
@@ -93,7 +94,7 @@ const BlogDetailPage = () => {
       {/* Header: avatar, autor, fecha, categorías */}
       <div className="flex flex-col md:flex-row md:items-center gap-3 px-8 pt-8 pb-4">
         {blog.author_avatar && (
-          <img src={getImageUrl(blog.author_avatar)} alt="avatar" className="w-12 h-12 rounded-full" />
+          <Image src={getImageUrl(blog.author_avatar)} alt="avatar" width={48} height={48} className="w-12 h-12 rounded-full" />
         )}
         <div className="flex flex-col md:flex-row md:items-center gap-2 flex-1">
           <span className="font-semibold text-lg">{blog.author_name}</span>
@@ -110,7 +111,7 @@ const BlogDetailPage = () => {
       {/* Imagen 1 como header grande, bien escalada */}
       {blog.image_url_1 && (
         <div className="w-full bg-gray-100 flex justify-center items-center">
-          <img src={getImageUrl(blog.image_url_1)} alt="Imagen principal" className="w-full max-h-[400px] object-contain" />
+          <Image src={getImageUrl(blog.image_url_1)} alt="Imagen principal" width={800} height={400} className="w-full max-h-[400px] object-contain" />
         </div>
       )}
       <div className="p-8 pt-6">
@@ -122,7 +123,7 @@ const BlogDetailPage = () => {
           </div>
           {blog.image_url_2 && (
             <div className="md:w-56 md:flex-shrink-0 flex justify-center md:justify-end">
-              <img src={getImageUrl(blog.image_url_2)} alt="Imagen secundaria" className="rounded-lg shadow-md max-h-48 object-cover" />
+              <Image src={getImageUrl(blog.image_url_2)} alt="Imagen secundaria" width={224} height={192} className="rounded-lg shadow-md max-h-48 object-cover" />
             </div>
           )}
         </div>
@@ -173,7 +174,7 @@ const BlogDetailPage = () => {
             {comments.length === 0 && <p className="text-gray-400">Aún no hay comentarios.</p>}
             {comments.map((c) => (
               <div key={c.id} className="bg-gray-50 rounded-lg p-4 flex items-start gap-3">
-                {c.user_avatar && <img src={getImageUrl(c.user_avatar)} alt="avatar" className="w-8 h-8 rounded-full" />}
+                {c.user_avatar && <Image src={getImageUrl(c.user_avatar)} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full" />}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-sm">{c.user_name}</span>
