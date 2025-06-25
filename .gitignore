@@ -38,4 +38,6 @@ docker-compose.override.yml
 .github/
 
 # Logs de CI/CD
-ci-logs/ 
+ci-logs/
+
+package-lock.json 
