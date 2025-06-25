@@ -60,4 +60,41 @@ La página de inicio (`/`) ha sido significativamente rediseñada para contar un
 
 ### Preparación para Nuevas Funcionalidades
 
--   Se ha añadido un enlace "Tiendas" en el encabezado principal como marcador de posición para la próxima gran funcionalidad. 
+-   Se ha añadido un enlace "Tiendas" en el encabezado principal como marcador de posición para la próxima gran funcionalidad.
+
+### Página de Detalle de Tienda de Artesano
+
+- Se implementó la página de detalle para cada tienda/artesano, accesible mediante `/shops/[id]`.
+- La página obtiene y muestra:
+  - Información general de la tienda (nombre, avatar, cabecera, historia, ubicación, correo profesional).
+  - Productos publicados por el artesano, con paginación y botón "Ver más productos".
+  - Blogs publicados por el artesano, con visualización de imagen, título, autor y fecha.
+  - Reseñas de productos y comentarios en blogs, mezclados y ordenados por fecha, con botón "Ver más reseñas".
+- Se utiliza un diseño moderno con Tailwind CSS, componentes reutilizables y efectos visuales (sombra, gradientes, hover).
+- Se maneja el estado de carga y errores, mostrando mensajes personalizados si la tienda no está activa o no existen productos/blogs/reseñas.
+- Se implementó la funcionalidad de copiar el correo profesional al portapapeles con feedback visual.
+- Se respeta la estructura de carpetas y la lógica de paginación para productos y reseñas.
+- Los precios de productos se muestran en pesos colombianos (COP) con formato local.
+- Se integran los comentarios de blogs del artesano junto con las reseñas de productos, mostrando ambos tipos en la sección de "Últimas Reseñas".
+
+## Objetivo Próximo
+
+- Corregir los errores de visualización de imágenes que funcionan correctamente en entorno local pero presentan fallos en el entorno de despliegue (producción). Esto incluye revisar rutas, configuración de Next.js, permisos de archivos y posibles problemas con el sistema de almacenamiento o CDN.
+
+## Diagnóstico de errores de imágenes en despliegue
+
+**Ejemplo de error:**
+- En producción, las imágenes no se muestran y la consola muestra errores 400 (Bad Request) al intentar acceder a rutas como:
+  `/_next/image?url=https://artesaniasyco.com/uploads/avatars/xxx.png&w=1920&q=75`
+
+**Causas detectadas:**
+- El dominio no está listado en `images.domains` en `next.config.mjs`.
+- Las imágenes están fuera de la carpeta `/public` y Next.js no puede servirlas directamente.
+- Permisos o rutas mal configuradas en el servidor de producción (nginx, etc.).
+- Se usan URLs absolutas en vez de relativas.
+
+**Soluciones sugeridas:**
+- Agregar el dominio de producción a la whitelist de Next.js en `next.config.mjs`.
+- Usar rutas relativas y/o mover imágenes a `/public` si es posible.
+- Configurar correctamente el servidor para servir la ruta `/uploads`.
+- Usar el prop `unoptimized` en `<Image />` para imágenes que no pueden ser optimizadas por Next.js. 

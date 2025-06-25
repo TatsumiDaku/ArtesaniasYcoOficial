@@ -5,6 +5,12 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
+                hostname: 'artesaniasyco.com',
+                port: '',
+                pathname: '/uploads/**',
+            },
+            {
+                protocol: 'https',
                 hostname: 'via.placeholder.com',
                 port: '',
                 pathname: '/**',

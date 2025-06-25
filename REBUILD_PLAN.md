@@ -100,6 +100,18 @@
 - **UI responsiva:** Dropdown con scroll y estados de hover
 - **Contador de resultados:** Muestra estadísticas de búsqueda
 
+#### Avances en la sección de tiendas/artesanos
+
+- [x] Página de detalle de tienda (`/shops/[id]`) completamente funcional y estilizada.
+- [x] Visualización de productos del artesano con paginación.
+- [x] Visualización de blogs del artesano.
+- [x] Visualización combinada de reseñas de productos y comentarios en blogs, ordenados por fecha.
+- [x] Manejo de estados de carga, errores y mensajes personalizados según el estado de la tienda.
+- [x] Funcionalidad de copiar correo profesional.
+- [x] Uso de componentes reutilizables y buenas prácticas de diseño con Tailwind CSS.
+- [x] Formato de precios en COP.
+- [x] Integración de imágenes y avatares con manejo de rutas y placeholders.
+
 Este documento refleja el estado actual y robusto de la aplicación, incluyendo las nuevas funcionalidades de branding dinámico y sistema de ayuda completo, sirviendo como una guía precisa para el mantenimiento y desarrollo futuro.
 
 # REBUILD: Estado Final de Limpieza y Guía para la Reconstrucción de Blogs
@@ -234,4 +246,31 @@ Al actualizar la contraseña u otros datos del perfil de artesano, el frontend i
 - Corrección de bug al cambiar la contraseña: ahora el sistema cierra sesión y redirige a login tras guardar cambios, evitando errores de estado inconsistente.
 - Mejoras visuales en la página de tienda: header más limpio, avatar destacado, nombre más visible, layout y tarjetas modernizadas.
 - Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
-- Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema. 
+- Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema.
+
+### Objetivo Principal Próximo
+
+- Corregir los errores de carga y visualización de imágenes que funcionan en local pero fallan en despliegue (producción). 
+    - Revisar rutas relativas/absolutas y configuración de dominios permitidos en Next.js (`next.config.mjs`).
+    - Verificar permisos y estructura de carpetas en el servidor de producción.
+    - Comprobar configuración de almacenamiento (local, CDN, etc.) y headers de acceso.
+    - Validar que las URLs generadas por `getImageUrl` sean correctas en ambos entornos.
+    - Realizar pruebas de subida y visualización de imágenes en producción tras cada ajuste. 
+
+### Diagnóstico de errores de imágenes en despliegue
+
+**Ejemplo de error:**
+- En producción, las imágenes no se muestran y la consola muestra errores 400 (Bad Request) al intentar acceder a rutas como:
+  `/_next/image?url=https://artesaniasyco.com/uploads/avatars/xxx.png&w=1920&q=75`
+
+**Causas detectadas:**
+- El dominio no está listado en `images.domains` en `next.config.mjs`.
+- Las imágenes están fuera de la carpeta `/public` y Next.js no puede servirlas directamente.
+- Permisos o rutas mal configuradas en el servidor de producción (nginx, etc.).
+- Se usan URLs absolutas en vez de relativas.
+
+**Soluciones sugeridas:**
+- Agregar el dominio de producción a la whitelist de Next.js en `next.config.mjs`.
+- Usar rutas relativas y/o mover imágenes a `/public` si es posible.
+- Configurar correctamente el servidor para servir la ruta `/uploads`.
+- Usar el prop `unoptimized` en `<Image />` para imágenes que no pueden ser optimizadas por Next.js. 
