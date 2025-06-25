@@ -30,7 +30,7 @@ app.use(morgan('combined'));
 // Rate limiting - más permisivo en desarrollo
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // más permisivo en desarrollo
+  max: process.env.NODE_ENV === 'production' ? 1200 : 2000, // permite al menos 1200 peticiones por 15min en producción (soporta 1000 usuarios simultáneos)
   message: {
     error: 'Demasiadas peticiones, por favor intenta de nuevo más tarde.',
     retryAfter: '15 minutos'
@@ -79,7 +79,7 @@ app.get('/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    rateLimit: process.env.NODE_ENV === 'production' ? '100 requests/15min' : '1000 requests/15min'
+    rateLimit: process.env.NODE_ENV === 'production' ? '1200 requests/15min' : '2000 requests/15min'
   });
 });
 
@@ -101,7 +101,7 @@ app.use('*', (req, res) => {
 app.listen(PORT, async () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🚀 Rate Limit: ${process.env.NODE_ENV === 'production' ? '100 requests/15min' : '1000 requests/15min'}`);
+  console.log(`🚀 Rate Limit: ${process.env.NODE_ENV === 'production' ? '1200 requests/15min' : '2000 requests/15min'}`);
   try {
     await pool.query('SELECT 1');
     console.log('✅ Conexión a la base de datos PostgreSQL exitosa');

@@ -124,8 +124,8 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <Link href="/cart" className="relative p-2 rounded-full hover:bg-base-200 transition-colors">
-              <ShoppingCart className="h-6 w-6 text-base-content" />
+            <Link href="/cart" className="relative p-2 rounded-full hover:bg-base-200 transition-colors group">
+              <ShoppingCart className="h-6 w-6 text-black group-hover:scale-110 transition-transform duration-200" />
               {(cart || []).length > 0 && (
                 <span className="absolute top-0 right-0 block h-4 w-4 rounded-full bg-primary text-white text-xs text-center">
                   {cart.length}

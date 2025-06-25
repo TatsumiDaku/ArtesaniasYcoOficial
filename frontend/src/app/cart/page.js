@@ -13,13 +13,13 @@ const CartPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-      <h1 className="text-4xl font-black tracking-tight text-base-content mb-8">Tu Carrito</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8 bg-white text-gray-900 min-h-screen">
+      <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-8">Tu Carrito</h1>
       
       {cart.length === 0 ? (
-        <div className="text-center py-20 bg-base-200 rounded-2xl">
-          <ShoppingCart className="mx-auto w-16 h-16 text-base-content/30 mb-4" />
-          <p className="text-xl text-base-content/70 mb-4">Tu carrito está vacío.</p>
+        <div className="text-center py-20 bg-gray-100 rounded-2xl">
+          <ShoppingCart className="mx-auto w-16 h-16 text-gray-400 mb-4" />
+          <p className="text-xl text-gray-600 mb-4">Tu carrito está vacío.</p>
           <Link href="/products" className="btn btn-primary">
             Descubrir Productos
           </Link>
@@ -33,7 +33,7 @@ const CartPage = () => {
               const imageUrl = item.product?.images?.[0] ? `${API_BASE_URL}${item.product.images[0]}` : 'https://via.placeholder.com/100';
 
               return (
-                <div key={item.product_id} className="card card-side bg-base-100 shadow-md p-4 items-center">
+                <div key={item.product_id} className="card card-side bg-white shadow-md p-4 items-center text-gray-900">
                   <figure className="w-24 h-24 flex-shrink-0">
                     <Image
                       src={imageUrl}
@@ -68,7 +68,7 @@ const CartPage = () => {
           </div>
 
           {/* Cart Summary */}
-          <div className="card bg-base-200 h-fit p-6 space-y-4 shadow-lg">
+          <div className="card bg-gray-100 h-fit p-6 space-y-4 shadow-lg text-gray-900">
             <h2 className="text-2xl font-bold">Resumen del Pedido</h2>
             <div className="flex justify-between">
               <span className="text-base-content/70">Subtotal</span>
