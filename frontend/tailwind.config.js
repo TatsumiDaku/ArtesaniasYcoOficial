@@ -42,7 +42,8 @@ module.exports = {
     require("daisyui"),
     require('tailwindcss-animation-delay'),
   ],
+  darkMode: false,
   daisyui: {
-    themes: [],
+    themes: ["light"],
   },
 }; 

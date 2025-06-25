@@ -117,7 +117,7 @@ const Header = () => {
 
           <nav className="hidden md:flex md:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-base-content hover:text-primary transition-colors duration-200">
+              <Link key={link.name} href={link.href} className="text-black hover:text-primary transition-colors duration-200">
                 {link.name}
               </Link>
             ))}

@@ -23,6 +23,14 @@ body {
   @apply bg-white border border-gray-300 rounded-md py-2 px-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary;
 }
 
+input, textarea, select {
+  @apply bg-white text-gray-900 !important;
+}
+
+input[type="checkbox"] {
+  @apply bg-white border-gray-300 !important;
+}
+
 /* Responsive table hint */
 @media (max-width: 768px) {
   .table-responsive-hint::after {
