@@ -22,6 +22,7 @@ const shopsRoutes = require('./routes/shops');
 const blogsRoutes = require('./routes/blogs');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 if (cluster.isMaster) {

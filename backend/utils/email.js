@@ -22,7 +22,15 @@ async function sendEmail({ to, subject, html }) {
     subject,
     html,
   };
-  return transporter.sendMail(mailOptions);
+  console.log('Enviando email a:', to, 'con asunto:', subject);
+  try {
+    const result = await transporter.sendMail(mailOptions);
+    console.log('Email enviado correctamente:', result.response);
+    return result;
+  } catch (error) {
+    console.error('Error enviando email:', error);
+    throw error;
+  }
 }
 
 module.exports = { sendEmail }; 
