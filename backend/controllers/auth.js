@@ -183,17 +183,30 @@ const forgotPassword = async (req, res) => {
         // Enviar email real usando Resend
         const subject = 'Recuperación de contraseña - Artesanías & Co';
         const html = `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-            <h2 style="color: #ea580c;">Artesanías & Co</h2>
-            <p>Hola,</p>
-            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este mensaje.</p>
-            <p>Para crear una nueva contraseña, haz clic en el siguiente botón:</p>
-            <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#ea580c;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">Restablecer Contraseña</a>
-            <p>O copia y pega este enlace en tu navegador:</p>
-            <p><a href="${resetUrl}">${resetUrl}</a></p>
-            <hr style="margin:24px 0;">
-            <p style="font-size:12px;color:#888;">Este enlace expirará en 15 minutos por tu seguridad.</p>
-            <p style="font-size:12px;color:#888;">Si tienes dudas, contáctanos en soporte@artesaniasyco.com</p>
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px 24px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <img src='${frontendUrl}/static/LogoIncial.png' alt='Logo Artesanías & Co' style='width: 90px; margin-bottom: 12px;'/>
+              <h2 style="color: #ea580c; margin: 0; font-size: 2rem; letter-spacing: 1px;">Artesanías & Co</h2>
+            </div>
+            <p style="font-size: 1.1rem; color: #333;">¡Hola!<br>Recibimos una solicitud para restablecer la contraseña de tu cuenta en <b>Artesanías & Co</b>. Si no fuiste tú, puedes ignorar este mensaje.</p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;background:#ea580c;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:1.1rem;box-shadow:0 2px 8px #ea580c33;">Restablecer Contraseña</a>
+            </div>
+            <p style="color: #444; font-size: 1rem;">O copia y pega este enlace en tu navegador:<br>
+              <a href="${resetUrl}" style="color:#ea580c;word-break:break-all;">${resetUrl}</a>
+            </p>
+            <hr style="margin:28px 0; border:none; border-top:1px solid #eee;">
+            <div style="background: #f9f5f1; border-radius: 8px; padding: 18px 16px; margin-bottom: 18px;">
+              <p style="font-size: 1.05rem; color: #ea580c; margin: 0 0 8px 0; font-weight: bold;">Poema para los Artesanos</p>
+              <p style="font-size: 0.98rem; color: #555; margin: 0; font-style: italic;">
+                "Con manos de tierra y sueños de sol,<br>
+                creas belleza donde solo había barro.<br>
+                Cada pieza, un suspiro, un pedazo de amor,<br>
+                arte que nace del alma y del trabajo."
+              </p>
+            </div>
+            <p style="font-size: 0.97rem; color: #666; margin-bottom: 8px;">Este enlace expirará en 15 minutos por tu seguridad.</p>
+            <p style="font-size: 0.97rem; color: #666; margin-bottom: 0;">¿Tienes dudas o necesitas ayuda? Escríbenos a <a href="mailto:somos@artesaniasyco.com" style="color:#ea580c;">somos@artesaniasyco.com</a>.<br>¡Gracias por confiar en nosotros y en el arte colombiano!</p>
           </div>
         `;
         await enviarCorreo({ to: user.email, subject, html });

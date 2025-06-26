@@ -28,12 +28,15 @@ const ForgotPasswordPage = () => {
 
     if (submitted) {
         return (
-            <div className="flex items-center justify-center min-h-[70vh]">
-                <div className="w-full max-w-md p-8 space-y-6 card text-center">
-                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-                    <h2 className="text-2xl font-bold">Petición Enviada</h2>
-                    <p className="text-gray-600">
-                        Si una cuenta con ese correo electrónico existe en nuestro sistema, hemos enviado un enlace para recuperar tu contraseña. Por favor, revisa tu bandeja de entrada (y la carpeta de spam).
+            <div className="flex items-center justify-center min-h-[70vh] bg-gradient-to-br from-orange-50 to-white">
+                <div className="w-full max-w-md p-8 space-y-6 card text-center shadow-xl border border-orange-100 rounded-2xl bg-white/90">
+                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto animate-bounce" />
+                    <h2 className="text-2xl font-bold text-orange-700">¡Solicitud enviada con éxito!</h2>
+                    <p className="text-gray-700 text-base mt-2">
+                        Si existe una cuenta con ese correo electrónico, hemos enviado un enlace para recuperar tu contraseña.<br /><br />
+                        <span className="font-semibold text-orange-600">Importante:</span> Es muy probable que el correo llegue primero a la <span className="font-bold">bandeja de spam o correo no deseado</span>. Por favor, revisa allí si no lo ves en tu bandeja principal.<br /><br />
+                        Si tienes dudas o necesitas ayuda, escríbenos a <a href="mailto:somos@artesaniasyco.com" className="underline text-orange-700 font-medium">somos@artesaniasyco.com</a>.<br />
+                        ¡Gracias por confiar en Artesanías & Co!
                     </p>
                     <Link href="/login" className="btn btn-primary w-full mt-4">
                         Volver a Iniciar Sesión
