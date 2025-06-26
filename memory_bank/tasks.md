@@ -34,4 +34,6 @@
 - [x] Limpieza total de la lógica de blogs en backend y frontend (eliminación de rutas, controladores, páginas, componentes y referencias)
 - [x] Reconstrucción integral del sistema de blogs (endpoints, frontend, comentarios, ratings, imágenes, categorías, flujos admin/artesano/público)
 - [JUN 2024] Rate limit duplicado (2400 prod, 4000 dev) y feedback visual (toast) para errores 429 implementado en frontend.
-- [JUN 2024] ✅ Monitoreo/logs avanzados y automatización (CI/CD) documentados y completados. Documentación al día. 
+- [JUN 2024] ✅ Monitoreo/logs avanzados y automatización (CI/CD) documentados y completados. Documentación al día.
+- [x] Creación de páginas legales: Términos y Condiciones y Política de Privacidad, con enlaces añadidos al Footer y notificación de cookies actualizada.
+- [x] Mejora integral del flujo de recuperación de contraseña: validación de correo, envío de enlace seguro, formulario de restablecimiento, feedback visual, seguridad y buenas prácticas, según el plan REBUILD. 

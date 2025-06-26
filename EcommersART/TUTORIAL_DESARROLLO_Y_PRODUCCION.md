@@ -4,6 +4,56 @@ Este tutorial explica cómo trabajar de forma profesional y segura, separando el
 
 ---
 
+## 0. Configura el archivo .env del backend
+
+Antes de iniciar el backend, debes crear el archivo `.env` en la carpeta `backend` con las variables necesarias para el funcionamiento del sistema, incluyendo el correo y contraseña para el envío de emails.
+
+### 0.1. Crea el archivo `.env`
+
+1. Ve a la carpeta del backend:
+   ```bash
+   cd backend
+   ```
+2. Crea un archivo llamado `.env` (puedes usar un editor de texto o el comando):
+   ```bash
+   touch .env
+   ```
+3. Abre el archivo `.env` y agrega el siguiente contenido, reemplazando los valores por los tuyos:
+   ```env
+   # Puerto del servidor
+   PORT=5000
+
+   # Base de datos PostgreSQL
+   DB_USER=postgres
+   DB_PASSWORD=1234
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=artesanias_db
+
+   # JWT para autenticación
+   JWT_SECRET=tu_clave_secreta
+
+   # Variables para envío de correos (Nodemailer)
+   EMAIL_USER=tu_correo@gmail.com
+   EMAIL_PASS=tu_contraseña_de_aplicacion
+
+   # URL del frontend (para enlaces de recuperación de contraseña, etc)
+   FRONTEND_URL=http://localhost:3000
+
+   # Redis (opcional, para caché y escalabilidad)
+   REDIS_URL=redis://localhost:6379
+
+   # CPUs para clusterización (opcional)
+   # CLUSTER_CPUS=4
+
+   # Entorno (development o production)
+   NODE_ENV=development
+   ```
+
+> **Importante:** Para `EMAIL_PASS` debes usar una contraseña de aplicación (no tu contraseña normal de Gmail). Puedes generarla en la configuración de seguridad de tu cuenta de Google.
+
+---
+
 ## 1. Desarrollo Local (en tu PC)
 
 ### 1.1. Instala dependencias

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
+const { sendEmail } = require('../utils/email');
 
 const register = async (req, res) => {
   try {
@@ -166,8 +167,8 @@ const forgotPassword = async (req, res) => {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-        // Establecer fecha de expiración (e.g., 10 minutos)
-        const expirationDate = new Date(Date.now() + 10 * 60 * 1000);
+        // Establecer fecha de expiración (e.g., 15 minutos)
+        const expirationDate = new Date(Date.now() + 15 * 60 * 1000);
 
         // Guardar token hasheado y fecha en la BD
         await pool.query(
@@ -176,15 +177,26 @@ const forgotPassword = async (req, res) => {
         );
 
         // Crear URL de reseteo
-        // EN PRODUCCIÓN: process.env.FRONTEND_URL
-        const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
-        // Simular envío de correo. EN UN PROYECTO REAL, USARÍAMOS UN SERVICIO COMO NODEMAILER, SENDGRID, ETC.
-        console.log('--- SIMULACIÓN DE ENVÍO DE CORREO ---');
-        console.log(`Para: ${user.email}`);
-        console.log(`Asunto: Recuperación de contraseña`);
-        console.log(`Cuerpo: Para resetear tu contraseña, haz clic en este enlace: ${resetUrl}`);
-        console.log('------------------------------------');
+        // Enviar email real
+        const subject = 'Recuperación de contraseña - Artesanías & Co';
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color: #ea580c;">Artesanías & Co</h2>
+            <p>Hola,</p>
+            <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este mensaje.</p>
+            <p>Para crear una nueva contraseña, haz clic en el siguiente botón:</p>
+            <a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#ea580c;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">Restablecer Contraseña</a>
+            <p>O copia y pega este enlace en tu navegador:</p>
+            <p><a href="${resetUrl}">${resetUrl}</a></p>
+            <hr style="margin:24px 0;">
+            <p style="font-size:12px;color:#888;">Este enlace expirará en 15 minutos por tu seguridad.</p>
+            <p style="font-size:12px;color:#888;">Si tienes dudas, contáctanos en soporte@artesaniasyco.com</p>
+          </div>
+        `;
+        await sendEmail({ to: user.email, subject, html });
 
         res.json({ message: 'Si tu correo está registrado, recibirás un enlace para recuperar tu contraseña.' });
     } catch (error) {

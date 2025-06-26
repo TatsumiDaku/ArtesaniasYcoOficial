@@ -320,4 +320,51 @@ Estas acciones permitirán escalar el sistema para soportar cientos o miles de u
 - [x] Esto permite manejar más conexiones concurrentes, aprovechar todos los núcleos y mejorar la tolerancia a fallos. 
 
 - [JUN 2024] ✅ Integración de CI/CD documentada y recomendada (GitHub Actions). Ejemplo de workflow incluido en README.md. No se requiere integración de PM2 por decisión del usuario.
-- [JUN 2024] ✅ Documentación y REBUILD completamente actualizados hasta la fecha, incluyendo todos los cambios recientes de escalabilidad, rendimiento, feedback visual y automatización. 
+- [JUN 2024] ✅ Documentación y REBUILD completamente actualizados hasta la fecha, incluyendo todos los cambios recientes de escalabilidad, rendimiento, feedback visual y automatización.
+- [JUN 2024] Legalidad y cumplimiento
+- Se crearon las páginas legales: Términos y Condiciones (/legal/terminos) y Política de Privacidad (/legal/privacidad) con contenido realista y adaptado a la legislación colombiana.
+- El Footer ahora incluye enlaces claros y accesibles a ambas páginas legales.
+- La notificación de cookies fue actualizada para enlazar directamente a la Política de Privacidad, cumpliendo normativa y mejorando la transparencia para el usuario. 
+
+# REBUILD: Plan Principal de Mejora de Recuperación de Contraseña
+
+## Objetivo Principal
+
+Implementar y mejorar el flujo real de recuperación de contraseña para usuarios que han olvidado su acceso, asegurando seguridad, claridad y experiencia de usuario profesional.
+
+## Requisitos y Flujo Propuesto
+
+1. **Formulario de Solicitud de Recuperación**
+   - El usuario ingresa su correo electrónico en el formulario de "¿Olvidaste tu contraseña?".
+   - El sistema valida si el correo existe en la base de datos.
+   - Si el correo no existe, se muestra un mensaje claro: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña" (no revelar si existe o no por seguridad).
+
+2. **Envío de Enlace Seguro**
+   - Si el correo existe, se genera un token seguro y se envía un email con un enlace único para restablecer la contraseña.
+   - El enlace tiene expiración (ej: 1 hora) y solo puede usarse una vez.
+   - El email debe ser claro, con branding y un botón de acción.
+
+3. **Pantalla de Restablecimiento**
+   - El usuario accede al enlace y se le muestra un formulario para ingresar y confirmar la nueva contraseña.
+   - El sistema valida el token y permite el cambio solo si es válido y no expiró.
+   - Si el token es inválido o expiró, se muestra un mensaje de error y opción para solicitar uno nuevo.
+
+4. **Confirmación y Redirección**
+   - Al cambiar la contraseña exitosamente, se muestra un mensaje de éxito y se redirige automáticamente al login o a la página de inicio.
+   - Se recomienda mostrar un toast o alerta visual de confirmación.
+
+5. **Seguridad y Buenas Prácticas**
+   - No revelar nunca si un correo existe o no en el sistema.
+   - Los tokens deben ser aleatorios, seguros y de un solo uso.
+   - Limitar la cantidad de solicitudes por usuario/IP para evitar abuso.
+   - Registrar logs de intentos para monitoreo y auditoría.
+
+## Mejoras Adicionales Sugeridas
+- Añadir feedback visual en cada paso (cargando, éxito, error).
+- Permitir reenviar el enlace si el usuario no lo recibió.
+- Incluir enlaces a soporte en caso de problemas.
+- Documentar el flujo en la ayuda y FAQ.
+
+## Referencias
+- Revisar patrones de UX de plataformas líderes (Google, Facebook, MercadoLibre) para inspiración.
+- Seguir recomendaciones de seguridad OWASP para recuperación de contraseñas. 

@@ -24,6 +24,9 @@
 - Se implementó clusterización en el backend usando el módulo cluster de Node.js. El proceso master lanza un worker por cada CPU y los reinicia si fallan. Esto permite máxima concurrencia y tolerancia a fallos en producción.
 - [JUN 2024] Rate limit duplicado: ahora 2400 peticiones/15min en producción, 4000 en desarrollo. Implementado feedback visual global (toast) en frontend para errores 429 (demasiadas peticiones).
 - [JUN 2024] ✅ Integración de CI/CD (GitHub Actions) documentada y recomendada. Documentación y REBUILD actualizados al 100%.
+- [JUN 2024] Páginas legales implementadas: Términos y Condiciones (/legal/terminos) y Política de Privacidad (/legal/privacidad) creadas con contenido realista y profesional.
+- [JUN 2024] Footer actualizado: enlaces a Términos y Condiciones y Política de Privacidad añadidos y verificados.
+- [JUN 2024] Notificación de cookies actualizada: el enlace ahora dirige a la Política de Privacidad real, cumpliendo normativa y buenas prácticas legales.
 
 # Historial de Progreso del Proyecto
 
