@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
-const { sendEmail } = require('../utils/email');
+const { enviarCorreo } = require('../utils/email');
 
 const register = async (req, res) => {
   try {
@@ -180,7 +180,7 @@ const forgotPassword = async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
-        // Enviar email real
+        // Enviar email real usando Resend
         const subject = 'Recuperación de contraseña - Artesanías & Co';
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
@@ -196,7 +196,7 @@ const forgotPassword = async (req, res) => {
             <p style="font-size:12px;color:#888;">Si tienes dudas, contáctanos en soporte@artesaniasyco.com</p>
           </div>
         `;
-        await sendEmail({ to: user.email, subject, html });
+        await enviarCorreo({ to: user.email, subject, html });
 
         res.json({ message: 'Si tu correo está registrado, recibirás un enlace para recuperar tu contraseña.' });
     } catch (error) {

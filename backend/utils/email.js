@@ -1,38 +1,32 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465, // o 587
-  secure: true, // true para 465, false para 587
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Envía un email usando Nodemailer
+ * Envía un email usando Resend
  * @param {Object} options
  * @param {string} options.to - Destinatario
  * @param {string} options.subject - Asunto
  * @param {string} options.html - Contenido HTML
  */
-async function sendEmail({ to, subject, html }) {
-  const mailOptions = {
-    from: `Artesanías & Co <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  };
-  console.log('Enviando email a:', to, 'con asunto:', subject);
+async function enviarCorreo({ to, subject, html }) {
   try {
-    const result = await transporter.sendMail(mailOptions);
-    console.log('Email enviado correctamente:', result.response);
-    return result;
-  } catch (error) {
-    console.error('Error enviando email:', error);
-    throw error;
+    const { data, error } = await resend.emails.send({
+      from: 'Artesanías & Co <somos@artesaniasyco.com>',
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error('Error enviando email:', error);
+      throw error;
+    }
+    return data;
+  } catch (err) {
+    console.error('Error en enviarCorreo:', err);
+    throw err;
   }
 }
 
-module.exports = { sendEmail }; 
+module.exports = { enviarCorreo }; 
