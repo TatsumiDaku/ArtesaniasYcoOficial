@@ -4,8 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import UserMenu from './UserMenu';
-import { Search, ShoppingCart } from 'lucide-react';
+import { Search, ShoppingCart, Menu as Burger, X } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useState } from 'react';
+import { UserCircle, Heart } from 'lucide-react';
 
 const Header = () => {
   const { user, isAuthenticated } = useAuth();
@@ -19,6 +21,8 @@ const Header = () => {
     // { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
     // { name: 'Ayuda', href: '/ayuda' },
   ];
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Función para obtener el color de fondo del indicador según el rol
   const getIndicatorBackground = () => {
@@ -75,12 +79,11 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-base-100/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+    <header className={`${mobileMenuOpen ? 'bg-white' : 'bg-base-100/80 backdrop-blur-md'} shadow-sm sticky top-0 z-50`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="group flex items-center gap-3">
-              {/* Logo PNG */}
               <div className="relative">
                 <Image 
                   src="/static/LogoIncial.png" 
@@ -89,40 +92,22 @@ const Header = () => {
                   height={55}
                   className="drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300 group-hover:scale-110"
                 />
-                {/* Efecto de brillo en hover */}
-                <div className="absolute inset-0 bg-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
               </div>
-              
-              {/* Texto del logo con tipografía cursiva */}
-              <div className="text-2xl font-pacifico relative">
-                {/* Texto principal con tipografía cursiva artística unificada */}
+              <div className="text-2xl font-pacifico relative block">
                 <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent tracking-wider">
-                  Artesanías
+                  ArtesaníasYCo
                 </span>
-                <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent tracking-wider ml-1">
-                  YCo
-                </span>
-                
-                {/* Efecto de sombra artística */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/20 via-orange-500/20 to-red-600/20 blur-sm -z-10 transform scale-105"></div>
-                
-                {/* Línea decorativa artística */}
-                <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
-                
-                {/* Punto decorativo */}
-                <div className="absolute -top-1 -right-2 w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full opacity-80 group-hover:scale-125 transition-transform duration-300"></div>
               </div>
             </Link>
           </div>
-
-          <nav className="hidden md:flex md:space-x-8">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex lg:space-x-8">
             {navLinks.map((link) => (
               <Link key={link.name} href={link.href} className="text-black hover:text-primary transition-colors duration-200">
                 {link.name}
               </Link>
             ))}
           </nav>
-
           <div className="flex items-center space-x-4">
             <Link href="/cart" className="relative p-2 rounded-full hover:bg-base-200 transition-colors group">
               <ShoppingCart className="h-6 w-6 text-black group-hover:scale-110 transition-transform duration-200" />
@@ -133,20 +118,93 @@ const Header = () => {
               )}
             </Link>
             {isAuthenticated ? (
-              <UserMenu user={user} />
+              <div className="hidden lg:block">
+                <UserMenu user={user} />
+              </div>
             ) : (
               <div className="hidden sm:flex items-center space-x-2">
                 <Link href="/login" className="btn btn-ghost btn-sm">Iniciar Sesión</Link>
                 <Link href="/register" className="btn btn-primary btn-sm">Registrarse</Link>
               </div>
             )}
-            <div className="md:hidden">
-              {/* Mobile menu button can go here */}
-            </div>
+            {/* Botón hamburguesa para tablet/móvil */}
+            <button
+              className="inline-flex items-center justify-center rounded-md p-2 text-black hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary lg:hidden"
+              aria-label="Abrir menú"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Burger className="w-7 h-7" />
+            </button>
           </div>
         </div>
       </div>
-      
+      {/* Menú hamburguesa móvil/tablet */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end lg:hidden">
+          {/* Overlay oscuro, solo a la izquierda del panel */}
+          <div className="flex-1 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
+          {/* Panel lateral completamente opaco */}
+          <div className="w-full max-w-xs h-full bg-white shadow-2xl p-6 flex flex-col gap-6 animate-slide-in-right relative text-black z-[101]">
+            <button
+              className="absolute top-4 right-4 p-2 rounded-full bg-white hover:bg-gray-100 focus:outline-none shadow"
+              aria-label="Cerrar menú"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="flex flex-col items-center gap-2 mt-4">
+              <Image src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={50} height={50} className="mb-1" />
+              <span className="font-pacifico text-xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent">ArtesaníasYCo</span>
+            </div>
+            {isAuthenticated && user && (
+              <div className="flex flex-col items-center gap-2 mt-2 mb-4">
+                <Image
+                  src={user.avatar ? getImageUrl(user.avatar) : '/static/default-avatar.png'}
+                  alt="Avatar"
+                  width={56}
+                  height={56}
+                  className="rounded-full object-cover border-2 border-orange-400 shadow-md"
+                />
+                <span className="font-semibold text-lg truncate max-w-[140px]">{user.name}</span>
+                <span className="text-xs text-gray-500">{user.email}</span>
+              </div>
+            )}
+            <nav className="flex flex-col gap-2 mt-2">
+              {navLinks.map((link) => (
+                <Link key={link.name} href={link.href} className="text-base font-medium text-gray-800 hover:text-primary py-2 px-3 rounded-lg transition-colors">
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
+            {isAuthenticated && (
+              <div className="mt-4 border-t pt-4 flex flex-col gap-2">
+                <Link href={user.role === 'admin' ? '/admin/dashboard' : user.role === 'artesano' ? '/artisan/products' : '/dashboard'} className="flex items-center gap-2 text-base font-semibold text-orange-700 hover:text-orange-900">
+                  <UserCircle className="w-5 h-5" /> Mi Panel
+                </Link>
+                {user.role === 'cliente' && (
+                  <Link href="/dashboard/favorites" className="flex items-center gap-2 text-base text-orange-600 hover:text-orange-800">
+                    <Heart className="w-5 h-5" /> Mis Favoritos
+                  </Link>
+                )}
+                {user.role === 'artesano' && (
+                  <Link href="/artisan/profile" className="flex items-center gap-2 text-base text-orange-600 hover:text-orange-800">
+                    <UserCircle className="w-5 h-5" /> Editar Perfil
+                  </Link>
+                )}
+                <button onClick={() => { setMobileMenuOpen(false); user && user.logout && user.logout(); }} className="w-full flex items-center gap-2 text-base text-red-600 hover:text-red-800 font-semibold py-2 px-3 rounded-lg transition-colors">
+                  <X className="w-5 h-5" /> Cerrar Sesión
+                </button>
+              </div>
+            )}
+            {!isAuthenticated && (
+              <div className="mt-4 border-t pt-4 flex flex-col gap-2">
+                <Link href="/login" className="btn btn-ghost w-full">Iniciar Sesión</Link>
+                <Link href="/register" className="btn btn-primary w-full">Registrarse</Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Borde inferior con color según el rol */}
       <div className={`h-1 ${getBorderGradient()} transition-all duration-300 ease-in-out`}>
         {/* Indicador visual adicional para mostrar el rol */}
