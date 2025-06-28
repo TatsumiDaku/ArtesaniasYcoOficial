@@ -76,11 +76,6 @@ Esta guía detalla los pasos para desplegar la aplicación EcommersART desde cer
         # Backend
         JWT_SECRET=otro_secreto_muy_largo_y_diferente_para_jwt
         NEXT_PUBLIC_API_URL=https://artesaniasyco.com/api
-        # Redis
-        REDIS_URL=redis://localhost:6379  
-        # Cambia a redis://redis:6379 si usas Docker Compose
-        # Email (Resend)
-        RESEND_API_KEY=tu_api_key_de_resend
         ```
     *   Guarda y cierra el archivo (en `nano`, es `Ctrl+X`, luego `Y`, luego `Enter`).
 
@@ -146,67 +141,4 @@ Para que Let's Encrypt pueda verificar que eres el dueño del dominio, necesitam
 *   **Para detener la aplicación:**
     ```bash
     docker-compose down
-    ```
-
-## Seguridad Adicional: Protege tu instancia de Redis
-
-Si usas Redis en tu servidor, **nunca lo expongas a Internet**. Redis debe aceptar conexiones solo desde localhost o desde los contenedores que lo necesiten.
-
-1. Edita el archivo de configuración de Redis:
-    ```bash
-    sudo nano /etc/redis/redis.conf
-    ```
-2. Busca la línea:
-    ```
-    #bind 127.0.0.1 ::1
-    ```
-   y elimínale el `#` para que quede así:
-    ```
-    bind 127.0.0.1 ::1
-    ```
-3. Reinicia Redis:
-    ```bash
-    sudo systemctl restart redis
-    ```
-
-> **IMPORTANTE:** Si usas Docker, asegúrate de que el servicio de Redis solo sea accesible desde la red interna de Docker y no desde el exterior. Considera usar firewalls (UFW o el de DigitalOcean) para bloquear el puerto 6379 desde fuera.
-
-Más info: https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-20-04
-
-## Seguridad extra: Protege Redis con contraseña (token)
-
-Por defecto, Redis no tiene contraseña. Para producción, **siempre** debes protegerlo:
-
-1. Edita el archivo de configuración de Redis:
-    ```bash
-    sudo nano /etc/redis/redis.conf
-    ```
-2. Busca la línea:
-    ```
-    # requirepass tu_contraseña_segura
-    ```
-   y elimínale el `#` y pon tu contraseña fuerte:
-    ```
-    requirepass tu_contraseña_segura
-    ```
-3. Reinicia Redis:
-    ```bash
-    sudo systemctl restart redis
-    ```
-
-4. En tu archivo `.env` del backend, pon la contraseña en la URL de Redis así:
-    ```env
-    REDIS_URL=redis://:tu_contraseña_segura@localhost:6379
-    # O si usas Docker Compose:
-    REDIS_URL=redis://:tu_contraseña_segura@redis:6379
-    ```
-
-El backend ya está preparado para leer la contraseña desde la URL, no necesitas cambiar nada más en el código.
-
-> **Nunca subas tu contraseña/token a git.**
-
-## Recordatorio: Nunca subas tus tokens o contraseñas a git
-
-- Los archivos `.env`, `.env.local`, `.env.production` y similares **ya están en el `.gitignore`**. Nunca los subas al repositorio.
-- Si necesitas compartir un token o contraseña, hazlo solo por canales seguros y nunca lo publiques.
-- Si necesitas recordar cómo poner un token o contraseña, revisa este tutorial y el archivo `.env.example` si existe. 
+    ``` 
