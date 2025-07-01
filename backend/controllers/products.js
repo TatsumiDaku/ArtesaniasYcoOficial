@@ -199,10 +199,13 @@ const updateProduct = async (req, res) => {
     const newImages = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
     const allImages = [...imagesToKeep, ...newImages];
     
+    let stockValue = parseInt(stock, 10);
+    if (isNaN(stockValue) || stockValue < 0) stockValue = 0;
+    
     // La columna is_public no se modifica aquí para que solo el admin pueda cambiarla.
     const updatedProduct = await pool.query(
       'UPDATE products SET name = $1, description = $2, price = $3, stock = $4, category_id = $5, images = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
-      [name, description, parseFloat(price), parseInt(stock, 10), parseInt(category_id, 10), allImages, id]
+      [name, description, parseFloat(price), stockValue, parseInt(category_id, 10), allImages, id]
     );
 
     res.json({

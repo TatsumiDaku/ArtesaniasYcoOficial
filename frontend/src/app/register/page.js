@@ -51,6 +51,7 @@ const RegisterPage = () => {
   const avatarFile = watch('avatar');
   const headerFile = watch('shop_header_image');
   const [showLoader, setShowLoader] = useState(false);
+  const [shownFields, setShownFields] = useState({});
 
   useEffect(() => {
     if (avatarFile && avatarFile[0]) {
@@ -142,6 +143,40 @@ const RegisterPage = () => {
       </div>
   );
 
+  // Función para mostrar toasts informativos al enfocar campos clave
+  const handleFieldInfo = (field) => {
+    if (shownFields[field]) return;
+    setShownFields((prev) => ({ ...prev, [field]: true }));
+    switch (field) {
+      case 'nickname':
+        toast('El nickname será tu nombre público como artesano en la plataforma.', { icon: 'ℹ️' });
+        break;
+      case 'artisan_story':
+        toast('Cuenta brevemente tu historia como artesano/a. Será visible en tu perfil.', { icon: 'ℹ️' });
+        break;
+      case 'avatar':
+        toast('La imagen de perfil es obligatoria y será visible públicamente.', { icon: 'ℹ️' });
+        break;
+      case 'shop_header_image':
+        toast('La imagen de cabecera será la portada de tu tienda. Recomendado: 1500x400px.', { icon: 'ℹ️' });
+        break;
+      case 'professional_email':
+        toast('Este correo será visible en tu perfil de tienda para contacto profesional.', { icon: 'ℹ️' });
+        break;
+      case 'id_document':
+        toast('Ingresa tu cédula de ciudadanía colombiana. Solo números, sin puntos ni guiones.', { icon: 'ℹ️' });
+        break;
+      case 'phone':
+        toast('Ingresa solo números. Ejemplo: 3001234567', { icon: 'ℹ️' });
+        break;
+      case 'workshop_address':
+        toast('Dirección física de tu taller o lugar de trabajo.', { icon: 'ℹ️' });
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4">
       <div className="w-full max-w-4xl">
@@ -186,7 +221,7 @@ const RegisterPage = () => {
                             <PasswordInput name="password" register={register} required minLength="8" />
                             <PasswordStrength password={password} />
                         </div>
-                        <FormInput id="phone" label="Teléfono" type="tel" register={register} required="El teléfono es requerido" error={errors.phone} />
+                        <FormInput id="phone" label="Teléfono" type="tel" register={register} required="El teléfono es requerido" error={errors.phone} pattern={{ value: /^[0-9]{7,15}$/, message: "Solo números, entre 7 y 15 dígitos" }} placeholder="Ej: 3001234567" onFocus={() => handleFieldInfo('phone')} />
                     </fieldset>
                     
                     {/* --- SECCIÓN 3: PERFIL DE ARTESANO (CONDICIONAL) --- */}
@@ -196,14 +231,14 @@ const RegisterPage = () => {
                             
                             <div className="md:col-span-2">
                                 <label htmlFor="nickname" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Nickname</label>
-                                <input id="nickname" {...register("nickname", { required: "El nickname es obligatorio" })} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <input id="nickname" {...register("nickname", { required: "El nickname es obligatorio" })} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" onFocus={() => handleFieldInfo('nickname')} />
                                 <p className="text-xs text-gray-500 mt-1">Este será tu nombre público como artesano en la plataforma.</p>
                                 {errors.nickname && <span className="text-red-500 text-xs mt-1">{errors.nickname.message}</span>}
                             </div>
                             
                             <div className="md:col-span-2">
                                 <label htmlFor="artisan_story" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Tu historia como artesano/a (Máx. 300 caracteres)</label>
-                                <textarea id="artisan_story" {...register("artisan_story", { required: "Tu historia es importante.", maxLength: { value: 300, message: "Máximo 300 caracteres." }})} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4"></textarea>
+                                <textarea id="artisan_story" {...register("artisan_story", { required: "Tu historia es importante.", maxLength: { value: 300, message: "Máximo 300 caracteres." }})} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4" onFocus={() => handleFieldInfo('artisan_story')}></textarea>
                                 {errors.artisan_story && <span className="text-red-500 text-xs mt-1">{errors.artisan_story.message}</span>}
                             </div>
                             
@@ -220,14 +255,14 @@ const RegisterPage = () => {
                                     <label htmlFor="avatar-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-50 transition-colors">
                                         <UploadCloud className="w-5 h-5"/>
                                         <span>Subir imagen</span>
-                                        <input id="avatar-upload" type="file" {...register("avatar", { required: "La imagen de perfil es obligatoria." })} className="hidden" accept="image/*"/>
+                                        <input id="avatar-upload" type="file" {...register("avatar", { required: "La imagen de perfil es obligatoria." })} className="hidden" accept="image/*" onFocus={() => handleFieldInfo('avatar')} />
                                     </label>
                                 </div>
                                 {errors.avatar && <span className="text-red-500 text-xs mt-1">{errors.avatar.message}</span>}
                             </div>
 
                             <div className="md:col-span-2">
-                                <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Imagen de Cabecera de la Tienda (Opcional)</label>
+                                <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Imagen de Cabecera de la Tienda (Obligatoria)</label>
                                 <p className="text-xs text-gray-500 mt-1 mb-2">Esta será la imagen principal en tu perfil de tienda. Recomendado: 1500x400px.</p>
                                 <div className="mt-2 w-full aspect-[15/4] bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden relative">
                                     {headerPreview ? (
@@ -242,8 +277,9 @@ const RegisterPage = () => {
                                  <label htmlFor="header-upload" className="mt-2 cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-lg shadow-sm border border-indigo-200 hover:bg-indigo-50 transition-colors">
                                     <UploadCloud className="w-5 h-5"/>
                                     <span>Subir imagen de cabecera</span>
-                                    <input id="header-upload" type="file" {...register("shop_header_image")} className="hidden" accept="image/*"/>
+                                    <input id="header-upload" type="file" {...register("shop_header_image", { required: "La imagen de cabecera es obligatoria." })} className="hidden" accept="image/*" onFocus={() => handleFieldInfo('shop_header_image')} />
                                 </label>
+                                {errors.shop_header_image && <span className="text-red-500 text-xs mt-1">{errors.shop_header_image.message}</span>}
                             </div>
 
                             <div className="md:col-span-2 mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -258,17 +294,17 @@ const RegisterPage = () => {
 
                             <div className="md:col-span-2">
                                 <label htmlFor="professional_email" className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Correo profesional/artesanal de contacto</label>
-                                <input id="professional_email" type="email" {...register("professional_email", { required: "El correo profesional es obligatorio", pattern: { value: /^\S+@\S+\.\S+$/, message: "Correo profesional inválido" } })} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                                <input id="professional_email" type="email" {...register("professional_email", { required: "El correo profesional es obligatorio", pattern: { value: /^\S+@\S+\.\S+$/, message: "Correo profesional inválido" } })} className="mt-1 block w-full px-4 py-3 bg-white/80 rounded-xl border-2 border-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500" onFocus={() => handleFieldInfo('professional_email')} />
                                 <p className="text-xs text-gray-500 mt-1">Este correo será visible en tu perfil de tienda para contacto profesional.</p>
                                 {errors.professional_email && <span className="text-red-500 text-xs mt-1">{errors.professional_email.message}</span>}
                             </div>
 
                             <legend className="text-xl font-bold text-gray-700 col-span-full mb-2 mt-6">Información de Residencia</legend>
-                            <FormInput id="country" label="País" register={register} required="El país es requerido" error={errors.country} />
-                            <FormInput id="state" label="Departamento" register={register} required="El departamento es requerido" error={errors.state} />
-                            <FormInput id="city" label="Municipio" register={register} required="El municipio es requerido" error={errors.city} />
-                            <FormInput id="id_document" label="Cédula de Ciudadanía" register={register} required="La cédula es requerida" error={errors.id_document} />
-                            <FormInput id="workshop_address" label="Dirección del Taller" register={register} required="La dirección del taller es requerida" error={errors.workshop_address} className="md:col-span-2" />
+                            <FormInput id="country" label="País" register={register} required="El país es requerido" error={errors.country} onFocus={() => handleFieldInfo('country')} />
+                            <FormInput id="state" label="Departamento" register={register} required="El departamento es requerido" error={errors.state} onFocus={() => handleFieldInfo('state')} />
+                            <FormInput id="city" label="Municipio" register={register} required="El municipio es requerido" error={errors.city} onFocus={() => handleFieldInfo('city')} />
+                            <FormInput id="id_document" label="Cédula de Ciudadanía" register={register} required="La cédula es requerida" error={errors.id_document} pattern={{ value: /^[0-9]{6,10}$/, message: "Solo números, entre 6 y 10 dígitos" }} placeholder="Ej: 123456789" onFocus={() => handleFieldInfo('id_document')} />
+                            <FormInput id="workshop_address" label="Dirección del Taller" register={register} required="La dirección del taller es requerida" error={errors.workshop_address} className="md:col-span-2" onFocus={() => handleFieldInfo('workshop_address')} />
 
                         </fieldset>
                     )}

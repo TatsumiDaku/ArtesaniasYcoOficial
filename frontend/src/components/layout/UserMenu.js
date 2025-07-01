@@ -8,7 +8,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { Heart, UserCircle } from 'lucide-react';
-import { getImageUrl } from '@/utils/imageUrl';
+import imageUrl from '@/utils/imageUrl';
 
 // Helper para unir clases
 function classNames(...classes) {
@@ -33,7 +33,7 @@ const UserMenu = () => {
             <>
               {auth.user.avatar ? (
                 <Image 
-                  src={getImageUrl(auth.user.avatar)} 
+                  src={imageUrl(auth.user.avatar)} 
                   alt="Avatar"
                   width={24}
                   height={24}
@@ -85,7 +85,7 @@ const UserMenu = () => {
                         auth.isAdmin
                           ? '/admin/dashboard'
                           : auth.isArtisan
-                          ? '/artisan/products'
+                          ? '/dashboard'
                           : '/dashboard'
                       }
                       className={classNames(
@@ -125,13 +125,6 @@ const UserMenu = () => {
                     </button>
                   )}
                 </Menu.Item>
-                {auth.user.role === 'cliente' && (
-                  <li>
-                    <Link href="/dashboard/favorites">
-                      <Heart className="w-4 h-4" /> Mis Favoritos
-                    </Link>
-                  </li>
-                )}
               </>
             ) : (
               <>

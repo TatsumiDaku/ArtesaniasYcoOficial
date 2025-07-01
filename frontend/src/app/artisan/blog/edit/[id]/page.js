@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
-import { BookOpen, ArrowLeft, Loader2, Upload, XCircle } from "lucide-react";
-import { getImageUrl } from '@/utils/imageUrl';
+import { BookOpen, ArrowLeft, Loader2, Upload, XCircle, CalendarDays, MapPin } from "lucide-react";
+import imageUrl from '@/utils/imageUrl';
 import Image from 'next/image';
+import withAuthProtection from '@/components/auth/withAuthProtection';
 
 const EditBlogPage = () => {
   const router = useRouter();
@@ -23,6 +24,10 @@ const EditBlogPage = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [isEvent, setIsEvent] = useState(false);
+  const [eventStart, setEventStart] = useState("");
+  const [eventEnd, setEventEnd] = useState("");
+  const [eventAddress, setEventAddress] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +52,10 @@ const EditBlogPage = () => {
           image_url_1: blog.image_url_1 ? (blog.image_url_1.startsWith('http') ? blog.image_url_1 : `${base}${blog.image_url_1}`) : null,
           image_url_2: blog.image_url_2 ? (blog.image_url_2.startsWith('http') ? blog.image_url_2 : `${base}${blog.image_url_2}`) : null,
         });
+        // Cargar datos de evento si existen
+        setEventStart(blog.event_start || "");
+        setEventEnd(blog.event_end || "");
+        setEventAddress(blog.event_address || "");
       } catch (error) {
         const status = error.response?.status;
         const msg = error.response?.data?.message || error.message || 'Error desconocido';
@@ -58,6 +67,12 @@ const EditBlogPage = () => {
     };
     fetchData();
   }, [id, router]);
+
+  // Detectar si la categoría 'Eventos' está seleccionada
+  useEffect(() => {
+    const eventosCat = categories.find(cat => cat.name?.toLowerCase() === "eventos");
+    setIsEvent(eventosCat && formData.categories.includes(String(eventosCat.id)));
+  }, [formData.categories, categories]);
 
   const handleChange = (e) => {
     const { name, value, type, selectedOptions } = e.target;
@@ -111,9 +126,14 @@ const EditBlogPage = () => {
     // Imágenes
     if (newImages.image_url_1) data.append("image_url_1", newImages.image_url_1);
     if (newImages.image_url_2) data.append("image_url_2", newImages.image_url_2);
-    // Si no hay nueva imagen y existe la anterior, mantenerla
     if (!newImages.image_url_1 && existingImages.image_url_1) data.append("image_url_1", existingImages.image_url_1);
     if (!newImages.image_url_2 && existingImages.image_url_2) data.append("image_url_2", existingImages.image_url_2);
+    // Campos de evento
+    if (isEvent) {
+      data.append("event_start", eventStart);
+      data.append("event_end", eventEnd);
+      data.append("event_address", eventAddress);
+    }
     try {
       await api.put(`/blogs/${id}`, data, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -209,7 +229,7 @@ const EditBlogPage = () => {
             <label className="block text-sm font-semibold mb-2">Imagen 1</label>
             {existingImages.image_url_1 && (
               <div className="mb-2 flex items-center gap-2">
-                <Image src={getImageUrl(existingImages.image_url_1)} alt="Imagen 1" width={96} height={96} className="h-24 rounded" />
+                <Image src={imageUrl(existingImages.image_url_1)} alt="Imagen 1" width={96} height={96} className="h-24 rounded" />
                 <button
                   type="button"
                   onClick={() => handleRemoveExistingImage("image_url_1")}
@@ -225,7 +245,7 @@ const EditBlogPage = () => {
             <label className="block text-sm font-semibold mb-2">Imagen 2</label>
             {existingImages.image_url_2 && (
               <div className="mb-2 flex items-center gap-2">
-                <Image src={getImageUrl(existingImages.image_url_2)} alt="Imagen 2" width={96} height={96} className="h-24 rounded" />
+                <Image src={imageUrl(existingImages.image_url_2)} alt="Imagen 2" width={96} height={96} className="h-24 rounded" />
                 <button
                   type="button"
                   onClick={() => handleRemoveExistingImage("image_url_2")}
@@ -238,6 +258,25 @@ const EditBlogPage = () => {
             <input type="file" name="image_url_2" accept="image/*" onChange={handleImageChange} />
           </div>
         </div>
+        {/* Campos de evento si la categoría es Eventos */}
+        {isEvent && (
+          <div className="bg-orange-50 border-l-4 border-orange-400 rounded-xl p-4 mb-4 flex flex-col gap-4 animate-fade-in">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1"><CalendarDays className="w-4 h-4" />Fecha y hora de inicio</label>
+                <input type="datetime-local" value={eventStart} onChange={e => setEventStart(e.target.value)} className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400" />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1"><CalendarDays className="w-4 h-4" />Fecha y hora de fin</label>
+                <input type="datetime-local" value={eventEnd} onChange={e => setEventEnd(e.target.value)} className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1"><MapPin className="w-4 h-4" />Dirección del evento</label>
+              <input type="text" value={eventAddress} onChange={e => setEventAddress(e.target.value)} className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400" placeholder="Ej: Plaza principal, Bogotá" />
+            </div>
+          </div>
+        )}
         <div className="flex gap-4 mt-8">
           <button
             type="submit"
@@ -272,4 +311,4 @@ const EditBlogPage = () => {
   );
 };
 
-export default EditBlogPage; 
+export default withAuthProtection(EditBlogPage, { requiredRole: 'artesano' }); 

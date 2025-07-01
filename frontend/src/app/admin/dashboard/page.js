@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { Users, Package, ShoppingCart, Clock, ArrowRight, ExternalLink, Store, Settings, ListOrdered, ShieldCheck, RefreshCw, Crown, UserCheck, AlertTriangle, ArrowLeft, UserX } from 'lucide-react';
+import { Users, Package, ShoppingCart, Clock, ArrowRight, ExternalLink, Store, Settings, ListOrdered, ShieldCheck, RefreshCw, Crown, UserCheck, AlertTriangle, ArrowLeft, UserX, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -156,6 +156,17 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
+        {stats.products.lowStock > 0 && (
+          <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded flex items-center gap-4 animate-pulse">
+            <AlertTriangle className="w-8 h-8 text-red-500" />
+            <div className="flex-1">
+              <span className="font-bold text-red-700">¡Hay {stats.products.lowStock} producto(s) con stock bajo!</span>
+              <p className="text-red-700 text-sm">Reabastece estos productos para evitar quiebres de inventario.</p>
+            </div>
+            <Link href="/admin/products" className="btn bg-red-500 text-white font-bold px-4 py-2 rounded shadow hover:bg-red-600 transition">Ver productos</Link>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard 
             icon={<Users size={24} />} 
@@ -227,6 +238,13 @@ const AdminDashboardPage = () => {
                     gradient="from-pink-500 to-rose-500"
                 />
                 <AdminDashboardCard
+                    icon={Edit3}
+                    title="Crear Blog de Administrador"
+                    description="Redacta y publica un blog oficial como administrador. Ideal para comunicados, tutoriales o anuncios."
+                    link="/admin/blogs/new"
+                    gradient="from-amber-500 to-orange-500"
+                />
+                <AdminDashboardCard
                     icon={Package}
                     title="Gestionar Productos"
                     description="Supervisa el catálogo completo de productos, edita detalles y gestiona el inventario."
@@ -239,6 +257,14 @@ const AdminDashboardPage = () => {
                     description="Revisa el historial de pedidos, estados de entrega y detalles de las transacciones."
                     link="/admin/orders"
                     gradient="from-sky-500 to-blue-500"
+                />
+                {/* Tarjeta de noticias */}
+                <AdminDashboardCard
+                    icon={ListOrdered}
+                    title="Gestionar Noticias"
+                    description="Crea, edita o elimina noticias de la plataforma. Supervisa comentarios, likes y referencias."
+                    link="/admin/news"
+                    gradient="from-pink-500 to-rose-500"
                 />
             </div>
         </div>

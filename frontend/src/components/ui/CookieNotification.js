@@ -11,10 +11,7 @@ export default function CookieNotification() {
         if (!accepted) {
           setVisible(true);
           const timer = setTimeout(() => setVisible(false), 10000);
-          console.log('cookie inicia');
           return () => clearTimeout(timer);
-        } else {
-          console.log('cookie inicia');
         }
       }
     } catch (err) {

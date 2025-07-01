@@ -164,7 +164,7 @@ const ProductDetailPage = ({ params }) => {
               </div>
 
               {/* Título */}
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 mb-4 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-bold text-amber-700 font-pacifico mb-4 leading-tight">
                 {product.name}
               </h1>
 

@@ -211,8 +211,8 @@ const getMyBlogs = async (req, res) => {
 const createBlog = async (req, res) => {
   try {
     const user = req.user;
-    if (!user || user.role !== 'artesano') {
-      return res.status(403).json({ message: 'Solo los artesanos pueden crear blogs.' });
+    if (!user || (user.role !== 'artesano' && user.role !== 'admin')) {
+      return res.status(403).json({ message: 'Solo los artesanos o administradores pueden crear blogs.' });
     }
     const { title, content, categories } = req.body;
     // Validaciones básicas
@@ -231,11 +231,15 @@ const createBlog = async (req, res) => {
     if (req.files && req.files.image_url_2 && req.files.image_url_2[0]) {
       image_url_2 = '/uploads/blogs/' + req.files.image_url_2[0].filename;
     }
+    // Manejo de campos de evento
+    const event_start = req.body.event_start || null;
+    const event_end = req.body.event_end || null;
+    const event_address = req.body.event_address || null;
     // 1. Crear el blog (estado 'pending')
     const insertBlog = await pool.query(
-      `INSERT INTO blogs (author_id, title, content, image_url_1, image_url_2, status)
-       VALUES ($1, $2, $3, $4, $5, 'pending') RETURNING *`,
-      [user.id, title, content, image_url_1, image_url_2]
+      `INSERT INTO blogs (author_id, title, content, image_url_1, image_url_2, status, event_start, event_end, event_address)
+       VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7, $8) RETURNING *`,
+      [user.id, title, content, image_url_1, image_url_2, event_start, event_end, event_address]
     );
     const blog = insertBlog.rows[0];
     // 2. Asignar categorías (si se envían)
@@ -284,10 +288,14 @@ const updateBlog = async (req, res) => {
     if (req.files && req.files.image_url_2 && req.files.image_url_2[0]) {
       image_url_2 = '/uploads/blogs/' + req.files.image_url_2[0].filename;
     }
+    // Manejo de campos de evento
+    const event_start = req.body.event_start || null;
+    const event_end = req.body.event_end || null;
+    const event_address = req.body.event_address || null;
     // 3. Actualizar blog
     await pool.query(
-      `UPDATE blogs SET title = $1, content = $2, image_url_1 = $3, image_url_2 = $4, updated_at = NOW() WHERE id = $5`,
-      [title, content, image_url_1, image_url_2, id]
+      `UPDATE blogs SET title = $1, content = $2, image_url_1 = $3, image_url_2 = $4, event_start = $5, event_end = $6, event_address = $7, updated_at = NOW() WHERE id = $8`,
+      [title, content, image_url_1, image_url_2, event_start, event_end, event_address, id]
     );
     // 4. Actualizar categorías
     await pool.query('DELETE FROM blog_post_to_category WHERE blog_id = $1', [id]);
@@ -553,7 +561,7 @@ const getBlogCommentsByAuthor = async (req, res) => {
     }
     // 2. Obtener todos los comentarios de esos blogs
     const commentsResult = await pool.query(
-      `SELECT c.id, c.comment, c.created_at, c.blog_id, b.title as blog_title, u.id as user_id, u.name as user_name, u.avatar as user_avatar
+      `SELECT c.id, c.comment, c.created_at, c.blog_id, b.title as blog_title, b.author_id as blog_author_id, u.id as user_id, u.name as user_name, u.avatar as user_avatar
        FROM blog_comments c
        JOIN blogs b ON c.blog_id = b.id
        JOIN users u ON c.user_id = u.id
@@ -565,6 +573,58 @@ const getBlogCommentsByAuthor = async (req, res) => {
     res.json({ comments: commentsResult.rows });
   } catch (error) {
     console.error('Error obteniendo comentarios de blogs del artesano:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Participar en evento de blog
+const participateInBlogEvent = async (req, res) => {
+  try {
+    const user = req.user;
+    const { id } = req.params;
+    // Verificar que el blog existe y es evento
+    const blogResult = await pool.query('SELECT * FROM blogs WHERE id = $1 AND event_start IS NOT NULL AND event_end IS NOT NULL AND event_address IS NOT NULL', [id]);
+    if (blogResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Este blog no es un evento válido.' });
+    }
+    // Intentar insertar participante (solo una vez por usuario)
+    await pool.query(
+      `INSERT INTO blog_event_participants (blog_id, user_id)
+       VALUES ($1, $2)
+       ON CONFLICT (blog_id, user_id) DO NOTHING`,
+      [id, user.id]
+    );
+    res.status(201).json({ message: '¡Gracias por participar en el evento!' });
+  } catch (error) {
+    console.error('Error participando en evento de blog:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Obtener número de participantes de evento de blog
+const getBlogEventParticipants = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Contar participantes
+    const countResult = await pool.query('SELECT COUNT(*) FROM blog_event_participants WHERE blog_id = $1', [id]);
+    // Por defecto mínimo 5
+    const count = Math.max(5, parseInt(countResult.rows[0].count, 10));
+    res.json({ count });
+  } catch (error) {
+    console.error('Error obteniendo participantes de evento de blog:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Saber si el usuario ya participó en el evento de blog
+const hasParticipatedInBlogEvent = async (req, res) => {
+  try {
+    const user = req.user;
+    const { id } = req.params;
+    const result = await pool.query('SELECT 1 FROM blog_event_participants WHERE blog_id = $1 AND user_id = $2', [id, user.id]);
+    res.json({ participated: result.rows.length > 0 });
+  } catch (error) {
+    console.error('Error comprobando participación en evento de blog:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
@@ -586,4 +646,7 @@ module.exports = {
   approveBlog,
   setBlogPending,
   getBlogCommentsByAuthor,
+  participateInBlogEvent,
+  getBlogEventParticipants,
+  hasParticipatedInBlogEvent,
 }; 

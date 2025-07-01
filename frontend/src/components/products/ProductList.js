@@ -159,9 +159,9 @@ const ProductList = () => {
             <div className="text-center text-red-500">{error}</div>
         ) : (
             <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8 overflow-x-auto">
                     {products.length > 0 ? (
-                        products.map((product) => (
+                        products.filter(product => product.status === 'active').map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))
                     ) : (

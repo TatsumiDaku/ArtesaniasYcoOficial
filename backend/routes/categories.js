@@ -20,7 +20,13 @@ router.get('/', categoriesController.getAllCategories);
 // --- Rutas de Administrador ---
 const adminRouter = express.Router();
 
-adminRouter.use(authenticateToken, isAdmin);
+adminRouter.use(authenticateToken, (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'artesano')) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador o artesano.' });
+  }
+});
 
 // Obtener todas las categorías con estadísticas
 adminRouter.get('/', categoriesController.getCategoriesWithStats);

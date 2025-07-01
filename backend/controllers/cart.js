@@ -31,7 +31,6 @@ const getCart = async (req, res) => {
 // Agregar un producto al carrito
 const addToCart = async (req, res) => {
   try {
-    console.log('[addToCart] Received request body:', req.body); // Log para depuración
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       console.error('[addToCart] Validation errors:', errors.array()); // Log para depuración

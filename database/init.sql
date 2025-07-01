@@ -11,6 +11,7 @@ CREATE TABLE users (
     
     -- Nuevos campos para el flujo de aprobación y estado
     status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'pending_approval', 'rejected', 'banned')),
+    featured BOOLEAN DEFAULT FALSE,
     
     -- Campos generales y de cliente
     phone VARCHAR(50),
@@ -59,7 +60,7 @@ CREATE TABLE products (
     images TEXT[],
     category_id INTEGER REFERENCES categories(id),
     artisan_id INTEGER REFERENCES users(id),
-    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'inactive')),
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'inactive')), -- Solo los productos con status = 'active' serán visibles en público
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -69,7 +70,7 @@ CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     total DECIMAL(10,2) NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'confirmed', 'shipped', 'in_transit', 'delivered', 'cancelled')), -- Flujo: pending → paid → confirmed → shipped → in_transit → delivered (o cancelled)
     shipping_address TEXT NOT NULL,
     payment_method VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -137,7 +138,10 @@ CREATE TABLE blogs (
     content TEXT NOT NULL CHECK (char_length(content) <= 1500),
     image_url_1 TEXT,
     image_url_2 TEXT,
-   status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'inactive')),
+    status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('active', 'pending', 'inactive')),
+    event_start TIMESTAMP NULL, -- Fecha y hora de inicio del evento (solo si es evento)
+    event_end TIMESTAMP NULL,   -- Fecha y hora de fin del evento (solo si es evento)
+    event_address TEXT,         -- Dirección del evento (solo si es evento)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -168,6 +172,106 @@ CREATE TABLE blog_ratings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(blog_id, user_id)
 );
+
+-- =================================================================
+-- FUNCIONALIDAD DE NOTICIAS (ArtesaniasYCo)
+-- =================================================================
+
+-- Tabla de noticias
+CREATE TABLE news (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author_id INTEGER REFERENCES users(id) ON DELETE SET NULL, -- Solo admins
+    main_image TEXT, -- Imagen superior principal
+    content_blocks TEXT[], -- Máximo 15 bloques de texto (cada bloque es un párrafo o sección)
+    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    event_start TIMESTAMP NULL, -- Fecha y hora de inicio del evento (solo si es evento)
+    event_end TIMESTAMP NULL,   -- Fecha y hora de fin del evento (solo si es evento)
+    event_address TEXT,         -- Dirección del evento (solo si es evento)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Restricción para máximo 15 bloques de texto
+ALTER TABLE news ADD CONSTRAINT content_blocks_length CHECK (array_length(content_blocks, 1) <= 15);
+
+-- Tabla de participantes de eventos
+CREATE TABLE news_event_participants (
+    id SERIAL PRIMARY KEY,
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(news_id, user_id)
+);
+
+-- Tabla de likes/dislikes de noticias
+CREATE TABLE news_likes (
+    id SERIAL PRIMARY KEY,
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    is_like BOOLEAN NOT NULL, -- true = like, false = dislike
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(news_id, user_id)
+);
+
+-- Tabla de comentarios de noticias
+CREATE TABLE news_comments (
+    id SERIAL PRIMARY KEY,
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =================================================================
+-- REFERENCIAS ARTESANIASYCO
+-- =================================================================
+-- Relación noticia <-> artesano (opcional, una noticia puede referenciar a varios artesanos)
+CREATE TABLE news_to_artisan (
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    artisan_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (news_id, artisan_id)
+);
+-- Relación noticia <-> producto
+CREATE TABLE news_to_product (
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    PRIMARY KEY (news_id, product_id)
+);
+-- Relación noticia <-> blog
+CREATE TABLE news_to_blog (
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    blog_id INTEGER REFERENCES blogs(id) ON DELETE CASCADE,
+    PRIMARY KEY (news_id, blog_id)
+);
+
+-- =================================================================
+-- Tablas para la funcionalidad de Noticias
+-- =================================================================
+
+-- Tabla de categorías de noticias
+CREATE TABLE news_categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de unión noticia <-> categoría
+CREATE TABLE news_to_category (
+    news_id INTEGER REFERENCES news(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES news_categories(id) ON DELETE CASCADE,
+    PRIMARY KEY (news_id, category_id)
+);
+
+-- Categorías iniciales para noticias (puedes personalizar)
+INSERT INTO news_categories (name, description) VALUES
+('Actualidad', 'Noticias y novedades recientes'),
+('Eventos', 'Ferias, exposiciones y actividades'),
+('Reconocimientos', 'Premios y logros'),
+('Comunidad', 'Historias y participación comunitaria'),
+('Tendencias', 'Tendencias y novedades del sector');
 
 -- =================================================================
 -- Triggers para actualizar automáticamente los timestamps
@@ -213,6 +317,15 @@ BEFORE UPDATE ON blog_comments
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
+CREATE TRIGGER set_news_timestamp
+BEFORE UPDATE ON news
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
+
+CREATE TRIGGER set_news_comments_timestamp
+BEFORE UPDATE ON news_comments
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
 
 -- Insertar datos iniciales
 INSERT INTO categories (name, description) VALUES 
@@ -234,4 +347,35 @@ INSERT INTO blog_categories (name, description) VALUES
 ('Historias', 'Historias de vida y tradición'),
 ('Materiales', 'Materiales y herramientas'),
 ('Eventos', 'Ferias, exposiciones y eventos'),
-('Inspiración', 'Fuentes de inspiración y creatividad'); 
+('Inspiración', 'Fuentes de inspiración y creatividad');
+
+-- Tabla de participantes de eventos de blog
+CREATE TABLE IF NOT EXISTS blog_event_participants (
+    id SERIAL PRIMARY KEY,
+    blog_id INTEGER REFERENCES blogs(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(blog_id, user_id)
+);
+
+-- =============================
+-- Índices para estadísticas
+-- =============================
+CREATE INDEX IF NOT EXISTS idx_order_items_product_created_at ON order_items (product_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status);
+CREATE INDEX IF NOT EXISTS idx_products_artisan_id ON products (artisan_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_product_id ON reviews (product_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews (created_at);
+
+-- Tabla de historial de cambios de estado de pedidos
+CREATE TABLE IF NOT EXISTS order_status_history (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    old_status VARCHAR(32),
+    new_status VARCHAR(32) NOT NULL,
+    changed_by INTEGER REFERENCES users(id),
+    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Asegu

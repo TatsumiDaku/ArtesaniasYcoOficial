@@ -8,6 +8,7 @@ import { Search, ShoppingCart, Menu as Burger, X } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useState } from 'react';
 import { UserCircle, Heart } from 'lucide-react';
+import imageUrl from '@/utils/imageUrl';
 
 const Header = () => {
   const { user, isAuthenticated } = useAuth();
@@ -17,12 +18,15 @@ const Header = () => {
     { name: 'Productos', href: '/products' },
     { name: 'Tiendas', href: '/shops' },
     { name: 'Blogs', href: '/blog' },
-    { name: 'Noticias', href: '/noticias' },
+    { name: 'Noticias', href: '/news' },
     // { name: 'Sobre Nosotros', href: '/sobre-nosotros' },
     // { name: 'Ayuda', href: '/ayuda' },
   ];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Simulación: número de productos con stock bajo (en producción, obtener de contexto o props)
+  const lowStockCount = user && (user.role === 'admin' || user.role === 'artesano') ? (user.stats?.products?.lowStock || 0) : 0;
 
   // Función para obtener el color de fondo del indicador según el rol
   const getIndicatorBackground = () => {
@@ -103,8 +107,11 @@ const Header = () => {
           {/* Desktop nav */}
           <nav className="hidden lg:flex lg:space-x-8">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-black hover:text-primary transition-colors duration-200">
+              <Link key={link.name} href={link.href} className="text-black hover:text-primary transition-colors duration-200 relative">
                 {link.name}
+                {link.name === 'Productos' && lowStockCount > 0 && (
+                  <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 animate-pulse shadow">{lowStockCount}</span>
+                )}
               </Link>
             ))}
           </nav>
@@ -144,7 +151,7 @@ const Header = () => {
           {/* Overlay oscuro, solo a la izquierda del panel */}
           <div className="flex-1 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
           {/* Panel lateral completamente opaco */}
-          <div className="w-full max-w-xs h-full bg-white shadow-2xl p-6 flex flex-col gap-6 animate-slide-in-right relative text-black z-[101]">
+          <div className="w-full max-w-xs h-full bg-white shadow-2xl p-6 flex flex-col gap-6 animate-slide-in-right relative text-black z-[101] overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-amber-400 scrollbar-track-orange-100">
             <button
               className="absolute top-4 right-4 p-2 rounded-full bg-white hover:bg-gray-100 focus:outline-none shadow"
               aria-label="Cerrar menú"
@@ -159,7 +166,7 @@ const Header = () => {
             {isAuthenticated && user && (
               <div className="flex flex-col items-center gap-2 mt-2 mb-4">
                 <Image
-                  src={user.avatar ? getImageUrl(user.avatar) : '/static/default-avatar.png'}
+                  src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
                   alt="Avatar"
                   width={56}
                   height={56}
@@ -171,8 +178,11 @@ const Header = () => {
             )}
             <nav className="flex flex-col gap-2 mt-2">
               {navLinks.map((link) => (
-                <Link key={link.name} href={link.href} className="text-base font-medium text-gray-800 hover:text-primary py-2 px-3 rounded-lg transition-colors">
+                <Link key={link.name} href={link.href} className="text-base font-medium text-gray-800 hover:text-primary py-2 px-3 rounded-lg transition-colors relative">
                   {link.name}
+                  {link.name === 'Productos' && lowStockCount > 0 && (
+                    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 animate-pulse shadow">{lowStockCount}</span>
+                  )}
                 </Link>
               ))}
             </nav>
@@ -181,11 +191,6 @@ const Header = () => {
                 <Link href={user.role === 'admin' ? '/admin/dashboard' : user.role === 'artesano' ? '/artisan/products' : '/dashboard'} className="flex items-center gap-2 text-base font-semibold text-orange-700 hover:text-orange-900">
                   <UserCircle className="w-5 h-5" /> Mi Panel
                 </Link>
-                {user.role === 'cliente' && (
-                  <Link href="/dashboard/favorites" className="flex items-center gap-2 text-base text-orange-600 hover:text-orange-800">
-                    <Heart className="w-5 h-5" /> Mis Favoritos
-                  </Link>
-                )}
                 {user.role === 'artesano' && (
                   <Link href="/artisan/profile" className="flex items-center gap-2 text-base text-orange-600 hover:text-orange-800">
                     <UserCircle className="w-5 h-5" /> Editar Perfil

@@ -179,3 +179,23 @@
 #### Iconografía
 - **Lucide React**: Iconos consistentes con `w-4 h-4`, `w-5 h-5`, `w-6 h-6`, `w-8 h-8`
 - **Colores**: `text-white` para fondos oscuros, `text-[color]-500` para fondos claros 
+
+## Patrón para Toasts Informativos en Formularios
+
+Para mostrar toasts informativos en campos de formularios sin perder el foco del input, utiliza un estado `shownFields` para que el toast solo se muestre una vez por campo. Así evitas que el usuario pierda el foco y la experiencia es fluida.
+
+**Ejemplo de implementación en React:**
+
+```js
+const [shownFields, setShownFields] = useState({});
+const handleFieldInfo = (field) => {
+  if (shownFields[field]) return;
+  setShownFields((prev) => ({ ...prev, [field]: true }));
+  toast("Mensaje informativo", { icon: "ℹ️" });
+};
+// En el input:
+<input onFocus={() => handleFieldInfo('nombreCampo')} ... />
+```
+
+- El toast solo se muestra la primera vez que el usuario enfoca el campo.
+- Así se evita el bug de pérdida de foco y el usuario puede escribir normalmente. 

@@ -72,7 +72,8 @@ const ArtisanProductsPage = () => {
   };
 
   const handleRefresh = () => {
-    fetchArtisanData(1);
+    toast.loading('Actualizando productos...');
+    fetchArtisanData(1).finally(() => toast.dismiss());
   };
 
   const handleDelete = useCallback(async (productId) => {
@@ -104,7 +105,19 @@ const ArtisanProductsPage = () => {
     },
     { header: 'Nombre', accessorKey: 'name' },
     { header: 'Precio', accessorKey: 'price', cell: ({ row }) => `$${parseFloat(row.original.price || 0).toLocaleString('es-CO')} COP` },
-    { header: 'Stock', accessorKey: 'stock' },
+    {
+      header: 'Stock',
+      accessorKey: 'stock',
+      cell: ({ row }) => {
+        const stock = row.original.stock;
+        let color = 'text-green-700 bg-green-50 border border-green-200';
+        if (stock <= 2) color = 'text-red-700 bg-red-100 border border-red-200 animate-pulse';
+        else if (stock <= 5) color = 'text-yellow-800 bg-yellow-100 border border-yellow-200';
+        return (
+          <span className={`px-3 py-1.5 inline-flex text-xs font-bold rounded-full shadow-sm ${color}`}>{stock}</span>
+        );
+      }
+    },
     {
       header: 'Estado',
       accessorKey: 'status',
@@ -262,10 +275,15 @@ const ArtisanProductsPage = () => {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleRefresh}
-                  className="p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-colors"
+                  className={`p-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-200 transition-colors flex items-center justify-center ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
                   title="Actualizar lista"
+                  disabled={loading}
                 >
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
                   <RefreshCw className="w-5 h-5" />
+                  )}
                 </button>
                 <Link 
                   href="/artisan/products/new"

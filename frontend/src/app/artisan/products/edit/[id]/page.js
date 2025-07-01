@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import { ArrowLeft, Save, Image as ImageIcon, Trash2, Plus } from 'lucide-react';
 import AuthContext from '@/context/AuthContext';
-import { getImageUrl } from '@/utils/imageUrl';
+import imageUrl from '@/utils/imageUrl';
 
 const EditProductPage = () => {
   const { user } = useContext(AuthContext);
@@ -99,20 +99,29 @@ const EditProductPage = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Validar stock
+    let stockValue = parseInt(formData.stock, 10);
+    if (isNaN(stockValue) || stockValue < 0) stockValue = 0;
     const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
-    
+    Object.keys(formData).forEach(key => {
+      if (key === 'stock') {
+        data.append('stock', stockValue);
+      } else {
+        data.append(key, formData[key]);
+      }
+    });
     // Adjuntar imágenes nuevas
     newImages.forEach(image => data.append('images', image));
-
     // Adjuntar imágenes existentes que se conservan
     data.append('existingImages', JSON.stringify(existingImageUrls));
-
     try {
       await api.put(`/products/${id}`, data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Producto actualizado con éxito.');
+      if (stockValue <= 3) {
+        toast('¡Atención! El producto ha quedado con stock bajo. Considera reabastecer pronto.', { icon: '⚠️' });
+      }
       router.push('/artisan/products');
       router.refresh();
     } catch (error) {
@@ -295,7 +304,7 @@ const EditProductPage = () => {
                     {existingImageUrls.map((url, idx) => (
                       <div key={url + '-' + idx} className="relative group">
                         <Image 
-                          src={getImageUrl(url)} 
+                          src={imageUrl(url)} 
                           alt="Imagen existente" 
                           width={200} 
                           height={200} 

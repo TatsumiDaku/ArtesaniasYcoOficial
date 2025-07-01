@@ -89,4 +89,25 @@ router.put('/:id/approve-artisan', authenticateToken, param('id').isInt(), (req,
     next();
 }, usersController.approveArtisan);
 
+// Buscar artesanos por nombre o nickname (para referencias en noticias)
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    let result;
+    if (!query || query.length < 2) {
+      result = await req.app.get('db').query(
+        `SELECT id, name, nickname, avatar, email FROM users WHERE role = 'artesano' ORDER BY created_at DESC LIMIT 10`
+      );
+    } else {
+      result = await req.app.get('db').query(
+        `SELECT id, name, nickname, avatar, email FROM users WHERE role = 'artesano' AND (LOWER(name) LIKE LOWER($1) OR LOWER(nickname) LIKE LOWER($1)) LIMIT 10`,
+        [`%${query}%`]
+      );
+    }
+    res.json(Array.isArray(result.rows) ? result.rows : []);
+  } catch (err) {
+    res.status(500).json({ error: true, message: 'Error al buscar artesanos', details: err.message });
+  }
+});
+
 module.exports = router; 

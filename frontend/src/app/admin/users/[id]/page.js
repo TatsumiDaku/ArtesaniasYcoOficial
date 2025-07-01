@@ -11,7 +11,7 @@ import Image from 'next/image';
 import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import PasswordInput from '@/components/ui/PasswordInput';
-import { getImageUrl } from '@/utils/imageUrl';
+import imageUrl from '@/utils/imageUrl';
 
 const AdminUserDetailPage = () => {
   const params = useParams();
@@ -138,7 +138,7 @@ const AdminUserDetailPage = () => {
           <div className="flex items-center gap-6">
             <div className="relative group">
               <Image 
-                src={user.avatar ? getImageUrl(user.avatar) : '/static/LogoIncial.png'}
+                src={user.avatar ? imageUrl(user.avatar) : '/static/LogoIncial.png'}
                 alt="Avatar"
                 width={100}
                 height={100}

@@ -5,11 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import api from '@/utils/api';
 import ProductCard from '@/components/products/ProductCard';
-import { ChevronRight, Sparkles, Gift, Globe, Leaf } from 'lucide-react';
+import { ChevronRight, Sparkles, Gift, Globe, Leaf, Newspaper, ArrowRight } from 'lucide-react';
 
 const HomePage = () => {
   const [latestProducts, setLatestProducts] = useState([]);
   const [topRatedProducts, setTopRatedProducts] = useState([]);
+  const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,20 +18,30 @@ const HomePage = () => {
     const fetchHomepageData = async () => {
       try {
         setLoading(true);
-        const [latestRes, topRatedRes] = await Promise.all([
-          api.get('/products', { params: { limit: 8 } }), // Orden por defecto es created_at
-          api.get('/products', { params: { limit: 8, sortBy: 'rating' } })
+        const [latestRes, topRatedRes, newsRes] = await Promise.all([
+          api.get('/products', { params: { limit: 8 } }),
+          api.get('/products', { params: { limit: 8, sortBy: 'rating' } }),
+          api.get('/news?order=recent&limit=6')
         ]);
         setLatestProducts(latestRes.data.products);
         setTopRatedProducts(topRatedRes.data.products);
+        // Obtener categorías para cada noticia
+        const newsWithCategories = await Promise.all(newsRes.data.map(async (n) => {
+          try {
+            const catRes = await api.get(`/news/${n.id}/categories`);
+            return { ...n, categories: catRes.data };
+          } catch {
+            return { ...n, categories: [] };
+          }
+        }));
+        setNews(newsWithCategories);
       } catch (err) {
         console.error("Error fetching homepage data:", err);
-        setError('No se pudieron cargar los productos destacados. Por favor, intenta de nuevo más tarde.');
+        setError('No se pudieron cargar los productos o noticias. Por favor, intenta de nuevo más tarde.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchHomepageData();
   }, []);
 
@@ -39,7 +50,7 @@ const HomePage = () => {
       {/* Hero Section */}
       <section className="relative h-[70vh] md:h-[80vh] flex items-center justify-center text-white bg-black">
           <Image 
-              src="/static/artesanias-Inicio.jpg"
+              src="/static/INCIOPAGE.webp"
               alt="Fondo de artesanías colombianas"
               fill
               className="object-cover opacity-60"
@@ -62,6 +73,152 @@ const HomePage = () => {
           </div>
       </section>
       
+      {/* Noticias Destacadas */}
+      <section className="py-16 bg-gradient-to-r from-blue-50 via-pink-50 to-yellow-50">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="flex items-center gap-3 mb-8">
+            <Newspaper className="w-8 h-8 text-indigo-600" />
+            <h2 className="text-3xl md:text-4xl font-bold text-indigo-700">Noticias y Cultura</h2>
+          </div>
+          {/* Carrusel en móviles, grid en desktop */}
+          <div className="flex md:hidden gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+            {news.map(n => {
+              const isEvent = n.categories && n.categories.some(cat => cat.name.toLowerCase().includes('evento'));
+              return (
+                <div key={n.id} className="min-w-[85vw] max-w-xs shadow-lg overflow-hidden flex flex-col h-full snap-center" style={{background:'rgba(255,255,255,0.15)',backdropFilter:'blur(12px) saturate(1.5)'}}>
+                  <div className="relative w-full">
+                    <img
+                      src={n.main_image.startsWith('/') ? n.main_image : `/uploads/news/${n.main_image}`}
+                      alt={n.title}
+                      className="w-full h-36 object-contain bg-white"
+                    />
+                    {/* CHIP DE CATEGORÍA ROBUSTO */}
+                    {(() => {
+                      // 1. categories: array de objetos con name
+                      if (Array.isArray(n.categories) && n.categories.length > 0 && n.categories[0].name) {
+                        const cat = n.categories[0];
+                        const isEvento = cat.name.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{cat.name}</span>
+                        );
+                      }
+                      // 2. category: string
+                      if (typeof n.category === 'string' && n.category.length > 0) {
+                        const isEvento = n.category.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{n.category}</span>
+                        );
+                      }
+                      // 3. category: objeto con name
+                      if (n.category && typeof n.category === 'object' && n.category.name) {
+                        const isEvento = n.category.name.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{n.category.name}</span>
+                        );
+                      }
+                      // 4. tags: array de strings
+                      if (Array.isArray(n.tags) && n.tags.length > 0) {
+                        const tag = n.tags[0];
+                        const isEvento = tag.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{tag}</span>
+                        );
+                      }
+                      // Si no hay nada, mostrar Sin categoría
+                      return <span className="absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg bg-gray-800 text-white">Sin categoría</span>;
+                    })()}
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-xl font-bold text-amber-700 font-pacifico mb-1 line-clamp-2">{n.title}</h3>
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {n.categories && n.categories.length > 0 && n.categories.map(cat => (
+                        <span key={cat.id} className={`px-2 py-0.5 rounded text-xs font-semibold ${cat.name.toLowerCase().includes('evento') ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}`}>{cat.name}</span>
+                      ))}
+                    </div>
+                    {n.content_blocks && n.content_blocks.length > 0 && (
+                      <p className="text-gray-600 text-md mb-4 line-clamp-3">{n.content_blocks[0].slice(0, 140)}{n.content_blocks[0].length > 140 ? '...' : ''}</p>
+                    )}
+                    <div className="mt-auto pt-2">
+                      <Link href={`/news/${n.id}`} className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-all">Leer noticia <ArrowRight className="w-4 h-4" /></Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {news.map(n => {
+              const isEvent = n.categories && n.categories.some(cat => cat.name.toLowerCase().includes('evento'));
+              return (
+                <div key={n.id} className="shadow-lg overflow-hidden flex flex-col h-full" style={{background:'rgba(255,255,255,0.15)',backdropFilter:'blur(12px) saturate(1.5)'}}>
+                  <div className="relative w-full">
+                    <img
+                      src={n.main_image.startsWith('/') ? n.main_image : `/uploads/news/${n.main_image}`}
+                      alt={n.title}
+                      className="w-full h-36 object-contain bg-white"
+                    />
+                    {/* CHIP DE CATEGORÍA ROBUSTO */}
+                    {(() => {
+                      // 1. categories: array de objetos con name
+                      if (Array.isArray(n.categories) && n.categories.length > 0 && n.categories[0].name) {
+                        const cat = n.categories[0];
+                        const isEvento = cat.name.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{cat.name}</span>
+                        );
+                      }
+                      // 2. category: string
+                      if (typeof n.category === 'string' && n.category.length > 0) {
+                        const isEvento = n.category.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{n.category}</span>
+                        );
+                      }
+                      // 3. category: objeto con name
+                      if (n.category && typeof n.category === 'object' && n.category.name) {
+                        const isEvento = n.category.name.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{n.category.name}</span>
+                        );
+                      }
+                      // 4. tags: array de strings
+                      if (Array.isArray(n.tags) && n.tags.length > 0) {
+                        const tag = n.tags[0];
+                        const isEvento = tag.toLowerCase().includes('evento');
+                        return (
+                          <span className={`absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg ${isEvento ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white'}`}>{tag}</span>
+                        );
+                      }
+                      // Si no hay nada, mostrar Sin categoría
+                      return <span className="absolute top-2 right-2 z-20 px-3 py-1 rounded text-xs font-bold shadow-lg bg-gray-800 text-white">Sin categoría</span>;
+                    })()}
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-xl font-bold text-amber-700 font-pacifico mb-1 line-clamp-2">{n.title}</h3>
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {n.categories && n.categories.length > 0 && n.categories.map(cat => (
+                        <span key={cat.id} className={`px-2 py-0.5 rounded text-xs font-semibold ${cat.name.toLowerCase().includes('evento') ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}`}>{cat.name}</span>
+                      ))}
+                    </div>
+                    {n.content_blocks && n.content_blocks.length > 0 && (
+                      <p className="text-gray-600 text-md mb-4 line-clamp-3">{n.content_blocks[0].slice(0, 140)}{n.content_blocks[0].length > 140 ? '...' : ''}</p>
+                    )}
+                    <div className="mt-auto pt-2">
+                      <Link href={`/news/${n.id}`} className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition-all">Leer noticia <ArrowRight className="w-4 h-4" /></Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-center mt-10">
+            <Link href="/news" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg text-lg transition-all">
+              Ver todas las noticias <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+      
       {/* Novedades Section */}
       <ProductSection 
         title="Novedades"
@@ -70,6 +227,7 @@ const HomePage = () => {
         loading={loading}
         error={error}
         link="/products"
+        carouselMobile
       />
       
       {/* Why Support Section */}
@@ -178,7 +336,7 @@ const HomePage = () => {
   );
 };
 
-const ProductSection = ({ title, subtitle, products, loading, error, link }) => {
+const ProductSection = ({ title, subtitle, products, loading, error, link, carouselMobile }) => {
   if (error && (!products || products.length === 0)) return null;
 
   return (
@@ -193,18 +351,30 @@ const ProductSection = ({ title, subtitle, products, loading, error, link }) => 
             Ver todos <ChevronRight className="w-4 h-4"/>
           </Link>
         </div>
-        
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          carouselMobile ? (
+            <div className="flex sm:hidden gap-6 overflow-x-auto pb-4 snap-x snap-mandatory">
+              {products.map(product => (
+                <div key={product.id} className="min-w-[85vw] max-w-xs snap-center">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          ) : null
+        ) : null}
+        {/* Grid para desktop */}
+        {(!loading && products.length > 0) && (
+          <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        ) : (
+        )}
+        {(!loading && products.length === 0) && (
           <p className="text-center text-gray-500">No hay productos para mostrar en esta sección.</p>
         )}
       </div>

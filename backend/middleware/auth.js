@@ -11,14 +11,11 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
     // Verificar si el usuario existe
     const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
-    
     if (userResult.rows.length === 0) {
       return res.status(401).json({ message: 'Usuario no válido' });
     }
-
     req.user = userResult.rows[0];
     next();
   } catch (error) {

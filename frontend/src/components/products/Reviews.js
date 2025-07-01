@@ -102,7 +102,7 @@ const Reviews = ({ productId }) => {
       </div>
       
       {/* Form to add a review */}
-      {isAuthenticated && user?.role === 'cliente' && (
+      {isAuthenticated && (user?.role === 'cliente' || user?.role === 'admin') && (
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
           <form onSubmit={handleReviewSubmit}>
             <h3 className="text-xl font-semibold mb-4 text-gray-800">Deja tu opinión</h3>

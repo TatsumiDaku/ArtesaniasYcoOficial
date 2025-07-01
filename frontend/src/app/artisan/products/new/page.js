@@ -68,7 +68,7 @@ const NewProductPage = () => {
       return;
     }
     try {
-      const res = await api.post('/categories', { name: newCategoryName });
+      const res = await api.post('/categories/admin', { name: newCategoryName });
       toast.success('Categoría creada con éxito.');
       setCategoryModalOpen(false);
       setNewCategoryName('');
@@ -98,6 +98,9 @@ const NewProductPage = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Producto creado con éxito.');
+      if (parseInt(formData.stock, 10) <= 3) {
+        toast('¡Atención! El producto ha sido creado con stock bajo. Considera reabastecer pronto.', { icon: '⚠️' });
+      }
       router.push('/artisan/products');
     } catch (error) {
       toast.error('Error al crear el producto.');

@@ -143,4 +143,25 @@ router.post('/:productId/reviews', authenticateToken, async (req, res) => {
   }
 });
 
+// Buscar productos por nombre (para referencias en noticias)
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    let result;
+    if (!query || query.length < 2) {
+      result = await req.app.get('db').query(
+        `SELECT id, name, images, price FROM products ORDER BY created_at DESC LIMIT 10`
+      );
+    } else {
+      result = await req.app.get('db').query(
+        `SELECT id, name, images, price FROM products WHERE LOWER(name) LIKE LOWER($1) LIMIT 10`,
+        [`%${query}%`]
+      );
+    }
+    res.json(Array.isArray(result.rows) ? result.rows : []);
+  } catch (err) {
+    res.status(500).json({ error: true, message: 'Error al buscar productos', details: err.message });
+  }
+});
+
 module.exports = router; 

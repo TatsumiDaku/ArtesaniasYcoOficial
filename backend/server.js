@@ -8,6 +8,8 @@ require('dotenv').config();
 const pool = require('./config/database');
 const cluster = require('cluster');
 const os = require('os');
+const path = require('path');
+const cron = require('node-cron');
 
 // Rutas (se crearán posteriormente)
 const authRoutes = require('./routes/auth');
@@ -20,6 +22,7 @@ const statsRoutes = require('./routes/stats');
 const favoritesRoutes = require('./routes/favorites');
 const shopsRoutes = require('./routes/shops');
 const blogsRoutes = require('./routes/blogs');
+const newsRoutes = require('./routes/news');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -73,7 +76,7 @@ if (cluster.isMaster) {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
-  app.use('/uploads', express.static('uploads'));
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
   // Rutas (se activarán cuando existan los archivos)
   app.use('/api/auth', authRoutes);
@@ -86,6 +89,7 @@ if (cluster.isMaster) {
   app.use('/api/favorites', favoritesRoutes);
   app.use('/api/shops', shopsRoutes);
   app.use('/api/blogs', blogsRoutes);
+  app.use('/api/news', newsRoutes);
 
   // Ruta de salud
   app.get('/health', (req, res) => {
@@ -123,6 +127,20 @@ if (cluster.isMaster) {
       console.error('❌ Error al conectar con la base de datos PostgreSQL:', err.message);
     }
     // Aquí puedes agregar más comprobaciones de otros servicios si los tienes
+
+    // Tarea programada: cada 5 minutos desactiva eventos finalizados
+    cron.schedule('*/5 * * * *', async () => {
+      try {
+        const result = await pool.query(
+          "UPDATE news SET status = 'inactive' WHERE event_end IS NOT NULL AND event_end < NOW() AND status != 'inactive'"
+        );
+        if (result.rowCount > 0) {
+          console.log(`[CRON] Se desactivaron automáticamente ${result.rowCount} eventos finalizados.`);
+        }
+      } catch (err) {
+        console.error('[CRON] Error al desactivar eventos finalizados:', err);
+      }
+    });
   });
 }
 

@@ -5,27 +5,33 @@ import Link from 'next/link';
 import api from '@/utils/api';
 import { Loader2, Store, MapPin, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { getImageUrl } from '@/utils/imageUrl';
+import imageUrl from '@/utils/imageUrl';
 
 const ShopCard = ({ shop }) => {
     const defaultAvatar = '/static/default-avatar.png'; // Fallback image
+    const isFeatured = shop.featured || shop.is_featured;
     
     return (
         <Link href={`/shops/${shop.id}`} className="block group">
-            <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out h-full flex flex-col overflow-hidden border border-gray-200/80">
+            <div className="relative bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300">
+                {isFeatured && (
+                    <span className="absolute top-4 left-4 z-10 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-white font-bold shadow text-xs">
+                        ⭐ Tienda destacada
+                    </span>
+                )}
                 <div className="relative w-full h-40">
                      <Image
-                        src={getImageUrl(shop.avatar) || defaultAvatar}
+                        src={imageUrl(shop.avatar) || defaultAvatar}
                         alt={`Avatar de ${shop.nickname}`}
                         layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 group-hover:scale-105"
+                        objectFit="contain"
+                        className="bg-white transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => { e.currentTarget.src = defaultAvatar; }}
                      />
                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 </div>
                 <div className="p-5 flex-grow flex flex-col">
-                    <h3 className="text-xl font-bold text-gray-800 truncate group-hover:text-primary transition-colors">
+                    <h3 className="text-xl font-bold text-amber-700 font-pacifico truncate group-hover:text-primary transition-colors">
                         {shop.nickname}
                     </h3>
                     <p className="text-gray-500 text-sm mt-1 flex-grow">
@@ -49,10 +55,13 @@ const ShopCard = ({ shop }) => {
 
 
 export default function ShopsPage() {
+    const PAGE_SIZE = 12;
     const [shops, setShops] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [order, setOrder] = useState('recent');
 
     const fetchShops = useCallback(async (pageNum) => {
         setIsLoading(true);
@@ -85,49 +94,46 @@ export default function ShopsPage() {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen">
-            <div className="container mx-auto px-4 py-12">
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-6xl font-pacifico bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent py-2">
-                        Tiendas de Artesanos
-                    </h1>
-                    <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-                        Explora los talleres y perfiles de nuestros talentosos artesanos. Cada tienda es una puerta a un mundo de creatividad y tradición.
-                    </p>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+            {/* Hero Section */}
+            <section className="bg-gradient-to-r from-blue-50 via-pink-50 to-yellow-50 rounded-2xl shadow p-8 mb-10 flex flex-col items-center border border-gray-100">
+                <h1 className="text-4xl md:text-5xl font-bold font-pacifico leading-[1.2] pb-6 bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent mb-2 text-center">Tiendas Artesanales</h1>
+                <h2 className="text-lg md:text-xl text-gray-600 font-medium mb-2 text-center max-w-2xl">Descubre y apoya a los mejores artesanos. Explora tiendas únicas, conoce sus historias y encuentra productos auténticos hechos con pasión.</h2>
+                <div className="bg-gradient-to-r from-blue-100 to-pink-100 text-blue-700 rounded-xl px-6 py-3 shadow flex items-center gap-3 font-semibold text-lg mt-2 text-center">
+                    ¡Apoya el talento local y encuentra inspiración en cada tienda!
                 </div>
-
-                {isLoading && shops.length === 0 ? (
-                     <div className="flex justify-center items-center h-64">
-                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    </div>
-                ) : shops.length > 0 ? (
-                    <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                            {shops.map((shop) => (
-                               <ShopCard key={shop.id} shop={shop} />
-                            ))}
-                        </div>
-
-                        <div className="mt-16 text-center">
-                            {pagination && page < pagination.pages && (
-                                 <button
-                                    onClick={handleLoadMore}
-                                    disabled={isLoading}
-                                    className="btn btn-primary btn-wide"
-                                >
-                                    {isLoading ? <Loader2 className="animate-spin" /> : 'Cargar más tiendas'}
-                                </button>
-                            )}
-                        </div>
-                    </>
-                ) : (
-                    <div className="text-center py-16">
-                         <Store className="mx-auto h-16 w-16 text-gray-400" />
-                         <h3 className="mt-2 text-lg font-medium text-gray-900">No hay tiendas disponibles</h3>
-                         <p className="mt-1 text-sm text-gray-500">Vuelve a intentarlo más tarde o contacta con nosotros si crees que es un error.</p>
-                    </div>
-                )}
+            </section>
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+                <h1 className="text-2xl font-bold text-gray-700">Todas las tiendas</h1>
+                <div className="flex gap-2 flex-wrap items-center">
+                    <select className="input" value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setPage(1); }}>
+                        <option value="">Todas las categorías</option>
+                        {/* Aquí puedes mapear categorías si existen */}
+                    </select>
+                    <button onClick={() => setOrder("recent")} className={`btn btn-ghost ${order === "recent" ? "bg-blue-100 text-blue-700" : ""}`}>Más recientes</button>
+                    <button onClick={() => setOrder("popular")} className={`btn btn-ghost ${order === "popular" ? "bg-pink-100 text-pink-700" : ""}`}>Más populares</button>
+                </div>
             </div>
+            {isLoading ? (
+                <div className="flex justify-center items-center min-h-[200px]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-400"></div>
+                </div>
+            ) : shops.length === 0 ? (
+                <div className="text-center text-indigo-400 py-8 text-xl font-semibold">No hay tiendas para mostrar en este momento.</div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {shops.map((shop) => (
+                            <ShopCard key={shop.id} shop={shop} />
+                        ))}
+                    </div>
+                    <div className="flex justify-center mt-8 gap-2">
+                        <button className="btn btn-ghost" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
+                        <span className="px-4 py-2 rounded text-gray-700 font-semibold">Página {page}</span>
+                        <button className="btn btn-ghost" disabled={shops.length < PAGE_SIZE} onClick={() => setPage(page + 1)}>Siguiente</button>
+                    </div>
+                </>
+            )}
         </div>
     );
 } 

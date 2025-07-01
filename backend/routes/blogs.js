@@ -6,6 +6,8 @@ const { softAuthenticateToken } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { authorizeRoles } = require('../middleware/auth');
+const pool = require('../config/database');
 
 // Configuración de almacenamiento para imágenes de blogs
 const blogsUploadsDir = 'uploads/blogs/';
@@ -33,7 +35,7 @@ router.get('/mine', authenticateToken, blogsController.getMyBlogs);
 router.get('/:id', softAuthenticateToken, blogsController.getBlogById);
 
 // Rutas de artesano (requieren autenticación)
-router.post('/', authenticateToken, upload.fields([
+router.post('/', authenticateToken, authorizeRoles('artesano', 'admin'), upload.fields([
   { name: 'image_url_1', maxCount: 1 },
   { name: 'image_url_2', maxCount: 1 }
 ]), blogsController.createBlog);
@@ -57,5 +59,34 @@ router.put('/:id/approve', authenticateToken, blogsController.approveBlog);
 
 // Nueva ruta PUT /blogs/:id/pending protegida para admin
 router.put('/:id/pending', authenticateToken, blogsController.setBlogPending);
+
+// Buscar blogs por título (para referencias en noticias)
+router.get('/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    let result;
+    if (!query || query.length < 2) {
+      result = await pool.query(
+        `SELECT id, title FROM blogs ORDER BY created_at DESC LIMIT 10`
+      );
+    } else {
+      result = await pool.query(
+        `SELECT id, title FROM blogs WHERE LOWER(title) LIKE LOWER($1) LIMIT 10`,
+        [`%${query}%`]
+      );
+    }
+    res.json(Array.isArray(result.rows) ? result.rows : []);
+  } catch (err) {
+    res.status(500).json({ error: true, message: 'Error al buscar blogs', details: err.message });
+  }
+});
+
+// Participar en evento de blog
+router.post('/:id/participate', authenticateToken, blogsController.participateInBlogEvent);
+// Obtener número de participantes de evento de blog
+router.get('/:id/participants', blogsController.getBlogEventParticipants);
+
+// Saber si el usuario ya participó en el evento de blog
+router.get('/:id/has-participated', authenticateToken, blogsController.hasParticipatedInBlogEvent);
 
 module.exports = router; 

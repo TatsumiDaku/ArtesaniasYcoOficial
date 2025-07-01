@@ -28,4 +28,40 @@ router.get(
   statsController.getUserStatsById
 );
 
+// Endpoints de estadísticas avanzadas para artesano
+router.get('/sales-by-day', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getSalesByDay);
+
+router.get('/income-by-month', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getIncomeByMonth);
+
+router.get('/top-products', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getTopProducts);
+
+router.get('/order-status-distribution', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getOrderStatusDistribution);
+
+router.get('/product-ratings', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getProductRatings);
+
+router.get('/low-stock-products', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getLowStockProducts);
+
+router.get('/latest-reviews', authenticateToken, (req, res, next) => {
+  if (req.user.role !== 'artesano') return res.status(403).json({ message: 'Acceso denegado' });
+  next();
+}, statsController.getLatestReviews);
+
 module.exports = router; 

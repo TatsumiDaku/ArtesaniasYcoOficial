@@ -253,6 +253,53 @@ Al actualizar la contraseña u otros datos del perfil de artesano, el frontend i
 - Mensajes de ayuda y advertencia añadidos en formularios clave para mejorar la experiencia de usuario.
 - Limpieza total y reconstrucción planificada de la lógica de blogs, siguiendo la estructura de base de datos y los patrones de diseño del sistema.
 
+# Objetivo Principal Próximo: Flujo de Pedidos y Pagos Simulados
+
+- Tras finalizar el desarrollo del carrito, el siguiente objetivo es implementar el flujo completo de creación de pedidos y un sistema de pagos simulado (gratuito, pero semi-funcional para pruebas y lógica de negocio).
+- El usuario podrá realizar un pedido desde el carrito, el sistema generará la orden y la persistirá en la base de datos (`orders`, `order_items`).
+- El pago será simulado: el usuario podrá "pagar" sin costo real, pero el sistema registrará el estado del pedido como "pagado" o "confirmado".
+- Se debe mostrar feedback visual claro en frontend y actualizar el estado del pedido en tiempo real.
+- Este flujo es requisito previo para la siguiente fase de estadísticas, ya que las ventas y pedidos reales alimentarán los datos estadísticos.
+
+---
+
+# Objetivo Secundario: Implementación de Estadísticas para Artesanos
+
+Una vez completado el flujo de pedidos y pagos simulados, se implementará el sistema de estadísticas para artesanos, siguiendo estos lineamientos:
+
+## 1. **Base de datos y endpoints**
+- Revisar la estructura de la base de datos (`database/init.sql`) y agregar los campos/tablas necesarios para soportar todas las métricas requeridas (ventas por día, ingresos, estados de pedidos, etc.).
+- Crear o ajustar endpoints en el backend para exponer los datos agregados y filtrados por artesano, producto, fecha, etc.
+- Asegurar que los endpoints sean eficientes y seguros, y que soporten filtros por rango de fechas, producto, estado, etc.
+
+## 2. **Frontend y visualización**
+- Implementar la página `/artisan/statistics` con la estructura y estilo definidos en `systemPatterns.md`.
+- Usar **Recharts** para todas las gráficas (líneas, barras, dona, etc.), asegurando interactividad y visuales modernos.
+- Seguir la estructura base ya creada: KPIs, gráficas principales, listados rápidos.
+
+## 3. **Checklist de métricas y gráficas a implementar**
+- [ ] Ventas por día (últimos 30 días) — línea
+- [ ] Ingresos por mes (últimos 12 meses) — barras
+- [ ] Top 5 productos más vendidos — barras horizontales
+- [ ] Distribución de estados de pedidos — dona/pastel
+- [ ] Calificación promedio por producto — barras
+- [ ] KPIs: ventas mes, ingresos mes, productos activos, stock bajo, calificación promedio
+- [ ] Listado de productos con stock bajo
+- [ ] Listado de últimas reseñas recibidas
+
+## 4. **Notas y consideraciones**
+- Todo lo anterior (carrito, pedidos, pagos simulados) ya está implementado y funcional.
+- Si se detecta alguna carencia en la base de datos para estadísticas, se debe actualizar `init.sql` y migrar los datos según sea necesario.
+- Los estilos, layout y experiencia de usuario deben seguir los patrones definidos en `memory_bank/systemPatterns.md`.
+- El sistema debe ser escalable y eficiente, preparado para manejar grandes volúmenes de datos y usuarios concurrentes.
+
+---
+
+# Estado actual
+- Carrito, pedidos y pagos simulados: **completados**
+- Base de datos: alineada a los requisitos, pero sujeta a ajustes menores para métricas avanzadas
+- Siguiente paso: **Implementar estadísticas para artesanos** siguiendo este plan
+
 # Objetivo Principal Próximo: Escalabilidad y Rendimiento
 
 Para garantizar que la plataforma soporte un alto volumen de usuarios y mantenga una experiencia óptima, se priorizarán las siguientes acciones en todo el proyecto (backend y frontend):
@@ -368,3 +415,36 @@ Implementar y mejorar el flujo real de recuperación de contraseña para usuario
 ## Referencias
 - Revisar patrones de UX de plataformas líderes (Google, Facebook, MercadoLibre) para inspiración.
 - Seguir recomendaciones de seguridad OWASP para recuperación de contraseñas. 
+
+---
+
+# Próximos Objetivos y Pendientes (Checkout, Factura, Pedidos, Envíos)
+
+## 1. Flujo de Checkout y Factura (pendiente de implementar)
+- Al hacer clic en "Proceder al pago" en el carrito:
+  - Redirigir a página `/checkout` con resumen del pedido, dirección editable y método de pago simulado.
+  - Al confirmar, crear el pedido en la base de datos y marcarlo como "pagado" o "pendiente de envío".
+  - Generar una factura en PDF (usando pdfkit o puppeteer en backend).
+  - Enviar la factura PDF al correo registrado del usuario.
+  - Mostrar página de agradecimiento con resumen y número de pedido.
+
+## 2. Página de pagos simulada
+- Permitir elegir método de pago simulado (PSE, tarjeta, contraentrega, etc.).
+- Al confirmar, marcar el pedido como "pagado" y seguir el flujo anterior.
+
+## 3. Gestión de pedidos (pendiente en administración y dashboard de artesanos)
+- Listado de pedidos con filtros por estado, fecha, cliente, etc.
+- Detalle de cada pedido, historial de cambios de estado.
+- Acciones: cambiar estado, ver factura, reenviar factura, etc.
+
+## 4. Integración con empresa de envíos (API externa, pendiente)
+- Permitir que una empresa de envíos registre su API key y endpoint.
+- Enviar automáticamente los pedidos listos para envío vía webhook o API REST.
+- Permitir que la empresa actualice el estado del pedido desde su sistema.
+- Tabla `shipping_providers` y endpoints para integración.
+
+## 5. Notas
+- Todo lo anterior es gratis y funcional, no requiere integración de pagos reales.
+- Sienta la base para la gestión avanzada de pedidos y logística.
+
+--- 

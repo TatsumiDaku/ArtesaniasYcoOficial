@@ -85,15 +85,18 @@ const DashboardPage = () => {
     const welcomeTitle = `Bienvenido a tu Dashboard, ${getRoleName(user?.role)}`;
 
     const commonOptions = [
+        { href: '/dashboard/orders', title: 'Mis pedidos', description: 'Consulta el historial y estado de tus compras.', icon: ShoppingBag, role: 'cliente', color: 'from-amber-500 to-pink-500' },
         { href: '/dashboard/favorites', title: 'Mis Favoritos', description: 'Consulta tus productos guardados y crea tu lista de deseos.', icon: Heart, role: 'cliente', color: 'from-pink-500 to-rose-500' },
         { href: '/dashboard/profile', title: 'Mi Perfil', description: 'Gestiona tu información personal y configuración de cuenta.', icon: User, role: 'cliente', color: 'from-blue-500 to-indigo-500' },
     ];
     
     const artisanOptions = [
         { href: '/artisan/products', title: 'Gestionar Productos', description: 'Añade, edita y administra tus creaciones artesanales.', icon: Package, role: 'artesano', color: 'from-orange-500 to-red-500' },
+        { href: '/artisan/orders', title: 'Pedidos Recibidos', description: 'Consulta y gestiona los pedidos de tus productos artesanales.', icon: ShoppingBag, role: 'artesano', color: 'from-indigo-500 to-purple-500' },
         { href: '/artisan/blog', title: 'Gestionar Blogs', description: 'Crea, edita y administra tus publicaciones de blog artesanales.', icon: BookOpen, role: 'artesano', color: 'from-yellow-500 to-orange-500' },
         { href: '/artisan/shop', title: 'Gestionar Mi Tienda', description: 'Actualiza el lema e imagen de cabecera de tu tienda.', icon: Store, role: 'artesano', color: 'from-red-500 to-pink-500' },
         { href: '/artisan/profile', title: 'Mi Perfil', description: 'Gestiona tu información personal y datos de la cuenta.', icon: User, role: 'artesano', color: 'from-blue-500 to-indigo-500' },
+        { href: '/artisan/statistics', title: 'Gestionar Estadísticas', description: 'Visualiza y analiza tus ventas, ingresos, productos y más en gráficas interactivas.', icon: TrendingUp, role: 'artesano', color: 'from-green-500 to-blue-500' },
     ];
 
     const adminOptions = [
@@ -157,73 +160,6 @@ const DashboardPage = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Estadísticas para artesanos */}
-                {user?.role === 'artesano' && stats?.reviews && (
-                    <div className="mb-8">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            {/* Promedio de calificaciones */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                                <div className={`bg-gradient-to-r ${getRatingCategoryColor(stats.reviews.ratingCategory)} p-6 text-white`}>
-                                    <div className="flex items-center gap-3">
-                                        <Star className="w-6 h-6" />
-                                        <h3 className="text-lg font-bold">Calificación Promedio</h3>
-                                    </div>
-                                </div>
-                                <div className="p-6 text-center">
-                                    <div className="flex items-center justify-center gap-2 mb-2">
-                                        <span className="text-3xl font-bold text-gray-900">{stats.reviews.averageRating.toFixed(1)}</span>
-                                        <span className="text-gray-500">/5</span>
-                                    </div>
-                                    <StarRating rating={stats.reviews.averageRating} readOnly />
-                                    <div className="text-sm text-gray-600 mt-2">{getRatingCategoryText(stats.reviews.ratingCategory)}</div>
-                                </div>
-                            </div>
-
-                            {/* Total de reseñas */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white">
-                                    <div className="flex items-center gap-3">
-                                        <TrendingUp className="w-6 h-6" />
-                                        <h3 className="text-lg font-bold">Total Reseñas</h3>
-                                    </div>
-                                </div>
-                                <div className="p-6 text-center">
-                                    <div className="text-3xl font-bold text-gray-900">{stats.reviews.totalReviews}</div>
-                                    <div className="text-sm text-gray-600">Reseñas recibidas</div>
-                                </div>
-                            </div>
-
-                            {/* Reseñas positivas */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white">
-                                    <div className="flex items-center gap-3">
-                                        <TrendingUp className="w-6 h-6" />
-                                        <h3 className="text-lg font-bold">Positivas</h3>
-                                    </div>
-                                </div>
-                                <div className="p-6 text-center">
-                                    <div className="text-3xl font-bold text-gray-900">{stats.reviews.positiveReviews}</div>
-                                    <div className="text-sm text-gray-600">≥ 3.5 estrellas</div>
-                                </div>
-                            </div>
-
-                            {/* Reseñas negativas */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                                <div className="bg-gradient-to-r from-red-500 to-pink-500 p-6 text-white">
-                                    <div className="flex items-center gap-3">
-                                        <AlertTriangle className="w-6 h-6" />
-                                        <h3 className="text-lg font-bold">A mejorar</h3>
-                                    </div>
-                                </div>
-                                <div className="p-6 text-center">
-                                    <div className="text-3xl font-bold text-gray-900">{stats.reviews.negativeReviews}</div>
-                                    <div className="text-sm text-gray-600">&lt; 2.8 estrellas</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Tarjeta de bienvenida */}
                 <div className="mb-8">

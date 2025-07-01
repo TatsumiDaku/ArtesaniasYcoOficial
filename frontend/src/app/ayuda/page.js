@@ -211,15 +211,15 @@ const Ayuda = () => {
     envios: [
       {
         pregunta: "¿Cuánto tiempo tarda en llegar mi pedido?",
-        respuesta: "Los tiempos de envío varían según tu ubicación: Envío estándar (5-7 días), Envío express (2-3 días), Envío premium (1-2 días). Los productos artesanales pueden requerir tiempo adicional de producción."
+        respuesta: "Para envíos dentro de Colombia: Envío estándar (3-5 días hábiles), Envío express (1-2 días hábiles). Los productos artesanales hechos a pedido pueden requerir tiempo adicional de producción. Para envíos internacionales, el tiempo varía según el país de destino (7-21 días)."
       },
       {
         pregunta: "¿Cuánto cuesta el envío?",
-        respuesta: "El costo de envío se calcula automáticamente según tu ubicación y el peso del producto. Ofrecemos envío gratuito para compras superiores a $150 en la mayoría de regiones."
+        respuesta: "El costo de envío nacional se calcula automáticamente según tu ciudad y el peso del pedido. Envíos desde $8.000 COP. Ofrecemos envío gratuito en Colombia para compras superiores a $150.000 COP. Para envíos internacionales, el costo se calcula al finalizar la compra."
       },
       {
         pregunta: "¿Puedo rastrear mi pedido?",
-        respuesta: "Sí, una vez que tu pedido sea enviado, recibirás un email con el número de seguimiento. También puedes rastrearlo desde 'Mis Pedidos' en tu cuenta."
+        respuesta: "Sí, una vez que tu pedido sea enviado, recibirás un email con el número de guía. También puedes rastrearlo desde 'Mis Pedidos' en tu cuenta."
       },
       {
         pregunta: "¿Puedo cambiar mi dirección de envío?",
@@ -227,27 +227,27 @@ const Ayuda = () => {
       },
       {
         pregunta: "¿Qué pasa si no estoy en casa cuando llega mi pedido?",
-        respuesta: "El servicio de correo intentará entregar tu pedido. Si no estás en casa, dejarán una nota con instrucciones para recoger tu paquete en la oficina postal más cercana."
+        respuesta: "La transportadora intentará entregar tu pedido. Si no estás, dejarán una notificación para reprogramar la entrega o recogerlo en la oficina más cercana."
       },
       {
         pregunta: "¿Puedo solicitar envío a una dirección diferente?",
-        respuesta: "Sí, puedes enviar productos a cualquier dirección. Solo asegúrate de que la dirección esté completa y correcta para evitar retrasos en la entrega."
+        respuesta: "Sí, puedes enviar productos a cualquier dirección en Colombia. Solo asegúrate de que la dirección esté completa y correcta para evitar retrasos."
       },
       {
         pregunta: "¿Cómo funciona el envío internacional?",
-        respuesta: "El envío internacional está disponible a la mayoría de países. Los tiempos de entrega varían entre 7-21 días dependiendo del destino. Los costos se calculan automáticamente."
+        respuesta: "El envío internacional está disponible a la mayoría de países. Los tiempos y costos se calculan automáticamente según el destino. Ten en cuenta que pueden aplicar impuestos o aranceles en el país de destino."
       },
       {
         pregunta: "¿Puedo programar una entrega para una fecha específica?",
-        respuesta: "Sí, puedes solicitar una entrega programada durante el proceso de compra. Esta opción está disponible para envíos express y premium en algunas regiones."
+        respuesta: "Actualmente no ofrecemos entregas programadas, pero puedes contactarnos para casos especiales y haremos lo posible por ayudarte."
       },
       {
         pregunta: "¿Qué pasa si mi pedido se pierde en el envío?",
-        respuesta: "Si tu pedido se pierde, contacta a nuestro soporte inmediatamente. Investigaremos el caso y te ayudaremos a procesar un reembolso o reenvío."
+        respuesta: "Si tu pedido se pierde, contáctanos de inmediato. Investigaremos el caso con la transportadora y te ayudaremos a procesar un reembolso o reenvío."
       },
       {
         pregunta: "¿Puedo recoger mi pedido en una oficina postal?",
-        respuesta: "Sí, puedes elegir recoger tu pedido en una oficina postal durante el proceso de compra. Recibirás una notificación cuando tu pedido esté listo para recoger."
+        respuesta: "Sí, puedes elegir recoger tu pedido en una oficina de la transportadora durante el proceso de compra. Recibirás una notificación cuando tu pedido esté listo para recoger."
       }
     ],
     artesanos: [

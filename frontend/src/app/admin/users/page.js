@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import { User, Store, Trash2, Eye, Package, ArrowLeft, RefreshCw, Search, Users, Crown, Loader2 } from 'lucide-react';
+import { User, Store, Trash2, Eye, Package, ArrowLeft, RefreshCw, Search, Users, Crown, Loader2, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 
 import api from '@/utils/api';
@@ -149,14 +149,24 @@ const AdminUsersPage = () => {
             Ver
           </button>
           {activeTab === 'artesano' && (
-            <button
-              onClick={() => router.push(`/admin/artisan/${row.original.id}/products`)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
-              title="Ver Productos del Artesano"
-            >
-              <Package className="w-3 h-3" />
-              Productos
-            </button>
+            <>
+              <button
+                onClick={() => router.push(`/admin/artisan/${row.original.id}/products`)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+                title="Ver Productos del Artesano"
+              >
+                <Package className="w-3 h-3" />
+                Productos
+              </button>
+              <button
+                onClick={() => router.push(`/admin/artisan/${row.original.id}/statistics`)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 text-xs font-medium"
+                title="Ver Estadísticas del Artesano"
+              >
+                <BarChart3 className="w-3 h-3" />
+                Estadísticas
+              </button>
+            </>
           )}
           <button
             onClick={() => handleDelete(row.original.id)}

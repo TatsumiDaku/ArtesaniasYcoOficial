@@ -8,6 +8,7 @@ const storage = multer.diskStorage({
         let dest = 'uploads/avatars/';
         if (req.baseUrl.includes('products')) dest = 'uploads/products/';
         else if (req.baseUrl.includes('shops')) dest = 'uploads/shops/';
+        else if (req.baseUrl.includes('news')) dest = 'uploads/news/';
         // Puedes agregar más casos según tus rutas
         fs.mkdirSync(dest, { recursive: true });
         cb(null, dest);
@@ -17,6 +18,7 @@ const storage = multer.diskStorage({
         let prefix = 'avatar-';
         if (req.baseUrl.includes('products')) prefix = 'product-';
         else if (req.baseUrl.includes('shops')) prefix = 'shop_header_image-';
+        else if (req.baseUrl.includes('news')) prefix = 'news-';
         cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
     }
 });

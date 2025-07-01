@@ -32,7 +32,7 @@ const getUsers = async (req, res) => {
     const total = parseInt(totalResult.rows[0].count, 10);
 
     // Query para los datos paginados
-    const dataQuery = `SELECT id, email, name, role, status, phone, avatar, created_at ${baseQuery}${whereClause} ORDER BY created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+    const dataQuery = `SELECT id, email, name, role, status, phone, avatar, created_at, featured ${baseQuery}${whereClause} ORDER BY created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
     
     const usersResult = await pool.query(dataQuery, [...queryParams, limit, offset]);
     

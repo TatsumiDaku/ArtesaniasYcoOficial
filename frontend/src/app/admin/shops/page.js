@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { Edit, Trash2, RefreshCw, Store, Shield, ArrowLeft, Loader2, MoreVertical, Eye, UserCheck, UserX, Clock } from 'lucide-react';
+import { Switch } from '@headlessui/react';
 
 import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
@@ -74,6 +75,19 @@ const AdminShopsPage = () => {
     }
   }, [artisans]);
 
+  const handleFeaturedChange = useCallback(async (userId, newFeatured) => {
+    const originalArtisans = [...artisans];
+    setArtisans(prev => prev.map(a => a.id === userId ? { ...a, featured: newFeatured } : a));
+    try {
+      await api.put(`/users/admin/${userId}`, { featured: newFeatured });
+      toast.success('Estado de destacado actualizado.');
+    } catch (error) {
+      setArtisans(originalArtisans);
+      const msg = error.response?.data?.message || 'No se pudo actualizar el estado de destacado.';
+      toast.error(msg);
+    }
+  }, [artisans]);
+
   const columns = useMemo(() => [
     {
       header: 'Artesano',
@@ -103,6 +117,22 @@ const AdminShopsPage = () => {
       header: 'Fecha de Registro', 
       accessorKey: 'created_at',
       cell: ({ getValue }) => new Date(getValue()).toLocaleDateString('es-CO')
+    },
+    {
+      header: 'Destacada',
+      accessorKey: 'featured',
+      cell: ({ row }) => (
+        <Switch
+          checked={!!row.original.featured}
+          onChange={val => handleFeaturedChange(row.original.id, val)}
+          className={`${row.original.featured ? 'bg-amber-400' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none`}
+        >
+          <span className="sr-only">Marcar como destacada</span>
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${row.original.featured ? 'translate-x-6' : 'translate-x-1'}`}
+          />
+        </Switch>
+      )
     },
     {
       header: 'Acciones',
@@ -136,7 +166,7 @@ const AdminShopsPage = () => {
         </div>
       ),
     },
-  ], [router, handleStatusChange, API_BASE_URL]);
+  ], [router, handleStatusChange, handleFeaturedChange, API_BASE_URL]);
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">

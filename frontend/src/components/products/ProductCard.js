@@ -7,7 +7,7 @@ import { useFavorites } from '@/context/FavoritesContext';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
-import { getImageUrl } from '@/utils/imageUrl';
+import imageUrl from '@/utils/imageUrl';
 
 const StarRating = ({ rating, className }) => {
   const totalStars = 5;
@@ -37,8 +37,8 @@ const ProductCard = ({ product }) => {
   }
   
   const API_BASE_URL = 'http://localhost:5000';
-  const imageUrl = product.images && product.images.length > 0 
-    ? getImageUrl(product.images[0])
+  const imageSrc = product.images && product.images.length > 0 
+    ? imageUrl(product.images[0])
     : '/static/LogoIncial.png';
 
   const handleFavoriteClick = (e) => {
@@ -76,11 +76,11 @@ const ProductCard = ({ product }) => {
     >
       <div className="relative w-full h-64">
         <Image
-          src={imageUrl}
+          src={imageSrc}
           alt={product.name || 'Imagen del producto'}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          className="object-contain bg-white transition-transform duration-500 group-hover:scale-110"
         />
         { product.stock === 0 && (
             <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">AGOTADO</div>
@@ -113,9 +113,10 @@ const ProductCard = ({ product }) => {
             </div>
         </div>
         
-        <h3 className="text-lg font-bold text-gray-800 truncate h-14 leading-tight mt-2" title={product.name}>
+        <h3 className="text-xl font-bold text-amber-700 font-pacifico truncate h-14 leading-tight mt-2" title={product.name}>
           {product.name || 'Producto sin nombre'}
         </h3>
+        <p className="text-gray-500 text-sm mt-1 line-clamp-2 min-h-[2.5rem]">{product.description ? product.description : 'Sin descripción'}</p>
         
         <div className="flex items-center text-sm text-gray-500 mt-1">
           <User className="w-4 h-4 mr-2" />
