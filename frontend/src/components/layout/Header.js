@@ -89,13 +89,12 @@ const Header = () => {
           <div className="flex items-center">
             <Link href="/" className="group flex items-center gap-3">
               <div className="relative">
-                <Image 
+                <img 
                   src="/static/LogoIncial.png" 
                   alt="Artesanías & CO Logo" 
                   width={55} 
                   height={55}
                   className="drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300 group-hover:scale-110"
-                  unoptimized
                 />
               </div>
               <div className="text-2xl font-pacifico relative block">
@@ -161,7 +160,7 @@ const Header = () => {
               <X className="w-6 h-6" />
             </button>
             <div className="flex flex-col items-center gap-2 mt-4">
-              <Image src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={50} height={50} className="mb-1" unoptimized />
+              <img src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={50} height={50} className="mb-1" />
               <span className="font-pacifico text-xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent">ArtesaníasYCo</span>
             </div>
             {isAuthenticated && user && (
