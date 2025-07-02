@@ -75,13 +75,21 @@ const CartPage = () => {
                 return (
                   <div key={item.product_id} className="flex flex-col md:flex-row items-center bg-white/90 rounded-2xl shadow-md p-4 gap-6 hover:shadow-xl transition-all border border-amber-100">
                     <figure className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-xl border-2 border-amber-100 bg-white">
-                      <Image
-                        src={imageUrl(item.product?.images?.[0])}
-                        alt={item.product?.name || 'Producto'}
-                        width={112}
-                        height={112}
-                        className="object-cover w-full h-full"
-                      />
+                      {item.product?.images?.[0] && item.product.images[0].startsWith('/uploads') ? (
+                        <img
+                          src={imageUrl(item.product.images[0])}
+                          alt={item.product?.name || 'Producto'}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <Image
+                          src={imageUrl(item.product?.images?.[0])}
+                          alt={item.product?.name || 'Producto'}
+                          width={112}
+                          height={112}
+                          className="object-cover w-full h-full"
+                        />
+                      )}
                     </figure>
                     <div className="flex-1 flex flex-col gap-2 items-center md:items-start">
                       <h3 className="text-xl font-bold text-amber-700 font-pacifico">{item.product?.name}</h3>

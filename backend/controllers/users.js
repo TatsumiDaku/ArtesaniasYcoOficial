@@ -388,6 +388,93 @@ const approveArtisan = async (req, res) => {
     }
 };
 
+// Obtener mis comentarios (productos, blogs y noticias)
+const getMyComments = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    // Query para obtener todos los comentarios del usuario
+    const query = `
+      (
+        SELECT 
+          'product' as type,
+          pr.id,
+          pr.comment as content,
+          pr.rating,
+          pr.created_at,
+          p.id as item_id,
+          p.name as item_title
+        FROM product_reviews pr
+        INNER JOIN products p ON pr.product_id = p.id
+        WHERE pr.user_id = $1
+      )
+      UNION ALL
+      (
+        SELECT 
+          'blog' as type,
+          bc.id,
+          bc.comment as content,
+          NULL as rating,
+          bc.created_at,
+          b.id as item_id,
+          b.title as item_title
+        FROM blog_comments bc
+        INNER JOIN blogs b ON bc.blog_id = b.id
+        WHERE bc.user_id = $1
+      )
+      UNION ALL
+      (
+        SELECT 
+          'news' as type,
+          nc.id,
+          nc.comment as content,
+          NULL as rating,
+          nc.created_at,
+          n.id as item_id,
+          n.title as item_title
+        FROM news_comments nc
+        INNER JOIN news n ON nc.news_id = n.id
+        WHERE nc.user_id = $1
+      )
+      ORDER BY created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+
+    // Query para contar el total
+    const countQuery = `
+      SELECT COUNT(*) as total FROM (
+        SELECT id FROM product_reviews WHERE user_id = $1
+        UNION ALL
+        SELECT id FROM blog_comments WHERE user_id = $1
+        UNION ALL
+        SELECT id FROM news_comments WHERE user_id = $1
+      ) as all_comments
+    `;
+
+    const [commentsResult, countResult] = await Promise.all([
+      pool.query(query, [userId, limit, offset]),
+      pool.query(countQuery, [userId])
+    ]);
+
+    const total = parseInt(countResult.rows[0].total, 10);
+
+    res.json({
+      comments: commentsResult.rows,
+      pagination: {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error obteniendo comentarios del usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   getUsers,
   getUser,
@@ -396,5 +483,6 @@ module.exports = {
   adminUpdateUser,
   deleteUser,
   approveArtisan,
-  getUserStats
+  getUserStats,
+  getMyComments
 }; 

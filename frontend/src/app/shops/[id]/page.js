@@ -12,14 +12,22 @@ const ProductCard = ({ product }) => (
     <Link href={`/products/${product.id}`} className="block group">
         <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 border h-full">
             <div className="relative h-48">
-                <Image
-                    src={imageUrl(product.images && product.images[0]) || '/static/placeholder.png'}
-                    alt={product.name}
-                    fill
-                    className="rounded-t-lg"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    priority
-                />
+                {product.images && product.images[0] && product.images[0].startsWith('/uploads') ? (
+                    <img
+                        src={imageUrl(product.images[0]) || '/static/placeholder.png'}
+                        alt={product.name}
+                        className="absolute inset-0 w-full h-full object-cover rounded-t-lg"
+                    />
+                ) : (
+                    <Image
+                        src={imageUrl(product.images && product.images[0]) || '/static/placeholder.png'}
+                        alt={product.name}
+                        fill
+                        className="rounded-t-lg"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        priority
+                    />
+                )}
             </div>
             <div className="p-4">
                 <h3 className="font-pacifico text-amber-700 font-bold text-lg truncate group-hover:text-primary drop-shadow-[0_1.5px_1.5px_rgba(30,30,30,0.18)]">{product.name}</h3>

@@ -57,6 +57,9 @@ router.get('/stats', authenticateToken, statsLimiter, (req, res, next) => {
 // Obtener perfil del usuario autenticado
 router.get('/me', authenticateToken, usersController.getUser);
 
+// Obtener comentarios del usuario autenticado
+router.get('/me/comments', authenticateToken, usersController.getMyComments);
+
 // Obtener un usuario por ID (solo admin)
 router.get('/admin/:id', authenticateToken, param('id').isInt(), (req, res, next) => {
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Acceso denegado' });

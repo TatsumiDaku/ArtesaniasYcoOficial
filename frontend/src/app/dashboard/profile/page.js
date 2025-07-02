@@ -9,6 +9,7 @@ import withAuthProtection from '@/components/auth/withAuthProtection';
 import { User, Phone, MapPin, Mail, Calendar, Shield, Edit3, Save, UserCheck, ArrowLeft, MessageSquare, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import imageUrl from '@/utils/imageUrl';
 
 const ProfilePage = () => {
   const { user, updateUser: updateAuthUser } = useAuth();
@@ -126,8 +127,26 @@ const ProfilePage = () => {
           {/* Columna Izquierda: Info Fija */}
           <div className="xl:col-span-1 space-y-6">
              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 space-y-4">
-                <h2 className="text-xl font-bold text-gray-800">Resumen de tu Cuenta</h2>
-                 <div className="flex items-center gap-4 text-gray-700">
+                {/* Avatar del usuario */}
+                <div className="flex justify-center mb-4">
+                  {userInfo.avatar && userInfo.avatar.startsWith('/uploads') ? (
+                    <img
+                      src={imageUrl(userInfo.avatar)}
+                      alt={userInfo.name || 'Avatar'}
+                      className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-lg"
+                    />
+                  ) : (
+                    <Image
+                      src={userInfo.avatar ? imageUrl(userInfo.avatar) : '/static/default-avatar.png'}
+                      alt={userInfo.name || 'Avatar'}
+                      width={96}
+                      height={96}
+                      className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-lg"
+                    />
+                  )}
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 text-center">{userInfo.name}</h2>
+                <div className="flex items-center gap-4 text-gray-700">
                     <Mail className="w-5 h-5 text-indigo-500" />
                     <span>{userInfo.email}</span>
                  </div>
@@ -202,12 +221,32 @@ const ProfilePage = () => {
                     </div>
                 ) : comments.length > 0 ? (
                     comments.map(comment => (
-                        <div key={comment.id} className="p-4 border rounded-lg bg-gray-50/50">
-                            <div className="flex justify-between items-start">
-                                <p className="text-gray-700 italic">{`"${comment.content}"`}</p>
+                        <div key={`${comment.type}-${comment.id}`} className="p-4 border rounded-lg bg-gray-50/50 hover:bg-gray-100/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <p className="text-gray-700 italic flex-1">{`"${comment.content}"`}</p>
+                                {comment.rating && (
+                                    <div className="flex items-center gap-1 ml-2">
+                                        {[...Array(5)].map((_, i) => (
+                                            <span key={i} className={`text-sm ${i < comment.rating ? 'text-yellow-400' : 'text-gray-300'}`}>★</span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                            <div className="text-xs text-gray-400 mt-2">
-                                {new Date(comment.created_at).toLocaleString('es-CO', { dateStyle: 'long', timeStyle: 'short' })}
+                            <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
+                                <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-0.5 rounded-full font-semibold ${
+                                        comment.type === 'product' ? 'bg-blue-100 text-blue-700' :
+                                        comment.type === 'blog' ? 'bg-green-100 text-green-700' :
+                                        'bg-purple-100 text-purple-700'
+                                    }`}>
+                                        {comment.type === 'product' ? 'Producto' :
+                                         comment.type === 'blog' ? 'Blog' : 'Noticia'}
+                                    </span>
+                                    <span className="text-gray-600">
+                                        en <span className="font-semibold">{comment.item_title}</span>
+                                    </span>
+                                </div>
+                                <span>{new Date(comment.created_at).toLocaleDateString('es-CO')}</span>
                             </div>
                         </div>
                     ))
@@ -223,23 +262,6 @@ const ProfilePage = () => {
                 </div>
             )}
         </div>
-
-        {/* Avatar del usuario */}
-        {user.avatar && user.avatar.startsWith('/uploads') ? (
-          <img
-            src={imageUrl(user.avatar)}
-            alt={user.name || 'Avatar'}
-            className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
-          />
-        ) : (
-          <Image
-            src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
-            alt={user.name || 'Avatar'}
-            width={96}
-            height={96}
-            className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
-          />
-        )}
 
       </div>
     </div>

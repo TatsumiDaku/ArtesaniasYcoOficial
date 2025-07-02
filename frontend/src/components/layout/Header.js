@@ -6,12 +6,12 @@ import { useAuth } from '@/context/AuthContext';
 import UserMenu from './UserMenu';
 import { Search, ShoppingCart, Menu as Burger, X } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserCircle, Heart } from 'lucide-react';
 import imageUrl from '@/utils/imageUrl';
 
 const Header = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { cart } = useCart();
   const navLinks = [
     // { name: 'Inicio', href: '/' },
@@ -24,6 +24,23 @@ const Header = () => {
   ];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Manejar el overflow del body cuando el menú está abierto
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
+    }
+    
+    // Limpiar al desmontar el componente
+    return () => {
+      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
+    };
+  }, [mobileMenuOpen]);
 
   // Simulación: número de productos con stock bajo (en producción, obtener de contexto o props)
   const lowStockCount = user && (user.role === 'admin' || user.role === 'artesano') ? (user.stats?.products?.lowStock || 0) : 0;
@@ -151,66 +168,120 @@ const Header = () => {
           {/* Overlay oscuro, solo a la izquierda del panel */}
           <div className="flex-1 bg-black/40" onClick={() => setMobileMenuOpen(false)} />
           {/* Panel lateral completamente opaco */}
-          <div className="w-full max-w-xs h-full bg-white shadow-2xl p-6 flex flex-col gap-6 animate-slide-in-right relative text-black z-[101] overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-amber-400 scrollbar-track-orange-100">
+          <div className="w-full max-w-sm sm:max-w-md h-full bg-white shadow-2xl p-6 flex flex-col gap-4 animate-slide-in-right relative text-black z-[101] overflow-y-auto max-h-screen scrollbar-thin scrollbar-thumb-amber-400 scrollbar-track-orange-100">
             <button
-              className="absolute top-4 right-4 p-2 rounded-full bg-white hover:bg-gray-100 focus:outline-none shadow"
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 focus:outline-none shadow-md transition-colors"
               aria-label="Cerrar menú"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 text-gray-700" />
             </button>
-            <div className="flex flex-col items-center gap-2 mt-4">
+            <div className="flex flex-col items-center gap-2 mt-8">
               <img 
                 src="/static/LogoIncial.png" 
                 alt="Artesanías & CO Logo" 
-                width={50} 
-                height={50}
+                width={60} 
+                height={60}
                 className="mb-1"
               />
-              <span className="font-pacifico text-xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent">ArtesaníasYCo</span>
+              <span className="font-pacifico text-2xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent">ArtesaníasYCo</span>
             </div>
             {isAuthenticated && user && (
-              <div className="flex flex-col items-center gap-2 mt-2 mb-4">
-                <Image
-                  src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
-                  alt="Avatar"
-                  width={56}
-                  height={56}
-                  className="rounded-full object-cover border-2 border-orange-400 shadow-md"
-                />
-                <span className="font-semibold text-lg truncate max-w-[140px]">{user.name}</span>
-                <span className="text-xs text-gray-500">{user.email}</span>
+              <div className="flex flex-col items-center gap-3 mt-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl">
+                {user.avatar && user.avatar.startsWith('/uploads') ? (
+                  <img
+                    src={imageUrl(user.avatar)}
+                    alt="Avatar"
+                    className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
+                  />
+                ) : (
+                  <Image
+                    src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
+                    alt="Avatar"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
+                  />
+                )}
+                <div className="text-center">
+                  <p className="font-semibold text-lg text-gray-800 truncate max-w-[200px]">{user.name}</p>
+                  <p className="text-sm text-gray-600">{user.email}</p>
+                </div>
               </div>
             )}
-            <nav className="flex flex-col gap-2 mt-2">
+            <nav className="flex flex-col gap-1 mt-4">
               {navLinks.map((link) => (
-                <Link key={link.name} href={link.href} className="text-base font-medium text-gray-800 hover:text-primary py-2 px-3 rounded-lg transition-colors relative">
-                  {link.name}
+                <Link 
+                  key={link.name} 
+                  href={link.href} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg transition-all relative flex items-center justify-between"
+                >
+                  <span>{link.name}</span>
                   {link.name === 'Productos' && lowStockCount > 0 && (
-                    <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 animate-pulse shadow">{lowStockCount}</span>
+                    <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 animate-pulse shadow">{lowStockCount}</span>
                   )}
                 </Link>
               ))}
             </nav>
             {isAuthenticated && (
-              <div className="mt-4 border-t pt-4 flex flex-col gap-2">
-                <Link href={user.role === 'admin' ? '/admin/dashboard' : user.role === 'artesano' ? '/artisan/products' : '/dashboard'} className="flex items-center gap-2 text-base font-semibold text-orange-700 hover:text-orange-900">
-                  <UserCircle className="w-5 h-5" /> Mi Panel
+              <div className="mt-auto border-t pt-4 flex flex-col gap-2">
+                <Link 
+                  href={user.role === 'admin' ? '/admin/dashboard' : user.role === 'artesano' ? '/artisan/products' : '/dashboard'} 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg transition-all"
+                >
+                  <UserCircle className="w-5 h-5" /> 
+                  <span>Mi Panel</span>
                 </Link>
                 {user.role === 'artesano' && (
-                  <Link href="/artisan/profile" className="flex items-center gap-2 text-base text-orange-600 hover:text-orange-800">
-                    <UserCircle className="w-5 h-5" /> Editar Perfil
+                  <Link 
+                    href="/artisan/profile" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg transition-all"
+                  >
+                    <UserCircle className="w-5 h-5" /> 
+                    <span>Editar Perfil</span>
                   </Link>
                 )}
-                <button onClick={() => { setMobileMenuOpen(false); user && user.logout && user.logout(); }} className="w-full flex items-center gap-2 text-base text-red-600 hover:text-red-800 font-semibold py-2 px-3 rounded-lg transition-colors">
-                  <X className="w-5 h-5" /> Cerrar Sesión
+                {user.role === 'cliente' && (
+                  <Link 
+                    href="/dashboard/favorites" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg transition-all"
+                  >
+                    <Heart className="w-5 h-5" /> 
+                    <span>Mis Favoritos</span>
+                  </Link>
+                )}
+                <button 
+                  onClick={() => { 
+                    setMobileMenuOpen(false); 
+                    logout(); 
+                  }} 
+                  className="w-full flex items-center gap-3 text-base text-red-600 hover:text-red-700 hover:bg-red-50 font-medium py-3 px-4 rounded-lg transition-all mt-2"
+                >
+                  <X className="w-5 h-5" /> 
+                  <span>Cerrar Sesión</span>
                 </button>
               </div>
             )}
             {!isAuthenticated && (
-              <div className="mt-4 border-t pt-4 flex flex-col gap-2">
-                <Link href="/login" className="btn btn-ghost w-full">Iniciar Sesión</Link>
-                <Link href="/register" className="btn btn-primary w-full">Registrarse</Link>
+              <div className="mt-auto border-t pt-4 flex flex-col gap-3">
+                <Link 
+                  href="/login" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="btn btn-ghost w-full text-base"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link 
+                  href="/register" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="btn btn-primary w-full text-base"
+                >
+                  Registrarse
+                </Link>
               </div>
             )}
           </div>

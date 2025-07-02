@@ -40,7 +40,7 @@ const UserMenu = () => {
                 />
               ) : (
                 <Image
-                  src={auth.user?.avatar || '/static/default-avatar.png'}
+                  src={imageUrl(auth.user?.avatar) || '/static/default-avatar.png'}
                   alt={auth.user?.name || 'Avatar'}
                   width={40}
                   height={40}
