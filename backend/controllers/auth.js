@@ -177,7 +177,9 @@ const forgotPassword = async (req, res) => {
         );
 
         // Crear URL de reseteo
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const frontendUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://artesaniasyco.com' 
+            : (process.env.FRONTEND_URL || 'http://localhost:3000');
         const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
         // Enviar email real usando Resend
@@ -185,7 +187,7 @@ const forgotPassword = async (req, res) => {
         const html = `
           <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px 24px;">
             <div style="text-align: center; margin-bottom: 24px;">
-              <img src='${frontendUrl}/static/LogoIncial.png' alt='Logo Artesanías & Co' style='width: 90px; margin-bottom: 12px;'/>
+              <img src='https://artesaniasyco.com/static/LogoIncial.png' alt='Logo Artesanías & Co' style='width: 90px; margin-bottom: 12px; height: auto;'/>
               <h2 style="color: #ea580c; margin: 0; font-size: 2rem; letter-spacing: 1px;">Artesanías & Co</h2>
             </div>
             <p style="font-size: 1.1rem; color: #333;">¡Hola!<br>Recibimos una solicitud para restablecer la contraseña de tu cuenta en <b>Artesanías & Co</b>. Si no fuiste tú, puedes ignorar este mensaje.</p>

@@ -37,6 +37,9 @@ router.post('/:orderId/pay', authenticateToken, ordersController.payOrder);
 // Generar solo la factura PDF (sin simular pago ni enviar email)
 router.post('/:id/generate-invoice', authenticateToken, ordersController.generateInvoicePDF);
 
+// Descargar factura PDF
+router.get('/:id/invoice', authenticateToken, ordersController.downloadInvoice);
+
 // Exportar pedidos a CSV
 router.get('/export/csv', authenticateToken, ordersController.exportOrdersCSV);
 

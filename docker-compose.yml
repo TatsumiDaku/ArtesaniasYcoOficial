@@ -41,6 +41,7 @@ services:
       - PORT=5000
       - REDIS_URL=redis://redis:6379
       - RESEND_API_KEY=re_62XWawsf_E3uF59As1Xc2C28RnLFnRcUA
+      - FRONTEND_URL=https://artesaniasyco.com
     volumes:
       - ./backend/uploads:/app/uploads
     depends_on:

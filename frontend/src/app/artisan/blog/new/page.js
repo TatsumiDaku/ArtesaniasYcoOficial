@@ -206,12 +206,46 @@ const NewBlogPage = () => {
               >
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1"><CalendarDays className="w-4 h-4" />Fecha y hora de inicio</label>
-                    <input type="datetime-local" value={eventStart} onChange={e => setEventStart(e.target.value)} className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Fecha y hora de inicio</label>
+                    <div className="relative">
+                      <input
+                        type="datetime-local"
+                        value={eventStart}
+                        onChange={e => setEventStart(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400 pr-12"
+                        id="eventStartInput"
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-orange-500 hover:text-orange-700"
+                        onClick={() => document.getElementById('eventStartInput')?.focus()}
+                        aria-label="Seleccionar fecha de inicio"
+                      >
+                        <CalendarDays className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1"><CalendarDays className="w-4 h-4" />Fecha y hora de fin</label>
-                    <input type="datetime-local" value={eventEnd} onChange={e => setEventEnd(e.target.value)} className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400" />
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Fecha y hora de fin</label>
+                    <div className="relative">
+                      <input
+                        type="datetime-local"
+                        value={eventEnd}
+                        onChange={e => setEventEnd(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border-2 border-orange-200 focus:ring-2 focus:ring-orange-400 pr-12"
+                        id="eventEndInput"
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-orange-500 hover:text-orange-700"
+                        onClick={() => document.getElementById('eventEndInput')?.focus()}
+                        aria-label="Seleccionar fecha de fin"
+                      >
+                        <CalendarDays className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div>

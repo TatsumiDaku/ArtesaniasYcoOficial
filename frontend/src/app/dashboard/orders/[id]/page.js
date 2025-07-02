@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from '@/utils/api';
-import { Loader2, FileText, ArrowLeft, Package, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, FileText, ArrowLeft, Package, CheckCircle, XCircle, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
@@ -33,32 +33,72 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingPayment, setProcessingPayment] = useState(false);
+
+  const fetchOrder = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/orders/${id}`);
+      setOrder(res.data);
+      // Notificación de cambio de estado
+      const lastStatus = localStorage.getItem(`orderStatus_${id}`);
+      if (lastStatus && lastStatus !== res.data.status) {
+        toast('¡El estado de tu pedido ha cambiado a: ' + (statusLabels[res.data.status] || res.data.status) + '!', { icon: '🔔' });
+      }
+      localStorage.setItem(`orderStatus_${id}`, res.data.status);
+      // Obtener los items del pedido
+      const itemsRes = await api.get(`/orders/${id}/items`);
+      setItems(itemsRes.data);
+    } catch (err) {
+      toast.error('No se pudo cargar el pedido');
+      router.push('/dashboard/orders');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
-    const fetchOrder = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/orders/${id}`);
-        setOrder(res.data);
-        // Notificación de cambio de estado
-        const lastStatus = localStorage.getItem(`orderStatus_${id}`);
-        if (lastStatus && lastStatus !== res.data.status) {
-          toast('¡El estado de tu pedido ha cambiado a: ' + (statusLabels[res.data.status] || res.data.status) + '!', { icon: '🔔' });
-        }
-        localStorage.setItem(`orderStatus_${id}`, res.data.status);
-        // Obtener los items del pedido
-        const itemsRes = await api.get(`/orders/${id}/items`);
-        setItems(itemsRes.data);
-      } catch (err) {
-        toast.error('No se pudo cargar el pedido');
-        router.push('/dashboard/orders');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchOrder();
   }, [id, router]);
+
+  const handlePayOrder = async () => {
+    setProcessingPayment(true);
+    try {
+      const response = await api.post(`/orders/${order.id}/pay`);
+      toast.success(response.data.message || 'Pago procesado exitosamente');
+      // Recargar los datos del pedido
+      await fetchOrder();
+    } catch (error) {
+      console.error('Error procesando pago:', error);
+      toast.error(error.response?.data?.message || 'Error al procesar el pago');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleDownloadInvoice = async () => {
+    try {
+      const response = await api.get(`/orders/${order.id}/invoice`, {
+        responseType: 'blob'
+      });
+      
+      // Crear un enlace de descarga
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `factura-orden-${order.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Factura descargada correctamente');
+    } catch (error) {
+      console.error('Error descargando factura:', error);
+      toast.error('No se pudo descargar la factura');
+    }
+  };
 
   if (loading) {
     return (
@@ -120,17 +160,36 @@ export default function OrderDetailPage() {
           )}
         </ul>
         <div className="flex flex-col gap-3 mt-4">
+          {order.status === 'pending' && (
+            <button
+              onClick={handlePayOrder}
+              disabled={processingPayment}
+              className="btn bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition flex items-center gap-2 justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {processingPayment ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Procesando pago...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  Pagar Ahora
+                </>
+              )}
+            </button>
+          )}
           {['paid','confirmed','shipped','in_transit','delivered'].includes(order.status) ? (
-            <a
-              href={`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/uploads/invoice-order-${order.id}.pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleDownloadInvoice}
               className="btn bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition flex items-center gap-2 justify-center"
             >
               <FileText className="w-5 h-5" /> Descargar Factura PDF
-            </a>
+            </button>
           ) : (
-            <span className="text-gray-400 text-xs">La factura estará disponible tras el pago.<br/>También podrás verla y descargarla desde esta sección cuando el pedido esté pagado.</span>
+            order.status !== 'pending' && (
+              <span className="text-gray-400 text-xs">La factura estará disponible tras el pago.<br/>También podrás verla y descargarla desde esta sección cuando el pedido esté pagado.</span>
+            )
           )}
           <Link href="/dashboard/orders" className="inline-flex items-center gap-2 mt-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-pink-400 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300">
             <ArrowLeft className="w-5 h-5" /> Volver a mis pedidos

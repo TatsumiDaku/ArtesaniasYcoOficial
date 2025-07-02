@@ -44,7 +44,24 @@ function BlogDetailModal({ blog, open, onClose, onCommentDeleted }) {
               style={{ maxHeight: '96px' }}
             />
           )}
-          {blog.image_url_2 && <Image src={imageUrl(blog.image_url_2)} alt="Imagen 2" width={96} height={96} className="rounded-lg object-cover border w-24 h-24" unoptimized />}
+          {blog.image_url_2 && (
+            blog.image_url_2.startsWith('/uploads') ? (
+              <img
+                src={imageUrl(blog.image_url_2)}
+                alt="Imagen 2"
+                className="w-24 h-24 object-cover rounded-lg border"
+              />
+            ) : (
+              <Image 
+                src={imageUrl(blog.image_url_2)} 
+                alt="Imagen 2" 
+                width={96} 
+                height={96} 
+                className="rounded-lg object-cover border w-24 h-24" 
+                unoptimized 
+              />
+            )
+          )}
         </div>
         <div className="mb-2 text-gray-700"><span className="font-semibold">Autor:</span> {blog.author_name || "-"}</div>
         <div className="mb-2 text-gray-700"><span className="font-semibold">Estado:</span> {blog.status}</div>
@@ -67,7 +84,22 @@ function BlogDetailModal({ blog, open, onClose, onCommentDeleted }) {
             <ul className="mt-2 space-y-2 max-h-40 overflow-y-auto pr-2">
               {blog.comments.map(c => (
                 <li key={c.id} className="flex items-start gap-2 border-b pb-2 last:border-b-0">
-                  <Image src={imageUrl(c.user_avatar) || '/static/default-avatar.png'} alt={c.user_name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border" unoptimized />
+                  {c.user_avatar && c.user_avatar.startsWith('/uploads') ? (
+                    <img 
+                      src={imageUrl(c.user_avatar)} 
+                      alt={c.user_name} 
+                      className="w-8 h-8 rounded-full object-cover border"
+                    />
+                  ) : (
+                    <Image 
+                      src={imageUrl(c.user_avatar) || '/static/default-avatar.png'} 
+                      alt={c.user_name} 
+                      width={32} 
+                      height={32} 
+                      className="w-8 h-8 rounded-full object-cover border" 
+                      unoptimized 
+                    />
+                  )}
                   <div className="flex-1">
                     <div className="text-xs text-gray-500">{c.user_name} • {new Date(c.created_at).toLocaleDateString()}</div>
                     <div className="text-gray-700 text-sm">{c.comment}</div>

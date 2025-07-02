@@ -274,7 +274,7 @@ function ArtisanStatisticsPage() {
           {/* KPI Calificación promedio */}
           <div className="bg-white rounded-2xl shadow-xl border border-yellow-100 p-6 flex flex-col items-center group relative transition-transform duration-200 hover:scale-105 animate-fade-in">
             <div className="mb-2">{KPI_ICONS.rating}</div>
-            <span className="text-3xl font-extrabold text-yellow-500">{loadingStats ? '--' : errorStats ? '--' : userStats?.reviewsStats?.average_rating?.toFixed(2) ?? '--'}</span>
+            <span className="text-3xl font-extrabold text-yellow-500">{loadingStats ? '--' : errorStats ? '--' : userStats?.reviews?.average_rating?.toFixed(2) ?? '--'}</span>
             <span className="text-gray-500 mt-1">Calificación promedio</span>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded shadow">Promedio de calificaciones de todos tus productos.</div>
           </div>
@@ -530,13 +530,21 @@ function ArtisanStatisticsPage() {
               <ul className="divide-y divide-gray-100">
                 {lowStockProducts.map(p => (
                   <li key={p.product_id} className="py-2 flex items-center gap-3 group">
-                    <Image
-                      src={imageUrl(p.image)}
-                      alt={p.name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded object-cover border"
-                    />
+                    {p.image?.startsWith('/uploads/') ? (
+                      <img
+                        src={imageUrl(p.image)}
+                        alt={p.name}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
+                    ) : (
+                      <Image
+                        src={imageUrl(p.image)}
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
+                    )}
                     <span className="font-medium text-gray-800">{p.name}</span>
                     <span className={`ml-auto text-sm font-bold px-2 py-1 rounded ${p.stock <= 2 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>Stock: {p.stock}</span>
                   </li>
@@ -569,13 +577,25 @@ function ArtisanStatisticsPage() {
                 {latestReviews.map(r => (
                   <li key={r.review_id} className="py-3 flex items-center gap-3">
                     {/* Miniatura del producto si está disponible */}
-                    <Image
-                      src={imageUrl(r.product_image)}
-                      alt={r.product_name}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded object-cover border"
-                    />
+                    {r.product_image ? (
+                      r.product_image.startsWith('/uploads/') ? (
+                        <img
+                          src={imageUrl(r.product_image)}
+                          alt={r.product_name}
+                          className="w-10 h-10 rounded object-cover border"
+                        />
+                      ) : (
+                        <Image
+                          src={imageUrl(r.product_image)}
+                          alt={r.product_name}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded object-cover border"
+                        />
+                      )
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-gray-200 border" />
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-orange-700 truncate">{r.product_name}</span>

@@ -195,13 +195,13 @@ const Header = () => {
                     className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
                   />
                 ) : (
-                  <Image
-                    src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
-                    alt="Avatar"
+                <Image
+                  src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
+                  alt="Avatar"
                     width={64}
                     height={64}
                     className="w-16 h-16 rounded-full object-cover border-3 border-white shadow-lg"
-                  />
+                />
                 )}
                 <div className="text-center">
                   <p className="font-semibold text-lg text-gray-800 truncate max-w-[200px]">{user.name}</p>
@@ -227,7 +227,7 @@ const Header = () => {
             {isAuthenticated && (
               <div className="mt-auto border-t pt-4 flex flex-col gap-2">
                 <Link 
-                  href={user.role === 'admin' ? '/admin/dashboard' : user.role === 'artesano' ? '/artisan/products' : '/dashboard'} 
+                  href={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} 
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 text-base font-medium text-gray-700 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg transition-all"
                 >

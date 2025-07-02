@@ -348,12 +348,25 @@ const getUserStatsById = async (req, res) => {
 const getSalesByDay = async (req, res) => {
   try {
     const artisanId = req.user.id;
-    const days = parseInt(req.query.days, 10) || 30;
-    // Fechas en zona horaria Colombia
-    const now = new Date();
-    const endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); // mañana 00:00
-    const startDate = new Date(endDate);
-    startDate.setDate(endDate.getDate() - days);
+    // Usar las fechas del query string o valores por defecto
+    const endDateParam = req.query.endDate;
+    const startDateParam = req.query.startDate;
+    
+    let endDate, startDate;
+    
+    if (endDateParam && startDateParam) {
+      // Usar las fechas proporcionadas
+      endDate = new Date(endDateParam);
+      endDate.setDate(endDate.getDate() + 1); // Incluir todo el día final
+      startDate = new Date(startDateParam);
+    } else {
+      // Valores por defecto: últimos 30 días
+      const days = parseInt(req.query.days, 10) || 30;
+      const now = new Date();
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - days);
+    }
 
     // Query: contar ventas por día
     const result = await pool.query(`
@@ -373,11 +386,11 @@ const getSalesByDay = async (req, res) => {
     const salesMap = {};
     result.rows.forEach(row => { salesMap[row.date] = parseInt(row.sales, 10); });
     const data = [];
-    for (let i = 0; i < days; i++) {
-      const d = new Date(startDate);
-      d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().slice(0, 10);
+    const currentDate = new Date(startDate);
+    while (currentDate < endDate) {
+      const dateStr = currentDate.toISOString().slice(0, 10);
       data.push({ date: dateStr, sales: salesMap[dateStr] || 0 });
+      currentDate.setDate(currentDate.getDate() + 1);
     }
     res.json(data);
   } catch (error) {
@@ -389,12 +402,25 @@ const getSalesByDay = async (req, res) => {
 const getIncomeByMonth = async (req, res) => {
   try {
     const artisanId = req.user.id;
-    const months = parseInt(req.query.months, 10) || 12;
-    // Calcular el rango de meses
-    const now = new Date();
-    const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1); // primer día del mes siguiente
-    const startDate = new Date(endDate);
-    startDate.setMonth(endDate.getMonth() - months);
+    // Usar las fechas del query string o valores por defecto
+    const endDateParam = req.query.endDate;
+    const startDateParam = req.query.startDate;
+    
+    let endDate, startDate;
+    
+    if (endDateParam && startDateParam) {
+      // Usar las fechas proporcionadas
+      endDate = new Date(endDateParam);
+      endDate.setMonth(endDate.getMonth() + 1); // Incluir todo el mes final
+      startDate = new Date(startDateParam);
+    } else {
+      // Valores por defecto: últimos 12 meses
+      const months = parseInt(req.query.months, 10) || 12;
+      const now = new Date();
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      startDate = new Date(endDate);
+      startDate.setMonth(endDate.getMonth() - months);
+    }
 
     // Query: sumar ingresos por mes
     const result = await pool.query(`
@@ -414,11 +440,11 @@ const getIncomeByMonth = async (req, res) => {
     const incomeMap = {};
     result.rows.forEach(row => { incomeMap[row.month] = parseFloat(row.income); });
     const data = [];
-    for (let i = 0; i < months; i++) {
-      const d = new Date(startDate);
-      d.setMonth(d.getMonth() + i);
-      const monthStr = d.toISOString().slice(0, 7);
+    const currentDate = new Date(startDate);
+    while (currentDate < endDate) {
+      const monthStr = currentDate.toISOString().slice(0, 7);
       data.push({ month: monthStr, income: incomeMap[monthStr] || 0 });
+      currentDate.setMonth(currentDate.getMonth() + 1);
     }
     res.json(data);
   } catch (error) {
@@ -485,18 +511,20 @@ const getProductRatings = async (req, res) => {
       SELECT 
         p.id as product_id,
         p.name,
+        p.images[1] as image,
         COALESCE(AVG(r.rating), 0) as average_rating,
         COUNT(r.id) as review_count
       FROM products p
       LEFT JOIN reviews r ON r.product_id = p.id
       WHERE p.artisan_id = $1
-      GROUP BY p.id, p.name
+      GROUP BY p.id, p.name, p.images
       ORDER BY p.name ASC
     `, [artisanId]);
     // Asegurar que los productos sin reseñas tengan review_count=0 y average_rating=0
     const data = result.rows.map(row => ({
       product_id: row.product_id,
       name: row.name,
+      image: row.image,
       average_rating: parseFloat(row.average_rating),
       review_count: parseInt(row.review_count, 10)
     }));
@@ -539,6 +567,7 @@ const getLatestReviews = async (req, res) => {
         r.id as review_id,
         p.id as product_id,
         p.name as product_name,
+        p.images[1] as product_image,
         u.id as user_id,
         u.name as user_name,
         r.rating,

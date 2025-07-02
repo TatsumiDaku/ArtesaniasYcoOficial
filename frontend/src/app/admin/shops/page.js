@@ -11,6 +11,7 @@ import { Switch } from '@headlessui/react';
 import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import DataTable from '@/components/ui/DataTable';
+import imageUrl from '@/utils/imageUrl';
 
 const StatusBadge = ({ status }) => {
   const statusInfo = {
@@ -94,13 +95,24 @@ const AdminShopsPage = () => {
       accessorKey: 'name',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-            <Image 
-                src={row.original.avatar ? `${API_BASE_URL}${row.original.avatar}` : '/default-avatar.png'} 
-                alt={row.original.name} 
-                width={40} 
-                height={40} 
-                className="rounded-full object-cover" 
-            />
+            {row.original.avatar && imageUrl(row.original.avatar).startsWith('/uploads') ? (
+              <img
+                src={imageUrl(row.original.avatar)}
+                alt={row.original.name}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <Image
+                src={imageUrl(row.original.avatar)}
+                alt={row.original.name}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+            )}
             <div>
                 <p className="font-bold">{row.original.name}</p>
                 <p className="text-sm text-gray-500">{row.original.email}</p>

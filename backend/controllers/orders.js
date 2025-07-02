@@ -25,7 +25,7 @@ const getOrders = async (req, res) => {
       return res.json(orders.rows);
     }
     // Si es artesano y se pasa artisan_id, devolver solo pedidos con productos suyos
-    if (req.user.role === 'artesano' && (req.query.artisan_id || req.query.artisan_id === req.user.id || req.query.artisan_id === String(req.user.id))) {
+          if (req.user.role === 'artesano' && (req.query.artisan_id || req.query.artisan_id === req.user.id || req.query.artisan_id === String(req.user.id))) {
       // Buscar pedidos que tengan al menos un producto del artesano
       const ordersRes = await pool.query(`
         SELECT DISTINCT o.*, u.name as user_name FROM orders o
@@ -83,11 +83,33 @@ const getOrder = async (req, res) => {
     if (orderRes.rows.length === 0) {
       return res.status(404).json({ message: 'Orden no encontrada' });
     }
-    // Solo el dueño o admin puede ver
-    if (req.user.role !== 'admin' && orderRes.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permisos para ver esta orden' });
+    
+    const order = orderRes.rows[0];
+    
+    // Verificar permisos
+    if (req.user.role === 'admin' || order.user_id === req.user.id) {
+      // Admin o dueño del pedido pueden ver
+      return res.json(order);
     }
-    res.json(orderRes.rows[0]);
+    
+    // Si es artesano, verificar si tiene productos en el pedido
+    if (req.user.role === 'artesano') {
+      const hasProductsInOrder = await pool.query(
+        `SELECT COUNT(*) as count 
+         FROM order_items oi 
+         JOIN products p ON oi.product_id = p.id 
+         WHERE oi.order_id = $1 AND p.artisan_id = $2`,
+        [id, req.user.id]
+      );
+      
+      if (parseInt(hasProductsInOrder.rows[0].count) > 0) {
+        return res.json(order);
+      }
+    }
+    
+    // Si no cumple ninguna condición, denegar acceso
+    return res.status(403).json({ message: 'No tienes permisos para ver esta orden' });
+    
   } catch (error) {
     console.error('Error obteniendo orden:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
@@ -587,6 +609,40 @@ const exportOrdersExcel = async (req, res) => {
 const getOrderItems = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Primero verificar que el pedido existe
+    const orderRes = await pool.query('SELECT * FROM orders WHERE id = $1', [id]);
+    if (orderRes.rows.length === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    
+    const order = orderRes.rows[0];
+    
+    // Verificar permisos - similar a getOrder
+    let hasPermission = false;
+    
+    if (req.user.role === 'admin' || order.user_id === req.user.id) {
+      hasPermission = true;
+    } else if (req.user.role === 'artesano') {
+      // Verificar si el artesano tiene productos en este pedido
+      const hasProductsInOrder = await pool.query(
+        `SELECT COUNT(*) as count 
+         FROM order_items oi 
+         JOIN products p ON oi.product_id = p.id 
+         WHERE oi.order_id = $1 AND p.artisan_id = $2`,
+        [id, req.user.id]
+      );
+      
+      if (parseInt(hasProductsInOrder.rows[0].count) > 0) {
+        hasPermission = true;
+      }
+    }
+    
+    if (!hasPermission) {
+      return res.status(403).json({ message: 'No tienes permisos para ver los items de esta orden' });
+    }
+    
+    // Si tiene permisos, obtener los items
     const itemsRes = await pool.query(
       'SELECT oi.*, p.name, p.stock, p.description, c.name as category FROM order_items oi JOIN products p ON oi.product_id = p.id LEFT JOIN categories c ON p.category_id = c.id WHERE oi.order_id = $1',
       [id]
@@ -712,18 +768,158 @@ const generateInvoicePDF = async (req, res) => {
   }
 };
 
+// Descargar factura PDF
+const downloadInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar que la orden existe
+    const orderResult = await pool.query(
+      'SELECT * FROM orders WHERE id = $1',
+      [id]
+    );
+    
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Orden no encontrada' });
+    }
+    
+    const order = orderResult.rows[0];
+    
+    // Verificar permisos
+    let hasPermission = false;
+    
+    if (req.user.role === 'admin' || order.user_id === req.user.id) {
+      hasPermission = true;
+    } else if (req.user.role === 'artesano') {
+      // Verificar si el artesano tiene productos en este pedido
+      const hasProductsInOrder = await pool.query(
+        `SELECT COUNT(*) as count 
+         FROM order_items oi 
+         JOIN products p ON oi.product_id = p.id 
+         WHERE oi.order_id = $1 AND p.artisan_id = $2`,
+        [id, req.user.id]
+      );
+      
+      if (parseInt(hasProductsInOrder.rows[0].count) > 0) {
+        hasPermission = true;
+      }
+    }
+    
+    if (!hasPermission) {
+      return res.status(403).json({ message: 'No tienes permisos para descargar esta factura' });
+    }
+    
+    // Verificar que el pedido esté en un estado que permita descargar factura
+    const allowedStatuses = ['paid', 'confirmed', 'shipped', 'in_transit', 'delivered'];
+    if (!allowedStatuses.includes(order.status)) {
+      return res.status(400).json({ message: 'La factura no está disponible para este pedido aún' });
+    }
+    
+    // Construir la ruta del archivo PDF
+    const pdfPath = path.join(__dirname, '../uploads', `invoice-order-${id}.pdf`);
+    
+    // Verificar si el archivo existe
+    const fs = require('fs').promises;
+    try {
+      await fs.access(pdfPath);
+    } catch (error) {
+      // Si no existe, intentar generarlo
+      await generateInvoiceForOrder(id);
+    }
+    
+    // Enviar el archivo
+    res.download(pdfPath, `factura-orden-${id}.pdf`, (err) => {
+      if (err) {
+        console.error('Error enviando factura:', err);
+        res.status(500).json({ message: 'Error al descargar la factura' });
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error en downloadInvoice:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Función auxiliar para generar factura si no existe
+const generateInvoiceForOrder = async (orderId) => {
+  const orderResult = await pool.query('SELECT * FROM orders WHERE id = $1', [orderId]);
+  const order = orderResult.rows[0];
+  
+  const itemsResult = await pool.query(
+    `SELECT oi.*, p.name as product_name 
+     FROM order_items oi 
+     JOIN products p ON oi.product_id = p.id 
+     WHERE oi.order_id = $1`,
+    [orderId]
+  );
+  
+  const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [order.user_id]);
+  const user = userResult.rows[0];
+  
+  // Generar factura PDF
+  const doc = new PDFDocument({ size: 'letter', margin: 50 });
+  const pdfPath = path.join(__dirname, '../uploads', `invoice-order-${orderId}.pdf`);
+  const stream = fs.createWriteStream(pdfPath);
+  doc.pipe(stream);
+  
+  // Header con logo
+  doc.font('Courier-Bold').fontSize(18).fillColor('#EA580C').text('Factura de Compra', 0, 90, { align: 'center' });
+  doc.fontSize(28).fillColor('#0F172A').text('Artesanías & Co', { align: 'center' });
+  doc.font('Helvetica').fontSize(10).fillColor('#64748B').text('Conectando arte y tradición', { align: 'center' });
+  
+  // Información de la orden
+  doc.moveDown(2);
+  doc.fontSize(11).fillColor('#0F172A');
+  doc.text(`Orden: #${orderId}`, 50, doc.y);
+  doc.text(`Fecha: ${new Date(order.created_at).toLocaleDateString('es-CO')}`, 50, doc.y + 15);
+  doc.text(`Cliente: ${user.name}`, 50, doc.y + 15);
+  doc.text(`Email: ${user.email}`, 50, doc.y + 15);
+  
+  // Productos
+  doc.moveDown(2);
+  doc.font('Helvetica-Bold').text('Productos:', 50);
+  doc.moveDown(0.5);
+  
+  let yPosition = doc.y;
+  itemsResult.rows.forEach(item => {
+    doc.font('Helvetica').fontSize(10);
+    doc.text(`${item.product_name || 'Producto'}`, 60, yPosition);
+    doc.text(`x${item.quantity}`, 350, yPosition);
+    doc.text(`$${parseFloat(item.price).toLocaleString('es-CO')} COP`, 420, yPosition, { align: 'right' });
+    yPosition += 20;
+  });
+  
+  // Total
+  doc.moveDown(2);
+  doc.font('Helvetica-Bold').fontSize(12);
+  doc.text(`Total: $${parseFloat(order.total).toLocaleString('es-CO')} COP`, 50, doc.y, { align: 'right' });
+  
+  // Footer
+  doc.moveDown(3);
+  doc.font('Helvetica').fontSize(9).fillColor('#64748B');
+  doc.text('Gracias por tu compra. Esta factura es válida como comprobante.', { align: 'center' });
+  doc.text('Artesanías & Co - NIT: 900.123.456-7', { align: 'center' });
+  
+  doc.end();
+  
+  // Esperar a que se termine de escribir el archivo
+  await new Promise((resolve) => stream.on('finish', resolve));
+};
+
 module.exports = {
   getOrders,
   getOrdersByUserId,
   getOrder,
+  getOrderItems,
   createOrder,
   updateOrderStatus,
   deleteOrder,
   checkoutOrder,
-  payOrder,
-  getOrderStatusHistory,
   exportOrdersCSV,
   exportOrdersExcel,
-  getOrderItems,
-  generateInvoicePDF
+  payOrder,
+  generateInvoicePDF,
+  downloadInvoice,
+  getOrderStatusHistory
 }; 

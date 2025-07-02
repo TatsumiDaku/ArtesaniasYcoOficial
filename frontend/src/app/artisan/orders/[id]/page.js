@@ -118,6 +118,28 @@ export default function ArtisanOrderDetailPage() {
     }
   };
 
+  const handleDownloadInvoice = async () => {
+    try {
+      const response = await api.get(`/orders/${id}/invoice`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `factura-orden-${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Factura descargada correctamente');
+    } catch (error) {
+      console.error('Error descargando factura:', error);
+      toast.error('No se pudo descargar la factura');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -234,14 +256,12 @@ export default function ArtisanOrderDetailPage() {
               <FileText className="w-4 h-4" /> Generar PDF
             </button>
             {['paid','confirmed','shipped','in_transit','delivered'].includes(order.status) ? (
-              <a
-                href={`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/uploads/invoice-order-${order.id}.pdf`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handleDownloadInvoice}
                 className="btn bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition flex items-center gap-2 justify-center"
               >
                 <FileText className="w-5 h-5" /> Descargar Factura PDF
-              </a>
+              </button>
             ) : (
               <span className="text-gray-400 text-xs">La factura estará disponible tras el pago.<br/>También podrás verla y descargarla desde esta sección cuando el pedido esté pagado.</span>
             )}

@@ -420,6 +420,22 @@ const AdminProductsPage = () => {
           ? imageUrl(row.original.images[0]) 
           : '/static/placeholder.png';
         
+        // Verificar si la imagen viene de uploads
+        const isUploadImage = row.original.images && row.original.images.length > 0 && row.original.images[0].startsWith('/uploads');
+        
+        if (isUploadImage) {
+          return (
+            <img
+              src={imageSrc}
+              alt={row.original.name || 'Producto'}
+              className="rounded-lg object-cover shadow-md border border-gray-200 w-16 h-16"
+              onError={(e) => {
+                e.target.src = '/static/placeholder.png';
+              }}
+            />
+          );
+        }
+        
         return (
           <Image
             src={imageSrc}

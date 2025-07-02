@@ -156,37 +156,25 @@ function ArtisanOrdersPage() {
     if (search) params.push(`search=${encodeURIComponent(search)}`);
     if (statusFilter) params.push(`status=${encodeURIComponent(statusFilter)}`);
     if (user?.id) params.push(`artisan_id=${user.id}`);
-    const url = `/api/orders/export/csv${params.length ? '?' + params.join('&') : ''}`;
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(url, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get(`/orders/export/csv${params.length ? '?' + params.join('&') : ''}`, {
+        responseType: 'blob'
       });
+      
       const blob = new Blob([response.data], { type: 'text/csv' });
       const linkCSV = document.createElement('a');
       linkCSV.href = window.URL.createObjectURL(blob);
-      linkCSV.setAttribute('download', 'pedidos.csv');
+      linkCSV.setAttribute('download', `pedidos-${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(linkCSV);
       linkCSV.click();
       document.body.removeChild(linkCSV);
+      window.URL.revokeObjectURL(linkCSV.href);
+      
+      toast.success('Archivo CSV descargado');
     } catch (err) {
-      let msg = 'No se pudo descargar el archivo CSV';
-      if (err?.response?.data) {
-        try {
-          const reader = new FileReader();
-          reader.onload = function() {
-            try {
-              const json = JSON.parse(reader.result);
-              if (json.message) toast.error(json.message);
-              else toast.error(msg);
-            } catch { toast.error(msg); }
-          };
-          reader.readAsText(err.response.data);
-          return;
-        } catch {}
-      }
+      console.error('Error exportando CSV:', err);
+      const msg = err?.response?.data?.message || 'No se pudo descargar el archivo CSV';
       toast.error(msg);
     }
   };
@@ -196,93 +184,87 @@ function ArtisanOrdersPage() {
     if (search) params.push(`search=${encodeURIComponent(search)}`);
     if (statusFilter) params.push(`status=${encodeURIComponent(statusFilter)}`);
     if (user?.id) params.push(`artisan_id=${user.id}`);
-    const url = `/api/orders/export/excel${params.length ? '?' + params.join('&') : ''}`;
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(url, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get(`/orders/export/excel${params.length ? '?' + params.join('&') : ''}`, {
+        responseType: 'blob'
       });
+      
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const linkExcel = document.createElement('a');
       linkExcel.href = window.URL.createObjectURL(blob);
-      linkExcel.setAttribute('download', 'pedidos.xlsx');
+      linkExcel.setAttribute('download', `pedidos-${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(linkExcel);
       linkExcel.click();
       document.body.removeChild(linkExcel);
+      window.URL.revokeObjectURL(linkExcel.href);
+      
+      toast.success('Archivo Excel descargado');
     } catch (err) {
-      let msg = 'No se pudo descargar el archivo Excel';
-      if (err?.response?.data) {
-        try {
-          const reader = new FileReader();
-          reader.onload = function() {
-            try {
-              const json = JSON.parse(reader.result);
-              if (json.message) toast.error(json.message);
-              else toast.error(msg);
-            } catch { toast.error(msg); }
-          };
-          reader.readAsText(err.response.data);
-          return;
-        } catch {}
-      }
+      console.error('Error exportando Excel:', err);
+      const msg = err?.response?.data?.message || 'No se pudo descargar el archivo Excel';
       toast.error(msg);
     }
   };
 
   const handleExportSelectedCSV = async () => {
     const params = [];
-    if (selectedOrders.length > 0) params.push(`ids=${selectedOrders.join(',')}`);
-    else {
+    if (selectedOrders.length > 0) {
+      params.push(`ids=${selectedOrders.join(',')}`);
+    } else {
       if (search) params.push(`search=${encodeURIComponent(search)}`);
       if (statusFilter) params.push(`status=${encodeURIComponent(statusFilter)}`);
       if (user?.id) params.push(`artisan_id=${user.id}`);
     }
-    const url = `/api/orders/export/csv${params.length ? '?' + params.join('&') : ''}`;
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(url, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get(`/orders/export/csv${params.length ? '?' + params.join('&') : ''}`, {
+        responseType: 'blob'
       });
+      
       const blob = new Blob([response.data], { type: 'text/csv' });
       const linkSelCSV = document.createElement('a');
       linkSelCSV.href = window.URL.createObjectURL(blob);
-      linkSelCSV.setAttribute('download', 'pedidos.csv');
+      linkSelCSV.setAttribute('download', `pedidos-seleccionados-${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(linkSelCSV);
       linkSelCSV.click();
       document.body.removeChild(linkSelCSV);
+      window.URL.revokeObjectURL(linkSelCSV.href);
+      
+      toast.success('Archivo CSV descargado');
     } catch (err) {
+      console.error('Error exportando CSV:', err);
       toast.error('No se pudo descargar el archivo CSV');
     }
   };
 
   const handleExportSelectedExcel = async () => {
     const params = [];
-    if (selectedOrders.length > 0) params.push(`ids=${selectedOrders.join(',')}`);
-    else {
+    if (selectedOrders.length > 0) {
+      params.push(`ids=${selectedOrders.join(',')}`);
+    } else {
       if (search) params.push(`search=${encodeURIComponent(search)}`);
       if (statusFilter) params.push(`status=${encodeURIComponent(statusFilter)}`);
       if (user?.id) params.push(`artisan_id=${user.id}`);
     }
-    const url = `/api/orders/export/excel${params.length ? '?' + params.join('&') : ''}`;
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(url, {
-        baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-        responseType: 'blob',
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get(`/orders/export/excel${params.length ? '?' + params.join('&') : ''}`, {
+        responseType: 'blob'
       });
+      
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const linkSelExcel = document.createElement('a');
       linkSelExcel.href = window.URL.createObjectURL(blob);
-      linkSelExcel.setAttribute('download', 'pedidos.xlsx');
+      linkSelExcel.setAttribute('download', `pedidos-seleccionados-${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(linkSelExcel);
       linkSelExcel.click();
       document.body.removeChild(linkSelExcel);
+      window.URL.revokeObjectURL(linkSelExcel.href);
+      
+      toast.success('Archivo Excel descargado');
     } catch (err) {
+      console.error('Error exportando Excel:', err);
       toast.error('No se pudo descargar el archivo Excel');
     }
   };
@@ -329,6 +311,28 @@ function ArtisanOrdersPage() {
       }
     }
     toast.success(`${success} factura(s) reenviada(s), ${fail} fallidas.`);
+  };
+
+  const handleDownloadInvoice = async (orderId) => {
+    try {
+      const response = await api.get(`/orders/${orderId}/invoice`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `factura-orden-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Factura descargada correctamente');
+    } catch (error) {
+      console.error('Error descargando factura:', error);
+      toast.error('No se pudo descargar la factura');
+    }
   };
 
   return (
@@ -455,16 +459,14 @@ function ArtisanOrdersPage() {
                       <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${statusColors[order.status] || 'bg-gray-100 text-gray-700'}`} title={`Estado actual del pedido: ${statusLabels[order.status] || order.status}`}>{statusLabels[order.status] || order.status}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {order.status === 'paid' || order.status === 'confirmed' ? (
-                        <a
-                          href={`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000'}/uploads/invoice-order-${order.id}.pdf`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {['paid', 'confirmed', 'shipped', 'in_transit', 'delivered'].includes(order.status) ? (
+                        <button
+                          onClick={() => handleDownloadInvoice(order.id)}
                           className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-semibold"
                           title="Descargar factura PDF"
                         >
                           <FileText className="w-5 h-5" /> PDF
-                        </a>
+                        </button>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-center">

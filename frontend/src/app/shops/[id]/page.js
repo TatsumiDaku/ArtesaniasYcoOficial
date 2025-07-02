@@ -19,14 +19,14 @@ const ProductCard = ({ product }) => (
                         className="absolute inset-0 w-full h-full object-cover rounded-t-lg"
                     />
                 ) : (
-                    <Image
-                        src={imageUrl(product.images && product.images[0]) || '/static/placeholder.png'}
-                        alt={product.name}
-                        fill
-                        className="rounded-t-lg"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        priority
-                    />
+                <Image
+                    src={imageUrl(product.images && product.images[0]) || '/static/placeholder.png'}
+                    alt={product.name}
+                    fill
+                    className="rounded-t-lg"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    priority
+                />
                 )}
             </div>
             <div className="p-4">
