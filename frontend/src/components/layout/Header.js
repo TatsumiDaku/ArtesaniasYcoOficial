@@ -91,7 +91,7 @@ const Header = () => {
               <div className="relative">
                 <Image 
                   src="/static/LogoIncial.png" 
-                  alt="ArtesaníasYCo Logo" 
+                  alt="Artesanías & CO Logo" 
                   width={55} 
                   height={55}
                   className="drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300 group-hover:scale-110"

@@ -64,6 +64,8 @@ services:
     restart: unless-stopped
     networks:
       - artesanias_net
+    environment:
+      - BACKEND_HOST=http://backend:5000
 
   nginx:
     image: nginx:alpine

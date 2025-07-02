@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const backendHost = process.env.BACKEND_HOST || 'http://localhost:5000';
+
 const nextConfig = {
     output: 'standalone',
     images: {
@@ -27,7 +29,7 @@ const nextConfig = {
         return [
             {
                 source: '/uploads/:path*',
-                destination: 'http://backend:5000/uploads/:path*',
+                destination: `${backendHost}/uploads/:path*`,
             },
         ];
     },

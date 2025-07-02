@@ -13,7 +13,7 @@ const Footer = () => {
             <Link href="/" className="flex items-center gap-2 mb-4 group">
               <Image 
                 src="/static/LogoIncial.png" 
-                alt="Artesanías & Co Logo" 
+                alt="Artesanías & CO Logo" 
                 width={50} 
                 height={50} 
                 className="group-hover:rotate-12 transition-transform duration-300"

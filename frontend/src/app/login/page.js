@@ -21,7 +21,7 @@ const LoginPage = () => {
         <div className="text-center mb-8">
             <Image
               src="/static/LogoIncial.png"
-              alt="Logo Artesanías & Co"
+              alt="Artesanías & CO Logo"
               width={120}
               height={120}
               className="mx-auto"
