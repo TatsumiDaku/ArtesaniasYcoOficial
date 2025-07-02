@@ -181,7 +181,7 @@ PORT=5000
 # Configuración de la base de datos PostgreSQL (usa los datos reales de tu servidor o contenedor)
 DB_USER=prod_user
 DB_PASSWORD=contraseña_segura
-DB_HOST=db                # Si usas Docker Compose, este es el nombre del servicio de la base de datos
+DB_HOST=postgres            # Si usas Docker Compose, este es el nombre del servicio de la base de datos
 DB_PORT=5432
 DB_NAME=artesanias_db
 
@@ -191,7 +191,8 @@ JWT_SECRET=clave_super_secreta_prod
 # Configuración de correo para envío de emails (puede ser Gmail, SMTP de tu dominio, etc)
 EMAIL_USER=correo@tudominio.com
 EMAIL_PASS=contraseña_app_prod
-
+NEXT_PUBLIC_API_URL=https://artesaniasyco.com/api
+DOMAIN_NAME=artesaniasyco.com
 # URL pública del frontend (debe ser el dominio real en producción)
 FRONTEND_URL=https://artesaniasyco.com
 
