@@ -160,7 +160,13 @@ const Header = () => {
               <X className="w-6 h-6" />
             </button>
             <div className="flex flex-col items-center gap-2 mt-4">
-              <img src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={50} height={50} className="mb-1" />
+              <img 
+                src="/static/LogoIncial.png" 
+                alt="Artesanías & CO Logo" 
+                width={50} 
+                height={50}
+                className="mb-1"
+              />
               <span className="font-pacifico text-xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent">ArtesaníasYCo</span>
             </div>
             {isAuthenticated && user && (

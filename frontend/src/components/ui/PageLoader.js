@@ -11,12 +11,12 @@ const PageLoader = () => {
 
         {/* The logo itself */}
         <div className="relative bg-white p-4 rounded-full shadow-2xl">
-          <Image
+          <img 
             src="/static/LogoIncial.png"
-            alt="Cargando..."
-            width={120}
-            height={120}
-            priority
+            alt="Artesanías & CO Logo"
+            width={60}
+            height={60}
+            className="mb-4 animate-pulse"
           />
         </div>
       </div>

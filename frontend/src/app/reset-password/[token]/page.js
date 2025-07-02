@@ -8,7 +8,6 @@ import { toast } from 'react-hot-toast';
 import { KeyRound, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import PasswordInput from '@/components/ui/PasswordInput';
-import Image from 'next/image';
 
 const ResetPasswordPage = () => {
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
@@ -51,7 +50,7 @@ const ResetPasswordPage = () => {
             <div className="flex items-center justify-center min-h-[80vh] bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
                 <div className="w-full max-w-md p-8 space-y-6 card text-center shadow-xl border border-orange-100 rounded-2xl bg-white/90">
                     <div className="flex flex-col items-center mb-2">
-                        <Image src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={70} height={70} className="mb-2 drop-shadow-sm" />
+                        <img src="/static/LogoIncial.png" alt="Artesanías & CO Logo" width={70} height={70} className="mb-2 drop-shadow-sm" />
                         <span className="font-pacifico text-3xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm">Artesanías & Co</span>
                     </div>
                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto animate-bounce" />
@@ -76,7 +75,7 @@ const ResetPasswordPage = () => {
             <div className="flex items-center justify-center min-h-[80vh] bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
                 <div className="w-full max-w-md p-8 space-y-6 card text-center shadow-xl border border-red-100 rounded-2xl bg-white/90">
                     <div className="flex flex-col items-center mb-2">
-                        <Image src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={70} height={70} className="mb-2 drop-shadow-sm" />
+                        <img src="/static/LogoIncial.png" alt="Artesanías & CO Logo" width={70} height={70} className="mb-2 drop-shadow-sm" />
                         <span className="font-pacifico text-3xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm">Artesanías & Co</span>
                     </div>
                     <AlertTriangle className="w-16 h-16 text-red-500 mx-auto animate-pulse" />
@@ -99,7 +98,7 @@ const ResetPasswordPage = () => {
         <div className="flex items-center justify-center min-h-[80vh] bg-gradient-to-br from-orange-50 via-amber-50 to-red-50">
             <div className="w-full max-w-md p-8 space-y-6 card shadow-xl border border-orange-100 rounded-2xl bg-white/90">
                 <div className="flex flex-col items-center mb-2">
-                    <Image src="/static/LogoIncial.png" alt="Logo Artesanías & Co" width={70} height={70} className="mb-2 drop-shadow-sm" />
+                    <img src="/static/LogoIncial.png" alt="Artesanías & CO Logo" width={70} height={70} className="mb-2 drop-shadow-sm" />
                     <span className="font-pacifico text-3xl bg-gradient-to-r from-amber-600 via-orange-500 to-red-600 bg-clip-text text-transparent drop-shadow-sm">Artesanías & Co</span>
                 </div>
                 <div className="text-center">

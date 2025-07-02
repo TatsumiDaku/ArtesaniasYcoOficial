@@ -19,7 +19,13 @@ const LoginPage = () => {
     <div className="min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-            <img src="/static/LogoIncial.png" alt="Artesanías & CO Logo" width={120} height={120} className="mx-auto" />
+            <img 
+                src="/static/LogoIncial.png" 
+                alt="Artesanías & CO Logo" 
+                width={120} 
+                height={120} 
+                className="mx-auto" 
+            />
         </div>
 
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50 overflow-hidden">

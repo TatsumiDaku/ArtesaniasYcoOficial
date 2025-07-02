@@ -113,7 +113,7 @@ const SobreNosotros = () => {
                     <div className="grid md:grid-cols-3 gap-8">
                         {equipo.map((miembro, index) => (
                              <div key={index} className="bg-white rounded-xl p-8 shadow-lg text-center transform hover:-translate-y-2 transition-transform duration-300">
-                                <Image
+                                <img
                                     src={miembro.imagen}
                                     alt={`Foto de ${miembro.nombre}`}
                                     width={120}
