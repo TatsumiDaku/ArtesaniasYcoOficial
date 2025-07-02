@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { fetchLatestArtisanReviews, fetchLowStockProducts, fetchUserStats, fetchSalesByDay, fetchIncomeByMonth, fetchTopProducts, fetchOrderStatusDistribution, fetchProductRatings } from '@/utils/api';
-import imageUrl from '@/utils/imageUrl';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
-import dayjs from 'dayjs';
-import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
+import api from '@/utils/api';
 import Image from 'next/image';
+import Link from 'next/link';
+import dayjs from 'dayjs';
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import withAuthProtection from '@/components/auth/withAuthProtection';
+import imageUrl from '@/utils/imageUrl';
 
 function StarRating({ rating }) {
   // Redondear a media estrella
@@ -63,7 +67,7 @@ const KPI_ICONS = {
   ),
 };
 
-export default function ArtisanStatisticsPage() {
+function ArtisanStatisticsPage() {
   const [latestReviews, setLatestReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [errorReviews, setErrorReviews] = useState(null);
@@ -100,8 +104,8 @@ export default function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingReviews(true);
-    fetchLatestArtisanReviews()
-      .then(setLatestReviews)
+    api.get('/stats/reviews/latest')
+      .then(res => setLatestReviews(res.data))
       .catch(err => {
         setErrorReviews('No se pudieron cargar las reseñas.');
       })
@@ -110,56 +114,56 @@ export default function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingLowStock(true);
-    fetchLowStockProducts()
-      .then(setLowStockProducts)
+    api.get('/stats/products/low-stock')
+      .then(res => setLowStockProducts(res.data))
       .catch(() => setErrorLowStock('No se pudieron cargar los productos con stock bajo.'))
       .finally(() => setLoadingLowStock(false));
   }, []);
 
   useEffect(() => {
     setLoadingStats(true);
-    fetchUserStats()
-      .then(setUserStats)
+    api.get('/stats/user')
+      .then(res => setUserStats(res.data))
       .catch(() => setErrorStats('No se pudieron cargar las estadísticas generales.'))
       .finally(() => setLoadingStats(false));
   }, []);
 
   useEffect(() => {
     setLoadingSales(true);
-    fetchSalesByDay(appliedStartDate, appliedEndDate)
-      .then(setSalesByDay)
+    api.get('/stats/sales/by-day', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
+      .then(res => setSalesByDay(res.data))
       .catch(() => setErrorSales('No se pudieron cargar las ventas por día.'))
       .finally(() => setLoadingSales(false));
   }, [appliedStartDate, appliedEndDate]);
 
   useEffect(() => {
     setLoadingIncome(true);
-    fetchIncomeByMonth(appliedStartDate, appliedEndDate)
-      .then(setIncomeByMonth)
+    api.get('/stats/income/by-month', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
+      .then(res => setIncomeByMonth(res.data))
       .catch(() => setErrorIncome('No se pudieron cargar los ingresos por mes.'))
       .finally(() => setLoadingIncome(false));
   }, [appliedStartDate, appliedEndDate]);
 
   useEffect(() => {
     setLoadingTopProducts(true);
-    fetchTopProducts()
-      .then(setTopProducts)
+    api.get('/stats/products/top')
+      .then(res => setTopProducts(res.data))
       .catch(() => setErrorTopProducts('No se pudo cargar el top de productos.'))
       .finally(() => setLoadingTopProducts(false));
   }, []);
 
   useEffect(() => {
     setLoadingOrderStatus(true);
-    fetchOrderStatusDistribution()
-      .then(setOrderStatus)
+    api.get('/stats/orders/status-distribution')
+      .then(res => setOrderStatus(res.data))
       .catch(() => setErrorOrderStatus('No se pudo cargar la distribución de estados de pedidos.'))
       .finally(() => setLoadingOrderStatus(false));
   }, []);
 
   useEffect(() => {
     setLoadingRatings(true);
-    fetchProductRatings()
-      .then(setProductRatings)
+    api.get('/stats/products/ratings')
+      .then(res => setProductRatings(res.data))
       .catch(() => setErrorRatings('No se pudo cargar la calificación por producto.'))
       .finally(() => setLoadingRatings(false));
   }, []);
@@ -526,21 +530,13 @@ export default function ArtisanStatisticsPage() {
               <ul className="divide-y divide-gray-100">
                 {lowStockProducts.map(p => (
                   <li key={p.product_id} className="py-2 flex items-center gap-3 group">
-                    {p.image && p.image.startsWith('/uploads') ? (
-                      <img
-                        src={imageUrl(p.image)}
-                        alt={p.name}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                    ) : (
-                      <Image
-                        src={p.image ? imageUrl(p.image) : '/static/placeholder.png'}
-                        alt={p.name}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                    )}
+                    <Image
+                      src={imageUrl(p.image)}
+                      alt={p.name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded object-cover border"
+                    />
                     <span className="font-medium text-gray-800">{p.name}</span>
                     <span className={`ml-auto text-sm font-bold px-2 py-1 rounded ${p.stock <= 2 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>Stock: {p.stock}</span>
                   </li>
@@ -573,21 +569,13 @@ export default function ArtisanStatisticsPage() {
                 {latestReviews.map(r => (
                   <li key={r.review_id} className="py-3 flex items-center gap-3">
                     {/* Miniatura del producto si está disponible */}
-                    {r.product_image && r.product_image.startsWith('/uploads') ? (
-                      <img
-                        src={imageUrl(r.product_image)}
-                        alt={r.product_name}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                    ) : (
-                      <Image
-                        src={r.product_image ? imageUrl(r.product_image) : '/static/placeholder.png'}
-                        alt={r.product_name}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                    )}
+                    <Image
+                      src={imageUrl(r.product_image)}
+                      alt={r.product_name}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded object-cover border"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-orange-700 truncate">{r.product_name}</span>
@@ -624,8 +612,8 @@ export default function ArtisanStatisticsPage() {
               setLoadingStats(true);
               setErrorStats(null);
               try {
-                const stats = await fetchUserStats();
-                setUserStats(stats);
+                const res = await api.get('/stats/user');
+                setUserStats(res.data);
               } catch (err) {
                 setErrorStats('No se pudieron cargar las estadísticas generales.');
               } finally {
@@ -658,4 +646,6 @@ export default function ArtisanStatisticsPage() {
       `}</style>
     </div>
   );
-} 
+}
+
+export default withAuthProtection(ArtisanStatisticsPage, { requiredRole: 'artesano' });

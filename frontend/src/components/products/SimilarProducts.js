@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/utils/api';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import imageUrl from '@/utils/imageUrl';
 
 const SimilarProducts = ({ currentProductId, categoryId }) => {
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -113,11 +114,6 @@ const SimilarProducts = ({ currentProductId, categoryId }) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Productos Similares</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {similarProducts.map((product) => {
-          const API_BASE_URL = 'http://localhost:5000';
-          const imageUrl = product.images && product.images.length > 0 
-            ? `${API_BASE_URL}${product.images[0]}`
-            : null;
-
           return (
             <Link 
               key={product.id} 
@@ -125,19 +121,13 @@ const SimilarProducts = ({ currentProductId, categoryId }) => {
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
               <div className="relative h-48">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={product.name || 'Imagen del producto'}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">Sin imagen</span>
-                  </div>
-                )}
+                <Image
+                  src={imageUrl(product.images?.[0])}
+                  alt={product.name || 'Imagen del producto'}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
                 
                 {user && user.role === 'cliente' && (
                   <button

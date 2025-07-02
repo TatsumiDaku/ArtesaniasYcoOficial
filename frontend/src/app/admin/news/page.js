@@ -38,34 +38,38 @@ const NewsCard = ({ news, onDelete }) => {
   const isEvent = news.event_start && news.event_end && news.event_address;
   return (
     <div className={`bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 ${isEvent ? 'border-l-8 border-orange-400' : ''}`}>
-      {isEvent && news.main_image && (
+      {news.main_image && (
         <div className="relative">
-          <img src={imageUrl(news.main_image)} alt={news.title} className="w-full h-40 object-cover border-4 border-orange-200" />
-          <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white font-bold px-3 py-1 rounded-full shadow text-xs flex items-center gap-1 z-10">
-            <RefreshCw className="w-4 h-4" /> Evento
-          </span>
+          <img
+            src={imageUrl(news.main_image)}
+            alt={news.title}
+            className="w-full h-40 object-contain bg-white border border-orange-300 rounded-lg"
+            style={{ maxHeight: '160px' }}
+          />
+          {isEvent && (
+            <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white font-bold px-3 py-1 rounded-full shadow text-xs flex items-center gap-1 z-10">
+              <RefreshCw className="w-4 h-4" /> Evento
+            </span>
+          )}
         </div>
       )}
-      {news.main_image && news.main_image.startsWith('/uploads') ? (
-        <img
-          src={imageUrl(news.main_image)}
-          alt={news.title}
-          className="w-full h-40 object-cover border-4 border-orange-200 rounded-lg"
-          style={{ maxHeight: '160px' }}
-        />
-      ) : (
-        <Image
-          src={news.main_image ? imageUrl(news.main_image) : '/static/placeholder.png'}
-          alt={news.title}
-          width={400}
-          height={160}
-          className="w-full h-40 object-cover border-4 border-orange-200 rounded-lg"
-          style={{ maxHeight: '160px' }}
-        />
+      {!news.main_image && (
+        <div className="relative">
+          <Image
+            src={'/static/placeholder.png'}
+            alt={news.title}
+            width={400}
+            height={160}
+            className="w-full h-40 object-contain bg-white border border-orange-300 rounded-lg"
+            style={{ maxHeight: '160px' }}
+          />
+        </div>
       )}
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between gap-2 mb-1">
-          <h2 className={`text-lg font-bold line-clamp-2 flex-1 ${isEvent ? 'text-orange-700 flex items-center gap-2' : 'text-gray-800'}`}>{isEvent && <RefreshCw className="w-5 h-5" />} {news.title}</h2>
+          <h2 className={`text-lg font-bold font-pacifico line-clamp-2 flex-1 ${isEvent ? 'text-orange-700 flex items-center gap-2' : 'text-gray-800'}`}>
+            {isEvent && <RefreshCw className="w-5 h-5" />} {news.title}
+          </h2>
           <span className="text-xs text-gray-400 whitespace-nowrap">{new Date(news.created_at).toLocaleDateString()}</span>
         </div>
         <div className="flex flex-wrap gap-1 mb-1">

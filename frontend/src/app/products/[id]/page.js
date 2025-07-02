@@ -13,6 +13,7 @@ import ProductImageGallery from '@/components/products/ProductImageGallery';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import imageUrl from '@/utils/imageUrl';
 
 const ProductDetailPage = ({ params }) => {
   const { id } = use(params);
@@ -135,11 +136,6 @@ const ProductDetailPage = ({ params }) => {
     );
   }
   
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-  const images = product.images && product.images.length > 0 
-    ? product.images.map(img => `${API_BASE_URL}${img}`)
-    : ['https://via.placeholder.com/600x600?text=Sin+Imagen'];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -159,23 +155,14 @@ const ProductDetailPage = ({ params }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Galería de Imágenes */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-              {product.images && product.images[0] && product.images[0].startsWith('/uploads') ? (
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-80 object-contain bg-white rounded-lg"
-                  style={{ maxHeight: '320px' }}
-                />
-              ) : (
-                <Image
-                  src={product.images && product.images[0] ? `${API_BASE_URL}${product.images[0]}` : '/static/placeholder.png'}
-                  alt={product.name}
-                  width={600}
-                  height={320}
-                  className="w-full h-80 object-contain bg-white rounded-lg"
-                  style={{ maxHeight: '320px' }}
-                />
-              )}
+              <Image
+                src={imageUrl(product.images?.[0])}
+                alt={product.name}
+                width={600}
+                height={320}
+                className="w-full h-80 object-contain bg-white rounded-lg"
+                style={{ maxHeight: '320px' }}
+              />
             </div>
 
             {/* Información del Producto */}

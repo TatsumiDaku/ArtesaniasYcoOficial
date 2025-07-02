@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 import { useState } from 'react';
+import imageUrl from '@/utils/imageUrl';
 
 const CartPage = () => {
   const { cart, loading, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
@@ -71,14 +72,11 @@ const CartPage = () => {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
               {cart.map((item) => {
-                const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-                const imageUrl = item.product?.images?.[0] ? `${API_BASE_URL}${item.product.images[0]}` : 'https://via.placeholder.com/100';
-
                 return (
                   <div key={item.product_id} className="flex flex-col md:flex-row items-center bg-white/90 rounded-2xl shadow-md p-4 gap-6 hover:shadow-xl transition-all border border-amber-100">
                     <figure className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-xl border-2 border-amber-100 bg-white">
                       <Image
-                        src={imageUrl}
+                        src={imageUrl(item.product?.images?.[0])}
                         alt={item.product?.name || 'Producto'}
                         width={112}
                         height={112}

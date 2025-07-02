@@ -6,6 +6,7 @@ import Image from 'next/image';
 import api from '@/utils/api';
 import ProductCard from '@/components/products/ProductCard';
 import { ChevronRight, Sparkles, Gift, Globe, Leaf, Newspaper, ArrowRight } from 'lucide-react';
+import imageUrl from '@/utils/imageUrl';
 
 const HomePage = () => {
   const [latestProducts, setLatestProducts] = useState([]);
@@ -88,7 +89,7 @@ const HomePage = () => {
                 <div key={n.id} className="min-w-[85vw] max-w-xs shadow-lg overflow-hidden flex flex-col h-full snap-center" style={{background:'rgba(255,255,255,0.15)',backdropFilter:'blur(12px) saturate(1.5)'}}>
                   <div className="relative w-full">
                     <img
-                      src={n.main_image.startsWith('/') ? n.main_image : `/uploads/news/${n.main_image}`}
+                      src={imageUrl(n.main_image)}
                       alt={n.title}
                       className="w-full h-36 object-contain bg-white"
                     />
@@ -153,7 +154,7 @@ const HomePage = () => {
                 <div key={n.id} className="shadow-lg overflow-hidden flex flex-col h-full" style={{background:'rgba(255,255,255,0.15)',backdropFilter:'blur(12px) saturate(1.5)'}}>
                   <div className="relative w-full">
                     <img
-                      src={n.main_image.startsWith('/') ? n.main_image : `/uploads/news/${n.main_image}`}
+                      src={imageUrl(n.main_image)}
                       alt={n.title}
                       className="w-full h-36 object-contain bg-white"
                     />

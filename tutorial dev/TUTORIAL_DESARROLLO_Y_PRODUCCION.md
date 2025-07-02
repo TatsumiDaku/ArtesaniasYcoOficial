@@ -163,36 +163,37 @@ sudo apt install -y git
    git clone <URL_DEL_REPO>
    cd EcommersART
    ```
-2. Crea el archivo `.env` en la carpeta `backend` (puedes copiar el de desarrollo y ajustar valores de producción):
+2. Crea el archivo `.env` en la raíz del proyecto (no en la carpeta `backend`):
    ```bash
-   cd backend
    touch .env
    # Edita el archivo y pon los valores de producción (usuarios, contraseñas, dominios, etc)
    ```
-   
-**¡Con este flujo tendrás un desarrollo ágil y un despliegue seguro y profesional!**
 
-#### Ejemplo de archivo `.env` para **despliegue en producción**
+#### Ejemplo de archivo `.env` completo para **despliegue en producción**
 
 ```env
 # Puerto donde correrá el backend (normalmente 5000)
 PORT=5000
 
-# Configuración de la base de datos PostgreSQL (usa los datos reales de tu servidor o contenedor)
+# Configuración de la base de datos PostgreSQL (para el backend)
 DB_USER=prod_user
 DB_PASSWORD=contraseña_segura
-DB_HOST=postgres            # Si usas Docker Compose, este es el nombre del servicio de la base de datos
+DB_HOST=postgres            # Debe coincidir con el nombre del servicio en docker-compose.yml
 DB_PORT=5432
 DB_NAME=artesanias_db
+
+# Variables requeridas por el contenedor de PostgreSQL (deben coincidir con las de arriba)
+POSTGRES_USER=prod_user
+POSTGRES_PASSWORD=contraseña_segura
+POSTGRES_DB=artesanias_db
 
 # Clave secreta para JWT (usa una clave larga y segura)
 JWT_SECRET=clave_super_secreta_prod
 
-# Configuración de correo para envío de emails (puede ser Gmail, SMTP de tu dominio, etc)
-EMAIL_USER=correo@tudominio.com
-EMAIL_PASS=contraseña_app_prod
-NEXT_PUBLIC_API_URL=https://artesaniasyco.com/api
-DOMAIN_NAME=artesaniasyco.com
+# Configuración de correo para envío de emails
+EMAIL_USER=soporte.artesaniasyco@gmail.com
+EMAIL_PASS=nvhpubomhwnzuhep
+
 # URL pública del frontend (debe ser el dominio real en producción)
 FRONTEND_URL=https://artesaniasyco.com
 
@@ -202,41 +203,215 @@ REDIS_URL=redis://redis:6379
 # Entorno de ejecución
 NODE_ENV=production
 
-#Configuracion de Resend envios de gmail
-RESEND_API_KEY=Api_key
+# Configuración de Resend para envíos de Gmail
+RESEND_API_KEY=re_62XWawsf_E3uF59As1Xc2C28RnLFnRcUA
+
+# Variables adicionales para evitar warnings en Docker Compose
+NEXT_PUBLIC_API_URL=https://artesaniasyco.com/api
+DOMAIN_NAME=artesaniasyco.com
 
 # CPUs para clusterización (opcional, solo si usas cluster)
 # CLUSTER_CPUS=4
-``` 
-
-### 2.3. Construye y levanta los servicios con Docker
-```bash
-docker-compose build --no-cache
-docker-compose up -d
 ```
 
-### 2.4. Verifica el estado de los servicios
+> **IMPORTANTE:** El archivo `.env` debe estar en la **raíz del proyecto**, en la misma carpeta donde está `docker-compose.yml`, no dentro de `/backend`.
+
+### 2.3. Configuración SSL con Cloudflare (DNS Challenge)
+
+Para evitar problemas con puertos bloqueados y obtener certificados SSL automáticamente, usaremos el método DNS challenge de Certbot con Cloudflare.
+
+#### 2.3.1. Configura tu dominio en Cloudflare
+
+1. **Crea una cuenta en Cloudflare** (si no la tienes): [https://cloudflare.com](https://cloudflare.com)
+2. **Agrega tu dominio** a Cloudflare.
+3. **Cambia los nameservers** en tu proveedor de dominio (IONOS, GoDaddy, etc.):
+   - Entra al panel de tu proveedor de dominio.
+   - Busca la sección de "Nameservers" o "Servidores de nombres".
+   - Reemplaza los nameservers actuales con los que te proporciona Cloudflare (ejemplo):
+     ```
+     aisha.ns.cloudflare.com
+     yadiel.ns.cloudflare.com
+     ```
+   - Guarda los cambios.
+4. **Espera la propagación** (10 minutos a 24 horas) hasta que Cloudflare muestre tu dominio como "Activo".
+
+#### 2.3.2. Crea un API Token en Cloudflare
+
+1. Ve a [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).
+2. Haz clic en **Create Token**.
+3. Elige la plantilla **Edit zone DNS**.
+4. Selecciona tu dominio.
+5. Crea el token y **guárdalo**.
+
+#### 2.3.3. Configura las credenciales de Cloudflare en el servidor
+
+En tu servidor Ubuntu, crea el archivo de credenciales:
 ```bash
-docker ps
+nano ~/.secreto_cloudflare.ini
+```
+Pega esto (reemplaza TU_TOKEN por el token real):
+```
+dns_cloudflare_api_token = TU_TOKEN
+```
+Protege el archivo:
+```bash
+chmod 600 ~/.secreto_cloudflare.ini
 ```
 
-### 2.5. Ver logs de un servicio (ejemplo backend)
+#### 2.3.4. Genera el certificado SSL con Certbot
+
+Desde la raíz del proyecto, ejecuta:
 ```bash
-docker logs artesanias_backend
+docker run -it --rm \
+  -v "$(pwd)/data/certbot/conf:/etc/letsencrypt" \
+  -v "$(pwd)/data/certbot/www:/var/www/certbot" \
+  -v ~/.secreto_cloudflare.ini:/secreto_cloudflare.ini \
+  certbot/dns-cloudflare certonly \
+  --dns-cloudflare \
+  --dns-cloudflare-credentials /secreto_cloudflare.ini \
+  --dns-cloudflare-propagation-seconds 60 \
+  -d artesaniasyco.com -d www.artesaniasyco.com
 ```
 
-### 2.6. Detén todos los servicios
+Si todo sale bien, verás:
+```
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/artesaniasyco.com/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/artesaniasyco.com/privkey.pem
+```
+
+### 2.4. Construye y levanta los servicios con Docker
+
+```bash
+docker-compose down
+docker-compose up --build -d
+```
+
+### 2.5. Verifica el estado de los servicios
+
+```bash
+docker-compose ps
+```
+
+Todos los contenedores deben estar en estado `Up` o `Up (healthy)`.
+
+### 2.6. Accede a tu web
+
+- Ve a **https://tudominio.com** en tu navegador.
+- Debes ver el candado verde (SSL activo).
+- Si intentas acceder por HTTP, debe redirigir automáticamente a HTTPS.
+
+### 2.7. Ver logs de un servicio (si hay problemas)
+
+```bash
+docker-compose logs nginx
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs postgres
+```
+
+### 2.8. Detén todos los servicios
+
 ```bash
 docker-compose down
 ```
 
 ---
 
-## 3. Consejos importantes
+## 3. Flujo de despliegue después de cambios
+
+Cuando hagas cambios en tu código y quieras desplegarlos:
+
+```bash
+# 1. Actualizar código
+git pull
+
+# 2. Verificar que el .env esté correcto
+cat .env
+
+# 3. Instalar dependencias nuevas (si es necesario)
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+
+# 4. Reiniciar servicios
+docker-compose down
+docker-compose up --build -d
+
+# 5. Verificar que todo funciona
+docker-compose ps
+docker-compose logs
+```
+
+---
+
+## 4. Renovación automática de certificados SSL
+
+Para renovar automáticamente los certificados antes de que expiren:
+
+1. **Crea un script de renovación:**
+   ```bash
+   nano ~/renovar_ssl.sh
+   ```
+   Contenido:
+   ```bash
+   #!/bin/bash
+   cd /ruta/a/tu/proyecto
+   docker run --rm \
+     -v "$(pwd)/data/certbot/conf:/etc/letsencrypt" \
+     -v "$(pwd)/data/certbot/www:/var/www/certbot" \
+     -v ~/.secreto_cloudflare.ini:/secreto_cloudflare.ini \
+     certbot/dns-cloudflare renew \
+     --dns-cloudflare \
+     --dns-cloudflare-credentials /secreto_cloudflare.ini
+   docker-compose restart nginx
+   ```
+
+2. **Dale permisos de ejecución:**
+   ```bash
+   chmod +x ~/renovar_ssl.sh
+   ```
+
+3. **Programa la renovación automática con cron:**
+   ```bash
+   crontab -e
+   ```
+   Agrega esta línea (renovar cada 2 meses):
+   ```
+   0 3 1 */2 * /root/renovar_ssl.sh >> /var/log/certbot_renewal.log 2>&1
+   ```
+
+---
+
+## 5. Consejos importantes
 
 - **Nunca edites archivos directamente en Ubuntu.** Haz todos los cambios en local y súbelos por Git.
 - **En local puedes usar Docker si quieres probar el entorno de producción, pero para desarrollo rápido usa `npm run dev`.**
 - **En producción, solo usa Docker y Git.**
-- **Si tienes archivos de configuración distintos para cada entorno, usa `.env.local` para desarrollo y `.env.production` para producción.**
+- **El archivo `.env` debe estar siempre en la raíz del proyecto, no en carpetas internas.**
+- **Si cambias variables de entorno, siempre reinicia los contenedores con `docker-compose down && docker-compose up -d`.**
+- **Mantén backups de tu archivo `.env` y de los datos importantes.**
 
 ---
+
+## 6. Solución de problemas comunes
+
+### El contenedor de PostgreSQL no arranca
+- Verifica que las variables `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DB` estén definidas en tu `.env`.
+- Si sigues teniendo problemas, elimina los volúmenes y reinicia: `docker-compose down -v && docker-compose up -d`.
+
+### Nginx falla con error de certificado SSL
+- Verifica que los archivos de certificado existan en `./data/certbot/conf/live/tudominio.com/`.
+- Si no existen, vuelve a ejecutar Certbot.
+- Revisa que Cloudflare esté gestionando tu dominio completamente.
+
+### La web no es accesible desde fuera
+- Verifica que el firewall de tu proveedor de nube (DigitalOcean, AWS, etc.) tenga abiertos los puertos 80 y 443.
+- Confirma que tu dominio apunta a la IP correcta de tu servidor.
+
+### Warnings de variables en Docker Compose
+- Asegúrate de que tu `.env` contenga `NEXT_PUBLIC_API_URL` y `DOMAIN_NAME`.
+- El archivo `.env` debe estar en la misma carpeta donde ejecutas `docker-compose up`.
+
+---
+
+**¡Con este flujo tendrás un desarrollo ágil y un despliegue seguro y profesional con HTTPS automático!**

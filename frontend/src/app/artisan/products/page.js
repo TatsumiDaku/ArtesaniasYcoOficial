@@ -11,6 +11,7 @@ import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import DataTable from '@/components/ui/DataTable';
 import { useAuth } from '@/context/AuthContext';
+import imageUrl from '@/utils/imageUrl';
 
 const ArtisanProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -94,17 +95,14 @@ const ArtisanProductsPage = () => {
       header: 'Imagen',
       accessorKey: 'images',
       cell: ({ getValue }) => {
-        const API_BASE_URL = 'http://localhost:5000';
-        const imageUrl = getValue() && getValue().length > 0 ? `${API_BASE_URL}${getValue()[0]}` : null;
-        return imageUrl ? (
+        const images = getValue();
+        return (
           <img
-            src={imageUrl}
+            src={imageUrl(images?.[0])}
             alt="Producto"
             className="w-16 h-16 object-cover rounded-lg border"
             style={{ maxHeight: '64px' }}
           />
-        ) : (
-          <div className="w-[50px] h-[50px] bg-gray-700 rounded-md flex items-center justify-center text-xs text-gray-500">Foto</div>
         );
       },
     },

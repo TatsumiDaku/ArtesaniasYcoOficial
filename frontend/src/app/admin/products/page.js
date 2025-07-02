@@ -11,6 +11,7 @@ import Link from 'next/link';
 import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import DataTable from '@/components/ui/DataTable';
+import imageUrl from '@/utils/imageUrl';
 
 // =================================================================================
 // Componente de Gestión de Categorías
@@ -415,23 +416,20 @@ const AdminProductsPage = () => {
       header: 'Imagen',
       accessorKey: 'images',
       cell: ({ row }) => {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        const imageUrl = row.original.images && row.original.images.length > 0 ? `${API_BASE_URL}${row.original.images[0]}` : null;
-        return imageUrl && imageUrl.startsWith('/uploads') ? (
-          <img
-            src={imageUrl}
-            alt={row.original.name}
-            className="rounded-lg object-cover shadow-md border border-gray-200 w-16 h-16"
-            style={{ maxHeight: '60px' }}
-          />
-        ) : (
+        const imageSrc = row.original.images && row.original.images.length > 0 
+          ? imageUrl(row.original.images[0]) 
+          : '/static/placeholder.png';
+        
+        return (
           <Image
-            src={row.original.images && row.original.images[0] ? imageUrl : '/static/placeholder.png'}
-            alt={row.original.name}
+            src={imageSrc}
+            alt={row.original.name || 'Producto'}
             width={60}
             height={60}
             className="rounded-lg object-cover shadow-md border border-gray-200 w-16 h-16"
-            style={{ maxHeight: '60px' }}
+            onError={(e) => {
+              e.target.src = '/static/placeholder.png';
+            }}
           />
         );
       },

@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 import api from '@/utils/api';
 import withAuthProtection from '@/components/auth/withAuthProtection';
+import imageUrl from '@/utils/imageUrl';
 
 const StatCard = ({ icon, title, value, color, description }) => (
   <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -296,7 +297,7 @@ const AdminDashboardPage = () => {
                   {stats.recentPendingProducts.map(product => (
                     <li key={product.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Image 
-                        src={`${API_BASE_URL}${product.images[0]}`} 
+                        src={imageUrl(product.images[0])} 
                         alt={product.name}
                         width={64}
                         height={64}
@@ -358,7 +359,7 @@ const AdminDashboardPage = () => {
                   {stats.recentPendingArtisans.map(artisan => (
                     <li key={artisan.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Image 
-                        src={artisan.avatar_url ? `${API_BASE_URL}${artisan.avatar_url}` : '/static/default-avatar.png'}
+                        src={imageUrl(artisan.avatar_url)}
                         alt={artisan.name}
                         width={64}
                         height={64}
@@ -420,7 +421,7 @@ const AdminDashboardPage = () => {
                   {stats.recentPendingBlogs.map(blog => (
                     <li key={blog.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Image 
-                        src={blog.image_url_1 ? `${API_BASE_URL}${blog.image_url_1}` : '/static/default-avatar.png'}
+                        src={imageUrl(blog.image_url_1)}
                         alt={blog.title}
                         width={64}
                         height={64}

@@ -27,7 +27,6 @@ const StarRating = ({ rating, className }) => {
   );
 };
 
-
 const ProductCard = ({ product }) => {
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
@@ -38,10 +37,19 @@ const ProductCard = ({ product }) => {
     return null;
   }
   
-  const API_BASE_URL = 'http://localhost:5000';
-  const imageSrc = product.images && product.images.length > 0 
-    ? imageUrl(product.images[0])
-    : '/static/LogoIncial.png';
+  const getImageSrc = () => {
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('/uploads')) {
+        return imageUrl(image);
+      }
+      if (image.startsWith('http')) {
+        return image;
+      }
+      return imageUrl(image);
+    }
+    return '/static/placeholder.png';
+  };
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -90,84 +98,88 @@ const ProductCard = ({ product }) => {
   return (
     <Link 
       href={`/products/${product.id}`} 
-      className="group relative block overflow-hidden bg-white rounded-xl shadow-md transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1 border-2 border-transparent hover:border-amber-500"
+      className="group relative block overflow-hidden bg-white rounded-2xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 border border-gray-100 hover:border-amber-300"
     >
-      <div className="relative w-full h-64">
-        {/* Imagen del producto */}
-        {product.images && product.images[0] && product.images[0].startsWith('/uploads') ? (
-          <img
-            src={imageUrl(product.images[0])}
-            alt={product.name}
-            className="w-full h-40 object-cover rounded-lg"
-            style={{ maxHeight: '160px' }}
-          />
-        ) : (
-          <Image
-            src={product.images && product.images[0] ? imageUrl(product.images[0]) : '/static/placeholder.png'}
-            alt={product.name}
-            width={300}
-            height={160}
-            className="w-full h-40 object-cover rounded-lg"
-            style={{ maxHeight: '160px' }}
-          />
+      <div className="relative w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        <Image
+          src={getImageSrc()}
+          alt={product.name || 'Producto'}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            e.target.src = '/static/placeholder.png';
+          }}
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {product.stock === 0 && (
+          <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg backdrop-blur-sm">
+            AGOTADO
+          </div>
         )}
-        { product.stock === 0 && (
-            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">AGOTADO</div>
-        )}
-        { user?.role === 'cliente' && (
+        
+        {user?.role === 'cliente' && (
           <button
             onClick={handleFavoriteClick}
-            className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-700 hover:text-red-500 scale-100 group-hover:scale-110 transition-all duration-200"
+            className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-700 hover:text-red-500 hover:bg-white shadow-lg transition-all duration-200 hover:scale-110"
             aria-label="Añadir a favoritos"
           >
-            <Heart fill={isFavorite(product.id) ? 'currentColor' : 'none'} className="w-5 h-5" />
+            <Heart 
+              fill={isFavorite(product.id) ? 'currentColor' : 'none'} 
+              className="w-5 h-5" 
+            />
           </button>
         )}
       </div>
 
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-amber-800 bg-amber-100 px-2 py-1 rounded-full mb-2">
-                {product.category_name || 'Sin Categoría'}
-            </span>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                <StarRating rating={averageRating} />
-                    <span className="font-medium">{averageRating.toFixed(1)}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="font-medium">{reviewCount}</span>
-                </div>
-            </div>
+      <div className="p-5">
+        <div className="flex justify-between items-start mb-3">
+          <span className="inline-block text-xs font-semibold text-amber-800 bg-amber-100 px-3 py-1 rounded-full">
+            {product.category_name || 'Sin Categoría'}
+          </span>
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <StarRating rating={averageRating} />
+            <span className="font-medium ml-1">{averageRating.toFixed(1)}</span>
+            <span className="text-gray-400">({reviewCount})</span>
+          </div>
         </div>
         
-        <h3 className="text-xl font-bold text-amber-700 font-pacifico truncate h-14 leading-tight mt-2" title={product.name}>
+        <h3 className="text-lg font-bold text-gray-800 font-pacifico mb-2 line-clamp-2 min-h-[3.5rem] leading-tight" title={product.name}>
           {product.name || 'Producto sin nombre'}
         </h3>
-        <p className="text-gray-500 text-sm mt-1 line-clamp-2 min-h-[2.5rem]">{product.description ? product.description : 'Sin descripción'}</p>
         
-        <div className="flex items-center text-sm text-gray-500 mt-1">
-          <User className="w-4 h-4 mr-2" />
-          <span>Por <span className="font-medium text-gray-700">{product.artisan_name || 'Artesano'}</span></span>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2 min-h-[2.5rem]">
+          {product.description || 'Sin descripción disponible'}
+        </p>
+        
+        <div className="flex items-center text-sm text-gray-500 mb-4">
+          <User className="w-4 h-4 mr-2 flex-shrink-0" />
+          <span className="truncate">
+            Por <span className="font-medium text-gray-700">{product.artisan_name || 'Artesano'}</span>
+          </span>
         </div>
 
-        <div className="mt-4 h-12 flex items-center justify-between">
-            <div>
-                <p className="text-2xl font-extrabold text-gray-900">${parseFloat(product.price || 0).toLocaleString('es-CO')}</p>
-                 <p className="text-xs text-gray-500 -mt-1">COP</p>
-            </div>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="flex-1">
+            <p className="text-2xl font-bold text-gray-900">
+              ${parseFloat(product.price || 0).toLocaleString('es-CO')}
+            </p>
+            <p className="text-xs text-gray-500 -mt-1">COP</p>
+          </div>
           
-            <div className="transition-all duration-300 transform-gpu translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100">
-                 <button
-                    onClick={handleAddToCart}
-                    className="btn btn-primary btn-sm bg-gradient-to-r from-amber-500 to-red-600 text-white border-none rounded-lg"
-                    aria-label="Añadir al carrito"
-                    disabled={product.stock === 0}
-                >
-                    <ShoppingCart className="w-4 h-4" />
-                </button>
-            </div>
+          <div className="transition-all duration-300 transform translate-x-2 opacity-60 group-hover:translate-x-0 group-hover:opacity-100">
+            <button
+              onClick={handleAddToCart}
+              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 flex items-center gap-2 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Añadir al carrito"
+              disabled={product.stock === 0}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              Añadir
+            </button>
+          </div>
         </div>
       </div>
     </Link>
