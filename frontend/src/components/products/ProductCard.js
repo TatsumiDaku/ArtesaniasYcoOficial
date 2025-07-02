@@ -101,16 +101,27 @@ const ProductCard = ({ product }) => {
       className="group relative block overflow-hidden bg-white rounded-2xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 border border-gray-100 hover:border-amber-300"
     >
       <div className="relative w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-        <Image
-          src={getImageSrc()}
-          alt={product.name || 'Producto'}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
-          onError={(e) => {
-            e.target.src = '/static/placeholder.png';
-          }}
-        />
+        {getImageSrc().startsWith('/uploads') ? (
+          <img
+            src={getImageSrc()}
+            alt={product.name || 'Producto'}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              e.target.src = '/static/placeholder.png';
+            }}
+          />
+        ) : (
+          <Image
+            src={getImageSrc()}
+            alt={product.name || 'Producto'}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              e.target.src = '/static/placeholder.png';
+            }}
+          />
+        )}
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         

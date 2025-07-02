@@ -42,14 +42,23 @@ const ProductImageGallery = ({ images, productName, stock }) => {
       >
         {images.map((image, index) => (
           <SwiperSlide key={index}>
-            <Image
-              src={imageUrl(image)}
-              alt={`${productName} - Imagen ${index + 1}`}
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-contain bg-white"
-              unoptimized
-            />
+            <div className="relative h-96 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden shadow-inner">
+              {image && image.startsWith('/uploads') ? (
+                <img
+                  src={imageUrl(image)}
+                  alt={`Imagen ${index + 1} del producto`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={imageUrl(image)}
+                  alt={`Imagen ${index + 1} del producto`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 25vw, 15vw"
+                />
+              )}
+            </div>
           </SwiperSlide>
         ))}
         
@@ -83,14 +92,21 @@ const ProductImageGallery = ({ images, productName, stock }) => {
             {images.map((image, index) => (
               <SwiperSlide key={index} className="cursor-pointer">
                 <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-400 transition-all duration-200">
-                   <Image
+                  {image && image.startsWith('/uploads') ? (
+                    <img
                       src={imageUrl(image)}
-                      alt={`${productName} - Miniatura ${index + 1}`}
-                      fill
-                      sizes="25vw"
-                      className="object-contain bg-white"
-                      unoptimized
+                      alt={`Imagen ${index + 1} del producto`}
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
+                  ) : (
+                    <Image
+                      src={imageUrl(image)}
+                      alt={`Imagen ${index + 1} del producto`}
+                      fill
+                      className="object-cover"
+                      sizes="25vw"
+                    />
+                  )}
                 </div>
               </SwiperSlide>
             ))}

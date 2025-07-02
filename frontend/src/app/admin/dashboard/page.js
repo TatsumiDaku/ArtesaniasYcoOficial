@@ -296,7 +296,7 @@ const AdminDashboardPage = () => {
                 <ul className="space-y-4">
                   {stats.recentPendingProducts.map(product => (
                     <li key={product.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Image 
+                      <img 
                         src={imageUrl(product.images[0])} 
                         alt={product.name}
                         width={64}
@@ -358,7 +358,7 @@ const AdminDashboardPage = () => {
                 <ul className="space-y-4">
                   {stats.recentPendingArtisans.map(artisan => (
                     <li key={artisan.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Image 
+                      <img 
                         src={imageUrl(artisan.avatar_url)}
                         alt={artisan.name}
                         width={64}
@@ -420,7 +420,7 @@ const AdminDashboardPage = () => {
                 <ul className="space-y-4">
                   {stats.recentPendingBlogs.map(blog => (
                     <li key={blog.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                      <Image 
+                      <img 
                         src={imageUrl(blog.image_url_1)}
                         alt={blog.title}
                         width={64}

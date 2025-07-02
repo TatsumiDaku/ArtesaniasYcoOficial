@@ -155,14 +155,23 @@ const ProductDetailPage = ({ params }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Galería de Imágenes */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-              <Image
-                src={imageUrl(product.images?.[0])}
-                alt={product.name}
-                width={600}
-                height={320}
-                className="w-full h-80 object-contain bg-white rounded-lg"
-                style={{ maxHeight: '320px' }}
-              />
+              {product.images?.[0] && product.images[0].startsWith('/uploads') ? (
+                <img
+                  src={imageUrl(product.images[0])}
+                  alt={product.name}
+                  className="w-full h-80 object-contain bg-white rounded-lg"
+                  style={{ maxHeight: '320px' }}
+                />
+              ) : (
+                <Image
+                  src={imageUrl(product.images?.[0])}
+                  alt={product.name}
+                  width={600}
+                  height={320}
+                  className="w-full h-80 object-contain bg-white rounded-lg"
+                  style={{ maxHeight: '320px' }}
+                />
+              )}
             </div>
 
             {/* Información del Producto */}
