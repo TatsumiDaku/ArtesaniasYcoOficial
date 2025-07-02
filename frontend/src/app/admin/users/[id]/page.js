@@ -137,13 +137,21 @@ const AdminUserDetailPage = () => {
           {/* Header */}
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <Image 
-                src={user.avatar ? imageUrl(user.avatar) : '/static/LogoIncial.png'}
-                alt="Avatar"
-                width={100}
-                height={100}
-                className="w-24 h-24 object-cover rounded-full shadow-2xl border-4 border-white"
-              />
+              {user.avatar && user.avatar.startsWith('/uploads') ? (
+                <img
+                  src={imageUrl(user.avatar)}
+                  alt={user.name || 'Avatar'}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                />
+              ) : (
+                <Image
+                  src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
+                  alt={user.name || 'Avatar'}
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                />
+              )}
               <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
                 <PenSquare className="text-white w-8 h-8" />
               </label>

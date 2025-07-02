@@ -227,35 +227,57 @@ const EditBlogPage = () => {
         <div className="flex gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2">Imagen 1</label>
-            {existingImages.image_url_1 && (
-              <div className="mb-2 flex items-center gap-2">
-                <Image src={imageUrl(existingImages.image_url_1)} alt="Imagen 1" width={96} height={96} className="h-24 rounded" />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveExistingImage("image_url_1")}
-                  className="mt-2 px-3 py-1 rounded-lg bg-red-100 text-red-600 font-semibold text-xs hover:bg-red-200 transition flex items-center gap-1"
-                >
-                  <XCircle className="inline w-4 h-4" /> Quitar imagen
-                </button>
-              </div>
+            {existingImages.image_url_1 && existingImages.image_url_1.startsWith('/uploads') ? (
+              <img
+                src={imageUrl(existingImages.image_url_1)}
+                alt="Imagen 1"
+                className="h-24 rounded"
+                style={{ maxHeight: '96px' }}
+              />
+            ) : (
+              <Image
+                src={existingImages.image_url_1 ? imageUrl(existingImages.image_url_1) : '/static/placeholder.png'}
+                alt="Imagen 1"
+                width={96}
+                height={96}
+                className="h-24 rounded"
+                style={{ maxHeight: '96px' }}
+              />
             )}
-            <input type="file" name="image_url_1" accept="image/*" onChange={handleImageChange} />
+            <button
+              type="button"
+              onClick={() => handleRemoveExistingImage("image_url_1")}
+              className="mt-2 px-3 py-1 rounded-lg bg-red-100 text-red-600 font-semibold text-xs hover:bg-red-200 transition flex items-center gap-1"
+            >
+              <XCircle className="inline w-4 h-4" /> Quitar imagen
+            </button>
           </div>
           <div>
             <label className="block text-sm font-semibold mb-2">Imagen 2</label>
-            {existingImages.image_url_2 && (
-              <div className="mb-2 flex items-center gap-2">
-                <Image src={imageUrl(existingImages.image_url_2)} alt="Imagen 2" width={96} height={96} className="h-24 rounded" />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveExistingImage("image_url_2")}
-                  className="mt-2 px-3 py-1 rounded-lg bg-red-100 text-red-600 font-semibold text-xs hover:bg-red-200 transition flex items-center gap-1"
-                >
-                  <XCircle className="inline w-4 h-4" /> Quitar imagen
-                </button>
-              </div>
+            {existingImages.image_url_2 && existingImages.image_url_2.startsWith('/uploads') ? (
+              <img
+                src={imageUrl(existingImages.image_url_2)}
+                alt="Imagen 2"
+                className="h-24 rounded"
+                style={{ maxHeight: '96px' }}
+              />
+            ) : (
+              <Image
+                src={existingImages.image_url_2 ? imageUrl(existingImages.image_url_2) : '/static/placeholder.png'}
+                alt="Imagen 2"
+                width={96}
+                height={96}
+                className="h-24 rounded"
+                style={{ maxHeight: '96px' }}
+              />
             )}
-            <input type="file" name="image_url_2" accept="image/*" onChange={handleImageChange} />
+            <button
+              type="button"
+              onClick={() => handleRemoveExistingImage("image_url_2")}
+              className="mt-2 px-3 py-1 rounded-lg bg-red-100 text-red-600 font-semibold text-xs hover:bg-red-200 transition flex items-center gap-1"
+            >
+              <XCircle className="inline w-4 h-4" /> Quitar imagen
+            </button>
           </div>
         </div>
         {/* Campos de evento si la categoría es Eventos */}

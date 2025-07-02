@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/utils/api';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 const SimilarProducts = ({ currentProductId, categoryId }) => {
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -16,6 +17,7 @@ const SimilarProducts = ({ currentProductId, categoryId }) => {
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const { addToCart } = useCart();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSimilarProducts = async () => {
@@ -60,7 +62,24 @@ const SimilarProducts = ({ currentProductId, categoryId }) => {
   };
 
   const handleAddToCart = (e, product) => {
-    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast((t) => (
+        <div className="flex flex-col gap-2">
+          <span>Para añadir al carrito debes iniciar sesión.</span>
+          <button
+            onClick={() => {
+              router.push('/register');
+              toast.dismiss(t.id);
+            }}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Regístrate
+          </button>
+        </div>
+      ), { duration: 6000 });
+      return;
+    }
     addToCart(product);
     toast.success('Producto añadido al carrito');
   };

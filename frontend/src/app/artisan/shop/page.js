@@ -158,21 +158,22 @@ const ArtisanShopPage = () => {
                     <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Imagen de cabecera</label>
                     <p className="text-xs text-gray-500 mb-2">Esta es la primera imagen que verán tus clientes. Recomendado: 1500x400px.</p>
                     <div className="mt-2 h-64 flex justify-center items-center rounded-lg border-2 border-dashed border-gray-300 relative bg-gray-50 hover:bg-gray-100 transition-colors overflow-hidden">
-                        {isValidImageUrl(headerPreview) ? (
-                            <Image 
-                                src={headerPreview} 
-                                alt="Vista previa de la cabecera" 
-                                fill
-                                sizes="(max-width: 768px) 100vw, 900px"
-                                style={{ objectFit: 'cover' }}
-                                className="rounded-lg" 
-                                priority
-                            />
-                        ) : (
-                            <div className="text-center text-gray-400 w-full">
-                                <p className="mt-16">No has subido una cabecera todavía.</p>
-                            </div>
-                        )}
+                        {/* Cabecera de la tienda */}
+                        {(headerPreview && (typeof headerPreview === 'string' ? headerPreview.startsWith('/uploads') : true)) ? (
+                          <img
+                            src={typeof headerPreview === 'string' ? headerPreview : headerPreview}
+                            alt={`Cabecera de ${user.nickname}`}
+                            className="w-full h-48 object-cover rounded-t-2xl"
+                            style={{ maxHeight: '220px' }}
+                          />
+                        ) : (user.shop_header_image && user.shop_header_image.startsWith('/uploads') ? (
+                          <img
+                            src={`${process.env.NEXT_PUBLIC_API_URL}${user.shop_header_image}`}
+                            alt={`Cabecera de ${user.nickname}`}
+                            className="w-full h-48 object-cover rounded-t-2xl"
+                            style={{ maxHeight: '220px' }}
+                          />
+                        ) : null)}
                     </div>
                     <div className="mt-4 flex justify-center">
                         <label htmlFor="shop_header_image-upload" className="inline-flex flex-col items-center justify-center px-6 py-3 bg-black/60 hover:bg-black/80 text-white rounded-lg cursor-pointer transition-opacity duration-300">
@@ -181,6 +182,26 @@ const ArtisanShopPage = () => {
                             <input id="shop_header_image-upload" type="file" {...register('shop_header_image')} className="sr-only" accept="image/*" />
                         </label>
                     </div>
+                </div>
+                {/* Avatar del artesano */}
+                <div className="absolute left-8 -bottom-12 z-20">
+                    {user.avatar && user.avatar.startsWith('/uploads') ? (
+                        <img
+                            src={user.avatar}
+                            alt={`Avatar de ${user.nickname}`}
+                            width={96}
+                            height={96}
+                            className="rounded-full border-4 border-white shadow-lg bg-white object-cover w-24 h-24"
+                        />
+                    ) : (
+                        <Image
+                            src={user.avatar || '/static/default-avatar.png'}
+                            alt={`Avatar de ${user.nickname}`}
+                            width={96}
+                            height={96}
+                            className="rounded-full border-4 border-white shadow-lg bg-white object-cover w-24 h-24"
+                        />
+                    )}
                 </div>
                 {/* Shop Tagline */}
                 <div className="mt-6">

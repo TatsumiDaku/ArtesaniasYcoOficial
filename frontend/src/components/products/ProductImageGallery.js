@@ -48,6 +48,7 @@ const ProductImageGallery = ({ images, productName, stock }) => {
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-contain bg-white"
+              unoptimized
             />
           </SwiperSlide>
         ))}
@@ -88,6 +89,7 @@ const ProductImageGallery = ({ images, productName, stock }) => {
                       fill
                       sizes="25vw"
                       className="object-contain bg-white"
+                      unoptimized
                     />
                 </div>
               </SwiperSlide>

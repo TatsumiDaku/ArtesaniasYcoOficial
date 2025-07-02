@@ -41,3 +41,14 @@ docker-compose.override.yml
 ci-logs/
 
 package-lock.json 
+backend/uploads/avatars/avatar-1751428955883-198502738.png
+
+backend/uploads/images-1751429294186.png
+
+backend/uploads/avatars/avatar-1751428955882-860893154.png
+
+backend/uploads/news/news-1751429426493-236706111.jpg
+
+*.jpg
+
+*.png

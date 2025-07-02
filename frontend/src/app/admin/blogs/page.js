@@ -27,8 +27,24 @@ function BlogDetailModal({ blog, open, onClose, onCommentDeleted }) {
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl">&times;</button>
         <h2 className="text-2xl font-bold mb-2">{blog.title}</h2>
         <div className="flex gap-4 mb-4">
-          {blog.image_url_1 && <Image src={imageUrl(blog.image_url_1)} alt="Imagen 1" width={96} height={96} className="rounded-lg object-cover border w-24 h-24" />}
-          {blog.image_url_2 && <Image src={imageUrl(blog.image_url_2)} alt="Imagen 2" width={96} height={96} className="rounded-lg object-cover border w-24 h-24" />}
+          {blog.image_url_1 && blog.image_url_1.startsWith('/uploads') ? (
+            <img
+              src={imageUrl(blog.image_url_1)}
+              alt={blog.title}
+              className="w-24 h-24 object-cover rounded-lg border"
+              style={{ maxHeight: '96px' }}
+            />
+          ) : (
+            <Image
+              src={blog.image_url_1 ? imageUrl(blog.image_url_1) : '/static/placeholder.png'}
+              alt={blog.title}
+              width={96}
+              height={96}
+              className="w-24 h-24 object-cover rounded-lg border"
+              style={{ maxHeight: '96px' }}
+            />
+          )}
+          {blog.image_url_2 && <Image src={imageUrl(blog.image_url_2)} alt="Imagen 2" width={96} height={96} className="rounded-lg object-cover border w-24 h-24" unoptimized />}
         </div>
         <div className="mb-2 text-gray-700"><span className="font-semibold">Autor:</span> {blog.author_name || "-"}</div>
         <div className="mb-2 text-gray-700"><span className="font-semibold">Estado:</span> {blog.status}</div>
@@ -51,7 +67,7 @@ function BlogDetailModal({ blog, open, onClose, onCommentDeleted }) {
             <ul className="mt-2 space-y-2 max-h-40 overflow-y-auto pr-2">
               {blog.comments.map(c => (
                 <li key={c.id} className="flex items-start gap-2 border-b pb-2 last:border-b-0">
-                  <Image src={imageUrl(c.user_avatar) || '/static/default-avatar.png'} alt={c.user_name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border" />
+                  <Image src={imageUrl(c.user_avatar) || '/static/default-avatar.png'} alt={c.user_name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border" unoptimized />
                   <div className="flex-1">
                     <div className="text-xs text-gray-500">{c.user_name} • {new Date(c.created_at).toLocaleDateString()}</div>
                     <div className="text-gray-700 text-sm">{c.comment}</div>
@@ -230,13 +246,23 @@ export default function AdminBlogsPage() {
               filteredBlogs.map(blog => (
                 <tr key={blog.id} className="hover:bg-emerald-50/40 transition-all align-middle">
                   <td className="px-4 py-3">
-                    <Image
-                      src={imageUrl(blog.image_url_1) || "/static/default-avatar.png"}
-                      alt={blog.title}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 rounded-lg object-cover border"
-                    />
+                    {blog.image_url_1 && blog.image_url_1.startsWith('/uploads') ? (
+                      <img
+                        src={imageUrl(blog.image_url_1)}
+                        alt={blog.title}
+                        className="w-24 h-24 object-cover rounded-lg border"
+                        style={{ maxHeight: '96px' }}
+                      />
+                    ) : (
+                      <Image
+                        src={blog.image_url_1 ? imageUrl(blog.image_url_1) : '/static/placeholder.png'}
+                        alt={blog.title}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 object-cover rounded-lg border"
+                        style={{ maxHeight: '96px' }}
+                      />
+                    )}
                   </td>
                   <td className="px-4 py-3 font-semibold text-gray-800 cursor-pointer hover:underline" onClick={() => handleShowDetail(blog.id)}>
                     {blog.title}

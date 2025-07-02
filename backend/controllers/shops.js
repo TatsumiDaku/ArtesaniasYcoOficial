@@ -36,7 +36,8 @@ const getShops = async (req, res) => {
         avatar, 
         shop_tagline,
         city,
-        state
+        state,
+        shop_header_image
       ${baseQuery} 
       ORDER BY created_at DESC 
       LIMIT $1 OFFSET $2
@@ -58,6 +59,18 @@ const getShops = async (req, res) => {
     } catch (err) {
       console.error('Error accediendo a Redis (set):', err);
     }
+    // Normalizar rutas de imagen a relativas en el listado de tiendas
+    response.data = response.data.map(shop => {
+      if (shop.avatar && !shop.avatar.startsWith('/uploads') && shop.avatar.includes('uploads/')) {
+        shop.avatar = '/' + shop.avatar.split('uploads/').pop();
+        shop.avatar = '/uploads/' + shop.avatar.replace(/^\/+/,'');
+      }
+      if (shop.shop_header_image && !shop.shop_header_image.startsWith('/uploads') && shop.shop_header_image.includes('uploads/')) {
+        shop.shop_header_image = '/' + shop.shop_header_image.split('uploads/').pop();
+        shop.shop_header_image = '/uploads/' + shop.shop_header_image.replace(/^\/+/,'');
+      }
+      return shop;
+    });
     res.json(response);
   } catch (error) {
     console.error('Error obteniendo tiendas:', error, error.stack);
@@ -91,6 +104,16 @@ const getShopById = async (req, res) => {
       return res.status(404).json({ message: 'Tienda no encontrada o no disponible.' });
     }
     const shopData = shopResult.rows[0];
+
+    // Normalizar rutas de imagen a relativas en el detalle de tienda
+    if (shopData.avatar && !shopData.avatar.startsWith('/uploads') && shopData.avatar.includes('uploads/')) {
+      shopData.avatar = '/' + shopData.avatar.split('uploads/').pop();
+      shopData.avatar = '/uploads/' + shopData.avatar.replace(/^\/+/,'');
+    }
+    if (shopData.shop_header_image && !shopData.shop_header_image.startsWith('/uploads') && shopData.shop_header_image.includes('uploads/')) {
+      shopData.shop_header_image = '/' + shopData.shop_header_image.split('uploads/').pop();
+      shopData.shop_header_image = '/uploads/' + shopData.shop_header_image.replace(/^\/+/,'');
+    }
 
     // 2. Obtener productos del artesano (paginado)
     const productsOffset = (productsPage - 1) * productsLimit;

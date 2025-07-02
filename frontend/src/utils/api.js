@@ -4,8 +4,10 @@ import toast from 'react-hot-toast';
 const getApiBaseUrl = () => {
   // Cuando se construye para producción, NODE_ENV es 'production'.
   if (process.env.NODE_ENV === 'production') {
-    // En producción, SIEMPRE usamos la variable de entorno del despliegue.
-    return process.env.NEXT_PUBLIC_API_URL;
+    // En producción, SIEMPRE usamos la variable de entorno del despliegue si existe.
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+    // Si no existe, usamos rutas relativas (proxy nginx)
+    return '';
   }
   // En cualquier otro caso (desarrollo local), SIEMPRE apuntamos a localhost.
   return 'http://localhost:5000/api';

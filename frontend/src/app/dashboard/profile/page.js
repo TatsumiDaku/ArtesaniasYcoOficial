@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import withAuthProtection from '@/components/auth/withAuthProtection';
 import { User, Phone, MapPin, Mail, Calendar, Shield, Edit3, Save, UserCheck, ArrowLeft, MessageSquare, ExternalLink, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const ProfilePage = () => {
   const { user, updateUser: updateAuthUser } = useAuth();
@@ -222,6 +223,23 @@ const ProfilePage = () => {
                 </div>
             )}
         </div>
+
+        {/* Avatar del usuario */}
+        {user.avatar && user.avatar.startsWith('/uploads') ? (
+          <img
+            src={imageUrl(user.avatar)}
+            alt={user.name || 'Avatar'}
+            className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+          />
+        ) : (
+          <Image
+            src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
+            alt={user.name || 'Avatar'}
+            width={96}
+            height={96}
+            className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+          />
+        )}
 
       </div>
     </div>

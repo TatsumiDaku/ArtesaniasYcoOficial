@@ -97,7 +97,12 @@ const ArtisanProductsPage = () => {
         const API_BASE_URL = 'http://localhost:5000';
         const imageUrl = getValue() && getValue().length > 0 ? `${API_BASE_URL}${getValue()[0]}` : null;
         return imageUrl ? (
-          <Image src={imageUrl} alt="Producto" width={50} height={50} className="rounded-md object-cover" />
+          <img
+            src={imageUrl}
+            alt="Producto"
+            className="w-16 h-16 object-cover rounded-lg border"
+            style={{ maxHeight: '64px' }}
+          />
         ) : (
           <div className="w-[50px] h-[50px] bg-gray-700 rounded-md flex items-center justify-center text-xs text-gray-500">Foto</div>
         );

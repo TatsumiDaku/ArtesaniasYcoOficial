@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import { RefreshCw, Plus, Edit, Trash2, ThumbsUp, ThumbsDown, MessageCircle, Eye, User, Package, BookOpen } from "lucide-react";
 import api from "@/utils/api";
 import imageUrl from "@/utils/imageUrl";
+import Image from "next/image";
 
 const NewsCard = ({ news, onDelete }) => {
   const [categories, setCategories] = useState([]);
@@ -45,8 +46,22 @@ const NewsCard = ({ news, onDelete }) => {
           </span>
         </div>
       )}
-      {!isEvent && news.main_image && (
-        <img src={imageUrl(news.main_image)} alt={news.title} className="w-full h-40 object-cover" />
+      {news.main_image && news.main_image.startsWith('/uploads') ? (
+        <img
+          src={imageUrl(news.main_image)}
+          alt={news.title}
+          className="w-full h-40 object-cover border-4 border-orange-200 rounded-lg"
+          style={{ maxHeight: '160px' }}
+        />
+      ) : (
+        <Image
+          src={news.main_image ? imageUrl(news.main_image) : '/static/placeholder.png'}
+          alt={news.title}
+          width={400}
+          height={160}
+          className="w-full h-40 object-cover border-4 border-orange-200 rounded-lg"
+          style={{ maxHeight: '160px' }}
+        />
       )}
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between gap-2 mb-1">

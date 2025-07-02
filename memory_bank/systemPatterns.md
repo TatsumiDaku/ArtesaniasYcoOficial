@@ -1,3 +1,4 @@
+
 # Patrones del Sistema
 
 - Arquitectura PENN Stack (PostgreSQL, Express, Next.js, Node.js react + talwindcss)

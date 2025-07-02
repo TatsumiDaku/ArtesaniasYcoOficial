@@ -144,14 +144,26 @@ const ArtisanBlogPage = () => {
                   return (
                     <tr key={blog.id} className="hover:bg-orange-50/40 transition-all align-middle">
                       <td className="px-4 py-3 align-middle">
-                        {blog.image_url_1 ? (
-                          <Image src={imageUrl(blog.image_url_1)} alt="Blog" width={64} height={64} className="w-16 h-16 object-cover rounded-xl border" />
+                        {blog.image_url_1 && blog.image_url_1.startsWith('/uploads') ? (
+                          <img
+                            src={imageUrl(blog.image_url_1)}
+                            alt={blog.title}
+                            className="w-16 h-16 object-cover rounded-xl border"
+                            style={{ maxHeight: '64px' }}
+                          />
                         ) : (
-                          <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center text-xs text-gray-400">Sin imagen</div>
+                          <Image
+                            src={blog.image_url_1 ? imageUrl(blog.image_url_1) : '/static/placeholder.png'}
+                            alt={blog.title}
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 object-cover rounded-xl border"
+                            style={{ maxHeight: '64px' }}
+                          />
                         )}
                       </td>
                       <td className="px-4 py-3 flex items-center gap-2 align-middle min-w-[120px]">
-                        {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full border" />}
+                        {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={32} height={32} className="w-8 h-8 rounded-full border" unoptimized />}
                         <span className="text-sm font-semibold text-gray-700 truncate">{blog.author_name}</span>
                       </td>
                       <td className="px-4 py-3 font-semibold text-gray-800 max-w-xs truncate align-middle">{blog.title}</td>

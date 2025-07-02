@@ -8,7 +8,9 @@ import Image from 'next/image';
 import imageUrl from '@/utils/imageUrl';
 
 const ShopCard = ({ shop }) => {
+    console.log('ShopCard:', shop);
     const defaultAvatar = '/static/default-avatar.png'; // Fallback image
+    const defaultHeader = '/static/shop-header-default.png';
     const isFeatured = shop.featured || shop.is_featured;
     
     return (
@@ -20,15 +22,36 @@ const ShopCard = ({ shop }) => {
                     </span>
                 )}
                 <div className="relative w-full h-40">
-                     <Image
-                        src={imageUrl(shop.avatar) || defaultAvatar}
-                        alt={`Avatar de ${shop.nickname}`}
-                        layout="fill"
-                        objectFit="contain"
-                        className="bg-white transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => { e.currentTarget.src = defaultAvatar; }}
-                     />
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    {shop.shop_header_image ? (
+                        <img
+                            src={imageUrl(shop.shop_header_image)}
+                            alt={`Cabecera de ${shop.nickname}`}
+                            className="absolute inset-0 w-full h-full object-cover object-center z-0"
+                        />
+                    ) : (
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-amber-200 via-pink-100 to-yellow-100 z-0" />
+                    )}
+                    {/* Avatar del artesano superpuesto */}
+                    <div className="absolute bottom-2 left-2 z-10">
+                        {shop.avatar && shop.avatar.startsWith('/uploads') ? (
+                            <img
+                                src={imageUrl(shop.avatar)}
+                                alt={`Avatar de ${shop.nickname}`}
+                                width={48}
+                                height={48}
+                                className="rounded-full border-2 border-white shadow-md bg-white object-cover"
+                            />
+                        ) : (
+                            <Image
+                                src={imageUrl(shop.avatar) || defaultAvatar}
+                                alt={`Avatar de ${shop.nickname}`}
+                                width={48}
+                                height={48}
+                                className="rounded-full border-2 border-white shadow-md bg-white object-cover"
+                            />
+                        )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-5 pointer-events-none"></div>
                 </div>
                 <div className="p-5 flex-grow flex flex-col">
                     <h3 className="text-xl font-bold text-amber-700 font-pacifico truncate group-hover:text-primary transition-colors">

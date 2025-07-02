@@ -12,6 +12,7 @@ import SimilarProducts from '@/components/products/SimilarProducts';
 import ProductImageGallery from '@/components/products/ProductImageGallery';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const ProductDetailPage = ({ params }) => {
   const { id } = use(params);
@@ -22,6 +23,7 @@ const ProductDetailPage = ({ params }) => {
   const { addToCart } = useCart();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { user } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!id) return;
@@ -41,6 +43,23 @@ const ProductDetailPage = ({ params }) => {
   }, [id]);
   
   const handleAddToCart = () => {
+    if (!user) {
+      toast((t) => (
+        <div className="flex flex-col gap-2">
+          <span>Para añadir al carrito debes iniciar sesión.</span>
+          <button
+            onClick={() => {
+              router.push('/register');
+              toast.dismiss(t.id);
+            }}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Regístrate
+          </button>
+        </div>
+      ), { duration: 6000 });
+      return;
+    }
     if (product) {
       addToCart(product, quantity);
       toast.success(`¡${product.name} añadido al carrito!`);
@@ -140,11 +159,23 @@ const ProductDetailPage = ({ params }) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
             {/* Galería de Imágenes */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-              <ProductImageGallery 
-                images={images}
-                productName={product.name}
-                stock={product.stock}
-              />
+              {product.images && product.images[0] && product.images[0].startsWith('/uploads') ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-full h-80 object-contain bg-white rounded-lg"
+                  style={{ maxHeight: '320px' }}
+                />
+              ) : (
+                <Image
+                  src={product.images && product.images[0] ? `${API_BASE_URL}${product.images[0]}` : '/static/placeholder.png'}
+                  alt={product.name}
+                  width={600}
+                  height={320}
+                  className="w-full h-80 object-contain bg-white rounded-lg"
+                  style={{ maxHeight: '320px' }}
+                />
+              )}
             </div>
 
             {/* Información del Producto */}

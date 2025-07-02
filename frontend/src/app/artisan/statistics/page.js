@@ -6,6 +6,7 @@ import imageUrl from '@/utils/imageUrl';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell, Legend } from 'recharts';
 import dayjs from 'dayjs';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function StarRating({ rating }) {
   // Redondear a media estrella
@@ -525,8 +526,20 @@ export default function ArtisanStatisticsPage() {
               <ul className="divide-y divide-gray-100">
                 {lowStockProducts.map(p => (
                   <li key={p.product_id} className="py-2 flex items-center gap-3 group">
-                    {p.image && (
-                      <img src={imageUrl(p.image)} alt={p.name} className="w-10 h-10 rounded object-cover border" />
+                    {p.image && p.image.startsWith('/uploads') ? (
+                      <img
+                        src={imageUrl(p.image)}
+                        alt={p.name}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
+                    ) : (
+                      <Image
+                        src={p.image ? imageUrl(p.image) : '/static/placeholder.png'}
+                        alt={p.name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
                     )}
                     <span className="font-medium text-gray-800">{p.name}</span>
                     <span className={`ml-auto text-sm font-bold px-2 py-1 rounded ${p.stock <= 2 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>Stock: {p.stock}</span>
@@ -560,8 +573,20 @@ export default function ArtisanStatisticsPage() {
                 {latestReviews.map(r => (
                   <li key={r.review_id} className="py-3 flex items-center gap-3">
                     {/* Miniatura del producto si está disponible */}
-                    {r.product_image && (
-                      <img src={imageUrl(r.product_image)} alt={r.product_name} className="w-10 h-10 rounded object-cover border" />
+                    {r.product_image && r.product_image.startsWith('/uploads') ? (
+                      <img
+                        src={imageUrl(r.product_image)}
+                        alt={r.product_name}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
+                    ) : (
+                      <Image
+                        src={r.product_image ? imageUrl(r.product_image) : '/static/placeholder.png'}
+                        alt={r.product_name}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded object-cover border"
+                      />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">

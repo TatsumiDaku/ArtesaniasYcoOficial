@@ -303,13 +303,23 @@ const EditProductPage = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {existingImageUrls.map((url, idx) => (
                       <div key={url + '-' + idx} className="relative group">
-                        <Image 
-                          src={imageUrl(url)} 
-                          alt="Imagen existente" 
-                          width={200} 
-                          height={200} 
-                          className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
-                        />
+                        {url && url.startsWith('/uploads') ? (
+                          <img
+                            src={imageUrl(url)}
+                            alt="Imagen existente"
+                            className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
+                            style={{ maxHeight: '96px' }}
+                          />
+                        ) : (
+                          <Image
+                            src={url ? imageUrl(url) : '/static/placeholder.png'}
+                            alt="Imagen existente"
+                            width={200}
+                            height={200}
+                            className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
+                            style={{ maxHeight: '96px' }}
+                          />
+                        )}
                         <button 
                           type="button" 
                           onClick={() => handleRemoveExistingImage(url)} 
@@ -362,13 +372,23 @@ const EditProductPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {imagePreviews.map((src, index) => (
                         <div key={index} className="relative group">
-                          <Image 
-                            src={src} 
-                            alt="Vista previa" 
-                            width={200} 
-                            height={200} 
-                            className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
-                          />
+                          {src && src.startsWith('/uploads') ? (
+                            <img
+                              src={src}
+                              alt="Vista previa"
+                              className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
+                              style={{ maxHeight: '96px' }}
+                            />
+                          ) : (
+                            <Image
+                              src={src}
+                              alt="Vista previa"
+                              width={200}
+                              height={200}
+                              className="w-full h-32 object-cover rounded-xl border-2 border-gray-200"
+                              style={{ maxHeight: '96px' }}
+                            />
+                          )}
                           <button 
                             type="button" 
                             onClick={() => handleRemoveNewImage(index)} 

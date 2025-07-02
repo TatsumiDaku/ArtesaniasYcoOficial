@@ -107,7 +107,11 @@ export default function NewsDetailPage() {
       toast.success("¡Te has registrado como asistente!");
       fetchNews();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "No se pudo registrar tu asistencia");
+      if (err?.response?.data?.message?.toLowerCase().includes('ya participas') || err?.response?.data?.message?.toLowerCase().includes('solo puedes votar una vez')) {
+        fetchNews();
+      } else {
+        toast.error(err?.response?.data?.message || "No se pudo registrar tu asistencia");
+      }
     } finally {
       setParticipateLoading(false);
     }
@@ -142,48 +146,47 @@ export default function NewsDetailPage() {
       </div>
       {isEvent && (
         <section
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-xl rounded-2xl p-6 mb-8 border-l-4 border-blue-400 flex flex-col gap-4 animate-fade-in"
+          className="bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 text-white shadow-2xl rounded-2xl p-8 mb-10 border-l-8 border-blue-400 flex flex-col gap-6 animate-fade-in"
           aria-label="Evento importante"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <CalendarDays className="w-8 h-8 text-white" />
-            <h2 className="text-2xl font-bold tracking-wide">¡Evento importante!</h2>
+          <div className="flex items-center gap-4 mb-2">
+            <CalendarDays className="w-10 h-10 text-white" />
+            <h2 className="text-3xl font-bold tracking-wide">¡Evento importante!</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <p className="text-lg font-semibold">Inicio:</p>
-              <p className="text-lg">{new Date(news.event_start).toLocaleString()}</p>
+              <p className="text-lg font-mono">{new Date(news.event_start).toLocaleString()}</p>
             </div>
             <div>
               <p className="text-lg font-semibold">Fin:</p>
-              <p className="text-lg">{new Date(news.event_end).toLocaleString()}</p>
+              <p className="text-lg font-mono">{new Date(news.event_end).toLocaleString()}</p>
             </div>
-            <div className="md:col-span-2">
-              <p className="text-lg font-semibold">Dirección:</p>
-              <p className="text-lg">{news.event_address}</p>
+            <div className="md:col-span-2 flex items-center gap-2 mt-2">
+              <MapPin className="w-6 h-6 text-white" />
+              <span className="text-lg font-semibold">Dirección:</span>
+              <span className="text-lg font-mono">{news.event_address}</span>
             </div>
           </div>
-          <div className="flex items-center gap-6 mt-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4">
             {news.user_participates ? (
               <button
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:scale-105 transition flex items-center gap-2 animate-bounce"
-                onClick={handleCancelParticipation}
-                disabled={participateLoading}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gray-400 to-gray-500 text-white font-bold shadow-lg cursor-not-allowed text-lg opacity-70 border-2 border-white/40"
+                disabled
               >
-                <XCircle className="w-5 h-5" />Cancelar asistencia
+                <CheckCircle className="w-6 h-6 text-white" /> ¡Ya participas!
               </button>
             ) : (
               <button
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:scale-105 transition flex items-center gap-2 animate-bounce"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold shadow-lg hover:scale-105 hover:shadow-2xl transition-all duration-200 text-lg"
                 onClick={handleParticipate}
                 disabled={participateLoading}
               >
-                <CheckCircle className="w-5 h-5" />Quiero asistir
+                <Users className="w-6 h-6" /> Quiero asistir
               </button>
             )}
-            <span className="text-xl font-bold flex items-center gap-2 bg-white/20 px-4 py-2 rounded-xl shadow border border-white/30">
-              <Users className="w-6 h-6 text-white" />
-              {news.participants_count || 0} asistentes
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 border border-white text-white font-semibold text-lg shadow">
+              <Users className="w-5 h-5" /> {news.participants_count || 0} participantes
             </span>
           </div>
         </section>

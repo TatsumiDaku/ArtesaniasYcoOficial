@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import imageUrl from '@/utils/imageUrl';
+import { useRouter } from 'next/navigation';
 
 const StarRating = ({ rating, className }) => {
   const totalStars = 5;
@@ -31,6 +32,7 @@ const ProductCard = ({ product }) => {
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite } = useFavorites();
   const { addToCart } = useCart();
+  const router = useRouter();
   
   if (!product || !product.id) {
     return null;
@@ -56,8 +58,24 @@ const ProductCard = ({ product }) => {
   };
 
   const handleAddToCart = (e) => {
-    e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      toast((t) => (
+        <div className="flex flex-col gap-2">
+          <span>Para añadir al carrito debes iniciar sesión.</span>
+          <button
+            onClick={() => {
+              router.push('/register');
+              toast.dismiss(t.id);
+            }}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Regístrate
+          </button>
+        </div>
+      ), { duration: 6000 });
+      return;
+    }
     if (product.stock === 0) {
       toast.error('Este producto está agotado');
       return;
@@ -75,13 +93,24 @@ const ProductCard = ({ product }) => {
       className="group relative block overflow-hidden bg-white rounded-xl shadow-md transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1 border-2 border-transparent hover:border-amber-500"
     >
       <div className="relative w-full h-64">
-        <Image
-          src={imageSrc}
-          alt={product.name || 'Imagen del producto'}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-contain bg-white transition-transform duration-500 group-hover:scale-110"
-        />
+        {/* Imagen del producto */}
+        {product.images && product.images[0] && product.images[0].startsWith('/uploads') ? (
+          <img
+            src={imageUrl(product.images[0])}
+            alt={product.name}
+            className="w-full h-40 object-cover rounded-lg"
+            style={{ maxHeight: '160px' }}
+          />
+        ) : (
+          <Image
+            src={product.images && product.images[0] ? imageUrl(product.images[0]) : '/static/placeholder.png'}
+            alt={product.name}
+            width={300}
+            height={160}
+            className="w-full h-40 object-cover rounded-lg"
+            style={{ maxHeight: '160px' }}
+          />
+        )}
         { product.stock === 0 && (
             <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full">AGOTADO</div>
         )}

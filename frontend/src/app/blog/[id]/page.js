@@ -136,20 +136,27 @@ const BlogDetailPage = () => {
   return (
     <div className="max-w-3xl mx-auto bg-gradient-to-br from-blue-50 via-purple-50 to-orange-50 rounded-3xl shadow-2xl mt-10 overflow-hidden border border-blue-100 animate-fade-in">
       {/* Imagen principal */}
-      {blog.image_url_1 && (
-        <div className="w-full h-64 md:h-80 relative overflow-hidden">
-          <Image src={imageUrl(blog.image_url_1)} alt="Imagen principal" fill className="object-contain bg-white w-full h-full" priority />
-          {isEvent && (
-            <span className="absolute top-4 left-4 bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold px-4 py-2 rounded-full shadow text-base flex items-center gap-2 z-10">
-              <CalendarDays className="w-5 h-5" /> Evento
-            </span>
-          )}
-        </div>
+      {blog.image_url_1 && blog.image_url_1.startsWith('/uploads') ? (
+        <img
+          src={imageUrl(blog.image_url_1)}
+          alt="Imagen principal"
+          className="object-contain bg-white w-full h-full rounded-xl"
+          style={{ maxHeight: '320px' }}
+        />
+      ) : (
+        <Image
+          src={blog.image_url_1 ? imageUrl(blog.image_url_1) : '/static/placeholder.png'}
+          alt="Imagen principal"
+          width={600}
+          height={320}
+          className="object-contain bg-white w-full h-full rounded-xl"
+          style={{ maxHeight: '320px' }}
+        />
       )}
       {/* Header autor y categorías */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 px-8 pt-8 pb-4 bg-white/80 border-b border-blue-100">
         {blog.author_avatar && (
-          <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={56} height={56} className="w-14 h-14 rounded-full border-4 border-orange-200 shadow" />
+          <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={56} height={56} className="w-14 h-14 rounded-full border-4 border-orange-200 shadow" unoptimized />
         )}
         <div className="flex flex-col md:flex-row md:items-center gap-2 flex-1">
           <span className="font-bold text-xl text-blue-900">{blog.author_name}</span>
@@ -210,7 +217,7 @@ const BlogDetailPage = () => {
           </div>
           {blog.image_url_2 && (
             <div className="md:w-64 md:flex-shrink-0 flex justify-center md:justify-end">
-              <Image src={imageUrl(blog.image_url_2)} alt="Imagen secundaria" width={256} height={192} className="rounded-2xl shadow-lg max-h-64 object-cover" />
+              <Image src={imageUrl(blog.image_url_2)} alt="Imagen secundaria" width={256} height={192} className="rounded-2xl shadow-lg max-h-64 object-cover" unoptimized />
             </div>
           )}
         </div>
@@ -262,7 +269,7 @@ const BlogDetailPage = () => {
             {comments.length === 0 && <p className="text-gray-400 text-lg">Aún no hay comentarios.</p>}
             {comments.map((c) => (
               <div key={c.id} className="bg-gradient-to-r from-blue-50 via-orange-50 to-purple-50 rounded-xl p-5 flex items-start gap-4 border border-blue-100 shadow">
-                {c.user_avatar && <Image src={imageUrl(c.user_avatar)} alt="avatar" width={40} height={40} className="w-10 h-10 rounded-full border-2 border-orange-200" />}
+                {c.user_avatar && <Image src={imageUrl(c.user_avatar)} alt="avatar" width={40} height={40} className="w-10 h-10 rounded-full border-2 border-orange-200" unoptimized />}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-base text-blue-900">{c.user_name}</span>

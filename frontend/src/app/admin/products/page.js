@@ -417,12 +417,22 @@ const AdminProductsPage = () => {
       cell: ({ row }) => {
         const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         const imageUrl = row.original.images && row.original.images.length > 0 ? `${API_BASE_URL}${row.original.images[0]}` : null;
-        return imageUrl ? (
-          <Image src={imageUrl} alt={row.original.name} width={60} height={60} className="rounded-lg object-cover shadow-md border border-gray-200" />
+        return imageUrl && imageUrl.startsWith('/uploads') ? (
+          <img
+            src={imageUrl}
+            alt={row.original.name}
+            className="rounded-lg object-cover shadow-md border border-gray-200 w-16 h-16"
+            style={{ maxHeight: '60px' }}
+          />
         ) : (
-          <div className="w-[60px] h-[60px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500 border border-gray-200">
-            Sin foto
-          </div>
+          <Image
+            src={row.original.images && row.original.images[0] ? imageUrl : '/static/placeholder.png'}
+            alt={row.original.name}
+            width={60}
+            height={60}
+            className="rounded-lg object-cover shadow-md border border-gray-200 w-16 h-16"
+            style={{ maxHeight: '60px' }}
+          />
         );
       },
     },

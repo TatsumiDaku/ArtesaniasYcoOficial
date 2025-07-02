@@ -1,41 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<div align="center">
+  <img src="../public/static/LogoIncial.png" alt="Artesanías&Co Logo" width="120"/>
+  <h1>Frontend - Artesanías&Co</h1>
+  <p><strong>La puerta de entrada a la cultura, el arte y la comunidad artesanal.</strong></p>
+</div>
 
-## Getting Started
+---
 
-First, run the development server:
+## 🚀 ¿Qué es esto?
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Este es el frontend de <b>Artesanías&Co</b>, una plataforma de e-commerce y comunidad para artesanos y amantes del arte manual. Construido con <b>Next.js</b> (App Router), <b>React</b> y <b>Tailwind CSS</b>.
+
+---
+
+## 🖥️ Tecnologías principales
+
+- <b>Next.js 14+</b> (App Router)
+- <b>React 19</b>
+- <b>Tailwind CSS</b> + DaisyUI
+- <b>Axios</b> (API REST)
+- <b>React Context API</b> (estado global: sesión, carrito, favoritos)
+- <b>React Hook Form</b> (formularios)
+- <b>React Hot Toast</b> (notificaciones)
+- <b>Lucide React</b> (iconos SVG)
+
+---
+
+## 📁 Estructura principal
+
+```
+/src
+  ├── app/           # Rutas y páginas (App Router)
+  ├── components/    # Componentes reutilizables (UI, layout, productos, etc.)
+  ├── context/       # Contextos globales (Auth, Carrito, Favoritos)
+  ├── hooks/         # Custom hooks
+  ├── utils/         # Utilidades (API, helpers de imágenes)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🏁 Primeros pasos (desarrollo)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Instala dependencias:
+   ```bash
+   npm install
+   ```
+2. Crea un archivo `.env.local` con la URL de la API:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000/api
+   ```
+3. Ejecuta el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+4. Abre [http://localhost:3000](http://localhost:3000)
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 Enlaces útiles
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Documentación general del proyecto](../tutorial%20dev/DOCUMENTACION_PROYECTO.md)
+- [Backend](../backend/README.md)
+- [Demo en producción](https://www.artesaniasyco.com)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Notificación de Cookies
+## 🍪 Notificación de Cookies
 
 El componente `CookieNotification` muestra un aviso de cookies en la parte inferior de la pantalla para cumplir con la normativa y mejorar la experiencia del usuario.
 
@@ -43,15 +72,8 @@ El componente `CookieNotification` muestra un aviso de cookies en la parte infer
 - El usuario puede cerrar el aviso manualmente (botón X) o esperar 10 segundos para que desaparezca automáticamente.
 - Una vez aceptado, no se vuelve a mostrar hasta que se borre el `localStorage`.
 
-### Logs de consola para depuración
+---
 
-- Cuando la cookie se lee correctamente (ya existe o se muestra el aviso), aparece en la consola:
-  ```
-  cookie inicia
-  ```
-- Si ocurre un error al leer o escribir en `localStorage`, aparece:
-  ```
-  cookie error <detalle del error>
-  ```
-
-Esto permite verificar fácilmente si la lógica de cookies está funcionando correctamente en desarrollo.
+<div align="center">
+  <p>Hecho con ❤️ para celebrar el arte y la cultura.</p>
+</div>

@@ -108,20 +108,27 @@ const BlogListPage = () => {
                   {isEvent && (
                     <div className="absolute left-0 top-0 h-full w-2 md:w-3 lg:w-4 bg-gradient-to-b from-orange-400 via-amber-300 to-yellow-200 z-20"></div>
                   )}
-                  {blog.image_url_1 && (
-                    <div className="relative">
-                      <Image src={imageUrl(blog.image_url_1)} alt={blog.title} width={600} height={192} className="w-full h-48 object-contain bg-white" />
-                      {isEvent && (
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white font-bold px-3 py-1 rounded-full shadow text-xs flex items-center gap-1 z-10">
-                          <CalendarDays className="w-4 h-4" /> Evento
-                        </span>
-                      )}
-                    </div>
+                  {blog.image_url_1 && blog.image_url_1.startsWith('/uploads') ? (
+                    <img
+                      src={imageUrl(blog.image_url_1)}
+                      alt={blog.title}
+                      className="w-full h-48 object-contain bg-white rounded-lg"
+                      style={{ maxHeight: '192px' }}
+                    />
+                  ) : (
+                    <Image
+                      src={blog.image_url_1 ? imageUrl(blog.image_url_1) : '/static/placeholder.png'}
+                      alt={blog.title}
+                      width={600}
+                      height={192}
+                      className="w-full h-48 object-contain bg-white rounded-lg"
+                      style={{ maxHeight: '192px' }}
+                    />
                   )}
                   <div className="p-6">
                     <h2 className={`text-2xl font-bold text-amber-700 font-pacifico mb-2 line-clamp-2 flex items-center gap-2`}>{isEvent && <CalendarDays className="w-5 h-5" />} {blog.title}</h2>
                     <div className="flex items-center gap-2 mb-2">
-                      {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={28} height={28} className="w-7 h-7 rounded-full" />}
+                      {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={28} height={28} className="w-7 h-7 rounded-full" unoptimized />}
                       <span className="text-sm font-semibold text-gray-700">{blog.author_name}</span>
                       <span className="text-xs text-gray-400">{new Date(blog.created_at).toLocaleDateString()}</span>
                     </div>

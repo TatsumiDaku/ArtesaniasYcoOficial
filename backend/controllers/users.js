@@ -108,6 +108,16 @@ const getUser = async (req, res) => {
     const user = userResult.rows[0];
     delete user.password; // Nunca enviar el hash de la contraseña
 
+    // Normalizar rutas de imagen a relativas si es necesario
+    if (user.avatar && !user.avatar.startsWith('/uploads') && user.avatar.includes('uploads/')) {
+      user.avatar = '/' + user.avatar.split('uploads/').pop();
+      user.avatar = '/uploads/' + user.avatar.replace(/^\/+/,'');
+    }
+    if (user.shop_header_image && !user.shop_header_image.startsWith('/uploads') && user.shop_header_image.includes('uploads/')) {
+      user.shop_header_image = '/' + user.shop_header_image.split('uploads/').pop();
+      user.shop_header_image = '/uploads/' + user.shop_header_image.replace(/^\/+/,'');
+    }
+
     res.json(user);
   } catch (error) {
     console.error('Error obteniendo usuario:', error);
@@ -126,6 +136,17 @@ const getUserById = async (req, res) => {
     }
     // No enviar el hash de la contraseña
     delete user.rows[0].password;
+
+    // Normalizar rutas de imagen a relativas si es necesario
+    if (user.rows[0].avatar && !user.rows[0].avatar.startsWith('/uploads') && user.rows[0].avatar.includes('uploads/')) {
+      user.rows[0].avatar = '/' + user.rows[0].avatar.split('uploads/').pop();
+      user.rows[0].avatar = '/uploads/' + user.rows[0].avatar.replace(/^\/+/,'');
+    }
+    if (user.rows[0].shop_header_image && !user.rows[0].shop_header_image.startsWith('/uploads') && user.rows[0].shop_header_image.includes('uploads/')) {
+      user.rows[0].shop_header_image = '/' + user.rows[0].shop_header_image.split('uploads/').pop();
+      user.rows[0].shop_header_image = '/uploads/' + user.rows[0].shop_header_image.replace(/^\/+/,'');
+    }
+
     res.json(user.rows[0]);
   } catch (error) {
     console.error('Error obteniendo usuario por ID:', error);
@@ -215,6 +236,16 @@ const updateUser = async (req, res) => {
 
     const updatedUser = updated.rows[0];
 
+    // Normalizar rutas de imagen a relativas si es necesario
+    if (updatedUser.avatar && !updatedUser.avatar.startsWith('/uploads') && updatedUser.avatar.includes('uploads/')) {
+      updatedUser.avatar = '/' + updatedUser.avatar.split('uploads/').pop();
+      updatedUser.avatar = '/uploads/' + updatedUser.avatar.replace(/^\/+/,'');
+    }
+    if (updatedUser.shop_header_image && !updatedUser.shop_header_image.startsWith('/uploads') && updatedUser.shop_header_image.includes('uploads/')) {
+      updatedUser.shop_header_image = '/' + updatedUser.shop_header_image.split('uploads/').pop();
+      updatedUser.shop_header_image = '/uploads/' + updatedUser.shop_header_image.replace(/^\/+/,'');
+    }
+
     // Generar un nuevo token con la información completa y actualizada
     const payload = {
         id: updatedUser.id,
@@ -288,6 +319,16 @@ const adminUpdateUser = async (req, res) => {
 
     const updatedUser = updated.rows[0];
     delete updatedUser.password;
+
+    // Normalizar rutas de imagen a relativas si es necesario
+    if (updatedUser.avatar && !updatedUser.avatar.startsWith('/uploads') && updatedUser.avatar.includes('uploads/')) {
+      updatedUser.avatar = '/' + updatedUser.avatar.split('uploads/').pop();
+      updatedUser.avatar = '/uploads/' + updatedUser.avatar.replace(/^\/+/,'');
+    }
+    if (updatedUser.shop_header_image && !updatedUser.shop_header_image.startsWith('/uploads') && updatedUser.shop_header_image.includes('uploads/')) {
+      updatedUser.shop_header_image = '/' + updatedUser.shop_header_image.split('uploads/').pop();
+      updatedUser.shop_header_image = '/uploads/' + updatedUser.shop_header_image.replace(/^\/+/,'');
+    }
 
     res.json({ message: 'Usuario actualizado exitosamente por el administrador.', user: updatedUser });
   } catch (error) {

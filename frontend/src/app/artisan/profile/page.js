@@ -11,6 +11,7 @@ import withAuthProtection from '@/components/auth/withAuthProtection';
 import PasswordInput from '@/components/ui/PasswordInput';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import imageUrl from '@/utils/imageUrl';
 
 const ArtisanProfilePage = () => {
   const { user, updateUser: updateAuthContext, loading: authLoading, logout } = useAuth();
@@ -148,19 +149,28 @@ const ArtisanProfilePage = () => {
           
           <header className="flex items-center gap-6">
             <div className="relative group">
-              {avatarPreview ? (
-                <Image 
-                  src={avatarPreview} 
-                  alt="Avatar" 
-                  width={120} 
-                  height={120} 
-                  className="w-32 h-32 object-cover rounded-full shadow-2xl border-4 border-white" 
+              {/* Avatar del artesano */}
+              {(avatarPreview && (typeof avatarPreview === 'string' ? avatarPreview.startsWith('/uploads') : true)) ? (
+                <img
+                  src={typeof avatarPreview === 'string' ? imageUrl(avatarPreview) : avatarPreview}
+                  alt={user.nickname || 'Avatar'}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                />
+              ) : (user.avatar && user.avatar.startsWith('/uploads') ? (
+                <img
+                  src={imageUrl(user.avatar)}
+                  alt={user.nickname || 'Avatar'}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
                 />
               ) : (
-                <div className="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
-                  <User className="w-16 h-16 text-gray-400" />
-                </div>
-              )}
+                <Image
+                  src={user.avatar ? imageUrl(user.avatar) : '/static/default-avatar.png'}
+                  alt={user.nickname || 'Avatar'}
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                />
+              ))}
               <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
                 <Edit3 className="text-white w-10 h-10" />
               </label>

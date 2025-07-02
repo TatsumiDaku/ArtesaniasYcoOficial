@@ -31,26 +31,21 @@ const UserMenu = () => {
         <Menu.Button className="inline-flex w-full justify-center items-center gap-x-2 rounded-md px-3 py-2 text-sm font-semibold hover:text-primary">
           {auth.user ? (
             <>
-              {auth.user.avatar ? (
-                <Image 
-                  src={imageUrl(auth.user.avatar)} 
-                  alt="Avatar"
-                  width={24}
-                  height={24}
-                  className="rounded-full object-cover"
-                  style={{ width: '24px', height: '24px' }}
-                />
-              ) : auth.user.role === 'cliente' ? (
-                <Image
-                  src="/static/default-avatar.png"
-                  alt="Avatar por defecto"
-                  width={24}
-                  height={24}
-                  className="rounded-full object-cover"
-                  style={{ width: '24px', height: '24px' }}
+              {/* Avatar del usuario */}
+              {auth.user?.avatar && auth.user.avatar.startsWith('/uploads') ? (
+                <img
+                  src={imageUrl(auth.user.avatar)}
+                  alt={auth.user.name || 'Avatar'}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-primary"
                 />
               ) : (
-                <UserCircle className="w-6 h-6 text-gray-400" />
+                <Image
+                  src={auth.user?.avatar || '/static/default-avatar.png'}
+                  alt={auth.user?.name || 'Avatar'}
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-primary"
+                />
               )}
               {/* Muestra el nickname para artesanos, o el nombre para otros roles */}
               <span className="truncate max-w-[100px]">{auth.isArtisan ? auth.user.nickname : auth.user.name}</span>

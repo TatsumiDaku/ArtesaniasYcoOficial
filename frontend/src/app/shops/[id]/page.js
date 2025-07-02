@@ -210,49 +210,55 @@ export default function ShopDetailPage() {
                 </button>
             </div>
             {/* Header section */}
-            <div className="relative h-64 md:h-80 w-full">
-                {imageUrl(shopData.shop_header_image) && (
-                    <Image
+            <div className="relative w-full h-64 md:h-80 flex items-end justify-center bg-gray-200">
+                {shopData.shop_header_image && shopData.shop_header_image.startsWith('/uploads') ? (
+                    <img
                         src={imageUrl(shopData.shop_header_image)}
                         alt={`Cabecera de ${shopData.nickname}`}
-                        layout="fill"
-                        objectFit="contain"
-                        priority
-                        sizes="100vw"
-                        className="z-0 bg-white"
+                        className="absolute inset-0 w-full h-full object-cover object-center rounded-b-2xl"
+                        style={{ zIndex: 1 }}
+                    />
+                ) : (
+                    <Image
+                        src={shopData.shop_header_image ? imageUrl(shopData.shop_header_image) : '/static/shop-header-default.png'}
+                        alt={`Cabecera de ${shopData.nickname}`}
+                        fill
+                        className="absolute inset-0 w-full h-full object-cover object-center rounded-b-2xl"
+                        style={{ zIndex: 1 }}
                     />
                 )}
-                <div className="absolute inset-0 flex items-end p-8 z-20">
-                    <div className="flex items-center gap-6">
-                        <div className="relative w-28 h-28 md:w-36 md:h-36 border-4 border-white/80 rounded-full shadow-2xl bg-white/40">
-                            <Image
-                                src={imageUrl(shopData.avatar)}
-                                alt={`Avatar de ${shopData.nickname}`}
-                                layout="fill"
-                                objectFit="cover"
-                                className="rounded-full"
-                                priority
-                                sizes="144px"
-                            />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-3 mb-1">
-                                <h1 className="text-2xl md:text-3xl font-bold font-pacifico text-amber-700 drop-shadow-[0_2px_2px_rgba(30,30,30,0.35)]">
-                                    {shopData.nickname}
-                                </h1>
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/30 text-orange-700 font-semibold rounded-full text-xs shadow border border-orange-200">
-                                    <Store className="w-4 h-4" /> Artesano
-                                </span>
-                            </div>
-                            {shopData.shop_tagline && (
-                                <p className="text-lg text-white/90 font-semibold drop-shadow-md bg-black/20 rounded-xl px-3 py-1 inline-block mt-1">
-                                    {shopData.shop_tagline}
-                                </p>
-                            )}
-                        </div>
-                    </div>
+                {/* Avatar centrado y sobresaliente */}
+                <div className="absolute left-1/2 -bottom-16 transform -translate-x-1/2 z-20 flex flex-col items-center">
+                    {shopData.avatar && shopData.avatar.startsWith('/uploads') ? (
+                        <img
+                            src={imageUrl(shopData.avatar)}
+                            alt={`Avatar de ${shopData.nickname}`}
+                            width={128}
+                            height={128}
+                            className="rounded-full border-4 border-white shadow-lg bg-white object-cover w-32 h-32"
+                            style={{ objectPosition: 'center' }}
+                        />
+                    ) : (
+                        <Image
+                            src={imageUrl(shopData.avatar) || '/static/default-avatar.png'}
+                            alt={`Avatar de ${shopData.nickname}`}
+                            width={128}
+                            height={128}
+                            className="rounded-full border-4 border-white shadow-lg bg-white object-cover w-32 h-32"
+                            style={{ objectPosition: 'center' }}
+                        />
+                    )}
+                    <h1 className="mt-4 text-2xl md:text-3xl font-bold font-pacifico text-amber-700 drop-shadow-[0_2px_2px_rgba(30,30,30,0.35)] text-center">
+                        {shopData.nickname}
+                    </h1>
+                    {shopData.shop_tagline && (
+                        <p className="text-lg text-gray-700 font-semibold drop-shadow-md bg-white/80 rounded-xl px-3 py-1 inline-block mt-1 text-center">
+                            {shopData.shop_tagline}
+                        </p>
+                    )}
                 </div>
             </div>
+            <div className="h-20" /> {/* Espacio para el overlap del avatar */}
 
             {/* Main content */}
             <div className="container mx-auto px-4 py-8">
@@ -342,7 +348,7 @@ export default function ShopDetailPage() {
                                             <Link key={blog.id} href={`/blog/${blog.id}`} className={`block bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border ${isEvent ? 'border-l-8 border-blue-400' : 'border-yellow-100'}`}>
                                                 {blog.image_url_1 && (
                                                     <div className="relative">
-                                                        <Image src={imageUrl(blog.image_url_1)} alt={blog.title} width={400} height={160} className="w-full h-40 object-contain bg-white" />
+                                                        <Image src={imageUrl(blog.image_url_1)} alt={blog.title} width={400} height={160} className="w-full h-40 object-contain bg-white" unoptimized />
                                                         {isEvent && (
                                                             <span className="absolute top-3 left-3 bg-gradient-to-r from-orange-400 to-amber-400 text-white font-bold px-3 py-1 rounded-full shadow text-xs flex items-center gap-1 z-10">
                                                                 <CalendarDays className="w-4 h-4" /> Evento
@@ -353,7 +359,7 @@ export default function ShopDetailPage() {
                                                 <div className="p-4">
                                                     <h3 className={`font-pacifico text-amber-700 font-bold text-lg mb-1 line-clamp-2 drop-shadow-[0_1.5px_1.5px_rgba(30,30,30,0.18)] ${isEvent ? 'flex items-center gap-2' : ''}`}>{isEvent && <CalendarDays className="w-5 h-5" />} {blog.title}</h3>
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={24} height={24} className="w-6 h-6 rounded-full" />}
+                                                        {blog.author_avatar && <Image src={imageUrl(blog.author_avatar)} alt="avatar" width={24} height={24} className="w-6 h-6 rounded-full" unoptimized />}
                                                         <span className="text-sm font-semibold text-gray-700">{blog.author_name}</span>
                                                     </div>
                                                     <span className="text-xs text-gray-400">{new Date(blog.created_at).toLocaleDateString()}</span>
