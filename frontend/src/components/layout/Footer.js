@@ -17,6 +17,7 @@ const Footer = () => {
                 width={50} 
                 height={50} 
                 className="group-hover:rotate-12 transition-transform duration-300"
+                unoptimized
               />
               <span className="font-pacifico text-2xl bg-gradient-to-r from-amber-200 via-orange-300 to-red-300 bg-clip-text text-transparent py-2">
                 ArtesaniasYCo

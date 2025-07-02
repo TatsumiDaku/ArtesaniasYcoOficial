@@ -24,7 +24,7 @@ const LoginPage = () => {
               alt="Artesanías & CO Logo"
               width={120}
               height={120}
-              className="mx-auto"
+              unoptimized
             />
         </div>
 
