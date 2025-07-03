@@ -26,6 +26,9 @@ const pacifico = Pacifico({
 export const metadata = {
   title: 'Artesanías & Co',
   description: 'Conectando artesanos y amantes del arte. Descubre piezas únicas.',
+  icons: {
+    icon: '/@apple-icon.png',
+  },
 };
 
 export default function RootLayout({ children }) {

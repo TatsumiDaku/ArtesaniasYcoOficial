@@ -30,14 +30,10 @@ function StarRating({ rating }) {
 function ProductYAxisTick({ x, y, payload, data }) {
   const product = data?.find(p => p.name === payload.value);
   
-  // Determinar la fuente de la imagen usando el patrón correcto
+  // Determinar la fuente de la imagen usando imageUrl y fallback
   let imageSrc = '/static/placeholder.png';
   if (product?.image) {
-    if (product.image.startsWith('/uploads/')) {
-      imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${product.image}`;
-    } else {
-      imageSrc = imageUrl(product.image);
-    }
+    imageSrc = imageUrl(product.image);
   }
   
   return (
@@ -50,9 +46,8 @@ function ProductYAxisTick({ x, y, payload, data }) {
           width={28}
           height={28}
           style={{ borderRadius: 6 }}
-          onError={() => {
-            // Para SVG necesitamos manejar el error diferente
-            console.warn('Error loading image in SVG:', imageSrc);
+          onError={(e) => {
+            e.target.setAttribute('href', '/static/placeholder.png');
           }}
         />
       )}
