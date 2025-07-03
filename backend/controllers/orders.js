@@ -674,90 +674,151 @@ const generateInvoicePDF = async (req, res) => {
     // Obtener usuario
     const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [order.user_id]);
     const user = userRes.rows[0];
-    // Obtener artesano (si hay solo uno)
-    let artisan = null;
-    if (items.length === 1) {
-      const artisanRes = await pool.query('SELECT * FROM users WHERE id = $1', [items[0].artisan_id]);
-      artisan = artisanRes.rows[0];
-    }
-    // Generar factura PDF (solo una página, diseño compacto)
-    const doc = new PDFDocument({ margin: 24, size: 'A4', autoFirstPage: true });
+
+    // Generar factura PDF profesional
+    const doc = new PDFDocument({ 
+      margin: 50, 
+      size: 'A4', 
+      autoFirstPage: true,
+      info: {
+        Title: `Factura #${id} - Artesanías&Co`,
+        Author: 'Artesanías&Co',
+        Subject: 'Factura de Compra',
+        Keywords: 'factura, artesanías, colombia'
+      }
+    });
     const pdfPath = path.join(__dirname, `../../backend/uploads/invoice-order-${id}.pdf`);
     const stream = fs.createWriteStream(pdfPath);
     doc.pipe(stream);
 
-    // Logo
+    // Colores corporativos
+    const primaryColor = '#EA580C'; // Naranja
+    const secondaryColor = '#FB923C'; // Naranja claro
+    const darkColor = '#1F2937'; // Gris oscuro
+    const lightGray = '#F9FAFB';
+    const mediumGray = '#6B7280';
+
+    // HEADER CON LOGO Y DATOS DE LA EMPRESA
     const logoPath = path.join(__dirname, '../../frontend/public/static/LogoIncial.png');
     if (fs.existsSync(logoPath)) {
-      doc.image(logoPath, doc.page.width / 2 - 40, 24, { width: 80 });
+      doc.image(logoPath, 50, 50, { width: 100 });
     }
-    // Título
-    doc.font('Courier-Bold').fontSize(18).fillColor('#EA580C').text('Factura de Compra', 0, 90, { align: 'center' });
-    doc.moveTo(32, 115).lineTo(doc.page.width - 32, 115).stroke('#EA580C');
 
-    // Info pedido y usuario
-    doc.font('Courier').fontSize(9).fillColor('#333');
-    doc.text(`Pedido: #${id}    Fecha: ${new Date(order.created_at).toLocaleDateString('es-CO')}`, 32, 125);
-    doc.text(`Cliente: ${user.name} (${user.email})`);
-    doc.text(`Envío: ${order.shipping_address}`);
-    doc.text(`Pago: ${order.payment_method}`);
-    if (items.length === 1 && items[0].artisan_id) {
-      const artisanRes = await pool.query('SELECT * FROM users WHERE id = $1', [items[0].artisan_id]);
-      const artisan = artisanRes.rows[0];
-      if (artisan) doc.text(`Artesano: ${artisan.name} (${artisan.email})`);
-    }
-    doc.moveTo(32, doc.y + 4).lineTo(doc.page.width - 32, doc.y + 4).stroke('#E0E7FF');
+    // Información de la empresa (lado derecho)
+    doc.font('Helvetica-Bold').fontSize(20).fillColor(primaryColor)
+       .text('Artesanías&Co', 350, 55, { align: 'right' });
+    doc.font('Helvetica').fontSize(10).fillColor(darkColor)
+       .text('Plataforma de Artesanías Colombianas', 350, 80, { align: 'right' })
+       .text('soporte@artesaniasyco.com', 350, 95, { align: 'right' })
+       .text('www.artesaniasyco.com', 350, 110, { align: 'right' });
 
-    // Tabla productos (máx 6)
-    doc.font('Courier-Bold').fontSize(10).fillColor('#6366F1').text('Productos:', 32, doc.y + 8);
-    const tableY = doc.y + 4;
-    doc.font('Courier-Bold').fontSize(8).fillColor('#fff');
-    doc.rect(32, tableY, doc.page.width - 64, 13).fill('#6366F1');
-    doc.fillColor('#fff').text('Nombre', 36, tableY + 2, { width: 70 });
-    doc.text('Cat.', 110, tableY + 2, { width: 35 });
-    doc.text('Desc.', 148, tableY + 2, { width: 70 });
-    doc.text('Cant.', 222, tableY + 2, { width: 25 });
-    doc.text('Precio', 252, tableY + 2, { width: 40 });
-    doc.text('Subtotal', 296, tableY + 2, { width: 50 });
-    let y = tableY + 13;
-    const maxRows = 6;
-    items.slice(0, maxRows).forEach((item, idx) => {
-      doc.save();
-      doc.rect(32, y, doc.page.width - 64, 12).fill(idx % 2 === 0 ? '#F3F4F6' : '#E0E7FF');
-      doc.restore();
-      doc.font('Courier').fontSize(7).fillColor('#EA580C');
-      doc.text(item.name.slice(0, 14), 36, y + 2, { width: 70 });
-      doc.text((item.category || '').slice(0, 10), 110, y + 2, { width: 35 });
-      doc.text((item.description || '-').slice(0, 18), 148, y + 2, { width: 70 });
-      doc.text(item.quantity.toString(), 222, y + 2, { width: 25 });
-      doc.text(`$${parseFloat(item.price).toLocaleString('es-CO')}`, 252, y + 2, { width: 40 });
-      doc.text(`$${(parseFloat(item.price) * item.quantity).toLocaleString('es-CO')}`, 296, y + 2, { width: 50 });
-      y += 12;
+    // TÍTULO FACTURA
+    doc.font('Helvetica-Bold').fontSize(32).fillColor(primaryColor)
+       .text('FACTURA', 50, 150);
+    
+    // Número de factura y fecha (cuadrito)
+    doc.rect(350, 140, 195, 60).fillAndStroke(lightGray, mediumGray);
+    doc.font('Helvetica-Bold').fontSize(12).fillColor(darkColor)
+       .text('Factura No.', 360, 150)
+       .text('Fecha', 360, 170);
+    doc.font('Helvetica').fontSize(12).fillColor(primaryColor)
+       .text(`#${id}`, 450, 150)
+       .text(new Date(order.created_at).toLocaleDateString('es-CO'), 450, 170);
+
+    // INFORMACIÓN DEL CLIENTE
+    doc.font('Helvetica-Bold').fontSize(14).fillColor(darkColor)
+       .text('FACTURAR A:', 50, 240);
+    
+    doc.rect(50, 260, 495, 80).fillAndStroke(lightGray, mediumGray);
+    doc.font('Helvetica-Bold').fontSize(12).fillColor(darkColor)
+       .text('Cliente:', 60, 275);
+    doc.font('Helvetica').fontSize(11).fillColor(darkColor)
+       .text(`${user.name}`, 110, 275)
+       .text(`Email: ${user.email}`, 60, 295)
+       .text(`Dirección de envío: ${order.shipping_address}`, 60, 315);
+
+    // INFORMACIÓN DEL PEDIDO
+    doc.font('Helvetica-Bold').fontSize(12).fillColor(darkColor)
+       .text('Método de pago:', 350, 275);
+    doc.font('Helvetica').fontSize(11).fillColor(darkColor)
+       .text(`${order.payment_method}`, 450, 275)
+       .text(`Estado: ${order.status}`, 350, 295);
+
+    // TABLA DE PRODUCTOS
+    let currentY = 370;
+    
+    // Encabezado de tabla
+    doc.rect(50, currentY, 495, 30).fillAndStroke(primaryColor, primaryColor);
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('white')
+       .text('PRODUCTO', 60, currentY + 8)
+       .text('CANTIDAD', 250, currentY + 8)
+       .text('PRECIO UNIT.', 320, currentY + 8)
+       .text('SUBTOTAL', 450, currentY + 8);
+
+    currentY += 30;
+    let rowColor = true;
+    let subtotal = 0;
+
+    // Filas de productos
+    items.forEach((item, index) => {
+      const rowHeight = 40;
+      const backgroundColor = rowColor ? 'white' : lightGray;
+      
+      doc.rect(50, currentY, 495, rowHeight).fillAndStroke(backgroundColor, mediumGray);
+      
+      doc.font('Helvetica-Bold').fontSize(10).fillColor(darkColor)
+         .text(item.name, 60, currentY + 8, { width: 180, height: rowHeight - 16 });
+      doc.font('Helvetica').fontSize(9).fillColor(mediumGray)
+         .text(item.description || '', 60, currentY + 22, { width: 180, height: rowHeight - 22 });
+      
+      doc.font('Helvetica').fontSize(11).fillColor(darkColor)
+         .text(item.quantity.toString(), 260, currentY + 15)
+         .text(`$${parseFloat(item.price).toLocaleString('es-CO')}`, 330, currentY + 15)
+         .text(`$${(parseFloat(item.price) * item.quantity).toLocaleString('es-CO')}`, 460, currentY + 15);
+
+      subtotal += parseFloat(item.price) * item.quantity;
+      currentY += rowHeight;
+      rowColor = !rowColor;
     });
-    if (items.length > maxRows) {
-      doc.save();
-      doc.rect(32, y, doc.page.width - 64, 12).fill('#FDE68A');
-      doc.restore();
-      doc.font('Courier-Bold').fontSize(7).fillColor('#EA580C').text(`...y ${items.length - maxRows} productos más`, 36, y + 2, { width: doc.page.width - 100 });
-      y += 12;
-    }
-    doc.y = y + 4;
-    doc.moveTo(32, doc.y).lineTo(doc.page.width - 32, doc.y).stroke('#EA580C');
 
-    // Total
-    doc.font('Courier-Bold').fontSize(11).fillColor('#059669').text(`Total: $${parseFloat(order.total).toLocaleString('es-CO')} COP`, doc.page.width - 180, doc.y + 6, { width: 170, align: 'right' });
+    // TOTALES
+    currentY += 20;
+    const totalBoxY = currentY;
+    
+    doc.rect(350, totalBoxY, 195, 60).fillAndStroke(lightGray, mediumGray);
+    
+    doc.font('Helvetica-Bold').fontSize(12).fillColor(darkColor)
+       .text('Subtotal:', 360, totalBoxY + 10)
+       .text('IVA (0%):', 360, totalBoxY + 25);
+    
+    doc.font('Helvetica-Bold').fontSize(14).fillColor(primaryColor)
+       .text('TOTAL:', 360, totalBoxY + 40);
+    
+    doc.font('Helvetica').fontSize(12).fillColor(darkColor)
+       .text(`$${subtotal.toLocaleString('es-CO')}`, 480, totalBoxY + 10, { align: 'right' })
+       .text('$0', 480, totalBoxY + 25, { align: 'right' });
+    
+    doc.font('Helvetica-Bold').fontSize(14).fillColor(primaryColor)
+       .text(`$${parseFloat(order.total).toLocaleString('es-CO')} COP`, 480, totalBoxY + 40, { align: 'right' });
 
-    // Mensaje agradecimiento
-    doc.font('Courier-Oblique').fontSize(8).fillColor('#EA580C').text('¡Gracias por confiar en el trabajo artesanal colombiano!', 32, doc.y + 18, { width: doc.page.width - 64, align: 'center' });
-    doc.font('Courier-Oblique').fontSize(7).fillColor('#6366F1').text('Tu apoyo hace la diferencia.', 32, doc.y + 28, { width: doc.page.width - 64, align: 'center' });
+    // MENSAJE DE AGRADECIMIENTO
+    currentY += 100;
+    doc.rect(50, currentY, 495, 60).fillAndStroke(secondaryColor, secondaryColor);
+    
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('white')
+       .text('¡GRACIAS POR TU COMPRA!', 50, currentY + 15, { width: 495, align: 'center' });
+    doc.font('Helvetica').fontSize(11).fillColor('white')
+       .text('Tu apoyo impulsa el talento artesanal colombiano', 50, currentY + 35, { width: 495, align: 'center' });
 
-    // Pie de página compacto (posición absoluta, nunca fuerza salto)
-    const footerY = doc.page.height - 48;
-    doc.save();
-    doc.rect(32, footerY, doc.page.width - 64, 24).fill('#FFF7ED');
-    doc.restore();
-    doc.font('Courier-Bold').fontSize(8).fillColor('#EA580C').text('¿Ayuda? soporte@artesaniasyco.com | ayuda@artesaniasyco.com | somos@artesaniasyco.com', 32, footerY + 6, { width: doc.page.width - 64, align: 'center', lineBreak: false });
-    doc.font('Courier-Oblique').fontSize(7).fillColor('#888').text('Artesanías&Co - Apoyando el arte colombiano.', 32, footerY + 16, { width: doc.page.width - 64, align: 'center', lineBreak: false });
+    // PIE DE PÁGINA
+    const footerY = doc.page.height - 100;
+    doc.font('Helvetica').fontSize(9).fillColor(mediumGray)
+       .text('Esta factura fue generada automáticamente por el sistema Artesanías&Co', 50, footerY, { width: 495, align: 'center' })
+       .text('Para cualquier consulta, contáctanos en soporte@artesaniasyco.com', 50, footerY + 15, { width: 495, align: 'center' })
+       .text('¡Seguimos apoyando el arte y la cultura colombiana!', 50, footerY + 30, { width: 495, align: 'center' });
+
+    // Línea decorativa final
+    doc.moveTo(50, footerY + 50).lineTo(545, footerY + 50).strokeColor(primaryColor).lineWidth(2).stroke();
 
     doc.end();
     await new Promise(resolve => stream.on('finish', resolve));

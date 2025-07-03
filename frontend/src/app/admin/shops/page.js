@@ -95,23 +95,35 @@ const AdminShopsPage = () => {
       accessorKey: 'name',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-            {row.original.avatar && imageUrl(row.original.avatar).startsWith('/uploads') ? (
-              <img
-                src={imageUrl(row.original.avatar)}
-                alt={row.original.name}
-                width={40}
-                height={40}
-                className="rounded-full object-cover"
-                style={{ minWidth: 40, minHeight: 40 }}
-              />
+            {row.original.avatar ? (
+              row.original.avatar.startsWith('/uploads/') ? (
+                <img
+                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${row.original.avatar}`}
+                  alt={row.original.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                  style={{ minWidth: 40, minHeight: 40 }}
+                  onError={(e) => {
+                    e.target.src = '/static/default-avatar.png';
+                  }}
+                />
+              ) : (
+                <Image
+                  src={imageUrl(row.original.avatar)}
+                  alt={row.original.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-cover"
+                  onError={(e) => {
+                    e.target.src = '/static/default-avatar.png';
+                  }}
+                />
+              )
             ) : (
-              <Image
-                src={imageUrl(row.original.avatar)}
-                alt={row.original.name}
-                width={40}
-                height={40}
-                className="rounded-full object-cover"
-              />
+              <div className="w-10 h-10 rounded-full bg-gray-200 border flex items-center justify-center">
+                <span className="text-gray-400 text-xs">👤</span>
+              </div>
             )}
             <div>
                 <p className="font-bold">{row.original.name}</p>

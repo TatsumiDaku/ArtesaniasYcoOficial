@@ -29,16 +29,31 @@ function StarRating({ rating }) {
 // Tick personalizado para el eje Y de productos (reutilizable)
 function ProductYAxisTick({ x, y, payload, data }) {
   const product = data?.find(p => p.name === payload.value);
+  
+  // Determinar la fuente de la imagen usando el patrón correcto
+  let imageSrc = '/static/placeholder.png';
+  if (product?.image) {
+    if (product.image.startsWith('/uploads/')) {
+      imageSrc = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${product.image}`;
+    } else {
+      imageSrc = imageUrl(product.image);
+    }
+  }
+  
   return (
     <g transform={`translate(${x},${y})`}>
       {product?.image && (
         <image
-          href={imageUrl(product.image)}
+          href={imageSrc}
           x={-34}
           y={-14}
           width={28}
           height={28}
           style={{ borderRadius: 6 }}
+          onError={() => {
+            // Para SVG necesitamos manejar el error diferente
+            console.warn('Error loading image in SVG:', imageSrc);
+          }}
         />
       )}
       <text x={0} y={0} dy={6} fontSize={13} fontWeight={600} fill="#b45309">
@@ -104,7 +119,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingReviews(true);
-    api.get('/stats/reviews/latest')
+    api.get('/stats/latest-reviews')
       .then(res => setLatestReviews(res.data))
       .catch(err => {
         setErrorReviews('No se pudieron cargar las reseñas.');
@@ -114,7 +129,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingLowStock(true);
-    api.get('/stats/products/low-stock')
+    api.get('/stats/low-stock-products')
       .then(res => setLowStockProducts(res.data))
       .catch(() => setErrorLowStock('No se pudieron cargar los productos con stock bajo.'))
       .finally(() => setLoadingLowStock(false));
@@ -130,7 +145,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingSales(true);
-    api.get('/stats/sales/by-day', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
+    api.get('/stats/sales-by-day', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
       .then(res => setSalesByDay(res.data))
       .catch(() => setErrorSales('No se pudieron cargar las ventas por día.'))
       .finally(() => setLoadingSales(false));
@@ -138,7 +153,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingIncome(true);
-    api.get('/stats/income/by-month', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
+    api.get('/stats/income-by-month', { params: { startDate: appliedStartDate, endDate: appliedEndDate } })
       .then(res => setIncomeByMonth(res.data))
       .catch(() => setErrorIncome('No se pudieron cargar los ingresos por mes.'))
       .finally(() => setLoadingIncome(false));
@@ -146,7 +161,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingTopProducts(true);
-    api.get('/stats/products/top')
+    api.get('/stats/top-products')
       .then(res => setTopProducts(res.data))
       .catch(() => setErrorTopProducts('No se pudo cargar el top de productos.'))
       .finally(() => setLoadingTopProducts(false));
@@ -154,7 +169,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingOrderStatus(true);
-    api.get('/stats/orders/status-distribution')
+    api.get('/stats/order-status-distribution')
       .then(res => setOrderStatus(res.data))
       .catch(() => setErrorOrderStatus('No se pudo cargar la distribución de estados de pedidos.'))
       .finally(() => setLoadingOrderStatus(false));
@@ -162,7 +177,7 @@ function ArtisanStatisticsPage() {
 
   useEffect(() => {
     setLoadingRatings(true);
-    api.get('/stats/products/ratings')
+    api.get('/stats/product-ratings')
       .then(res => setProductRatings(res.data))
       .catch(() => setErrorRatings('No se pudo cargar la calificación por producto.'))
       .finally(() => setLoadingRatings(false));
@@ -173,15 +188,19 @@ function ArtisanStatisticsPage() {
 
   const statusColors = {
     pending: '#fbbf24',
+    paid: '#10b981',
     confirmed: '#3b82f6',
     shipped: '#6366f1',
+    in_transit: '#8b5cf6',
     delivered: '#22c55e',
     cancelled: '#ef4444',
   };
   const statusLabels = {
     pending: 'Pendiente',
+    paid: 'Pagado',
     confirmed: 'Confirmado',
     shipped: 'Enviado',
+    in_transit: 'En tránsito',
     delivered: 'Entregado',
     cancelled: 'Cancelado',
   };
@@ -246,14 +265,14 @@ function ArtisanStatisticsPage() {
           {/* KPI Ventas mes */}
           <div className="bg-white rounded-2xl shadow-xl border border-orange-100 p-6 flex flex-col items-center group relative transition-transform duration-200 hover:scale-105 animate-fade-in">
             <div className="mb-2">{KPI_ICONS.ventas}</div>
-            <span className="text-3xl font-extrabold text-orange-600">{loadingStats ? '--' : errorStats ? '--' : userStats?.salesThisMonth?.toLocaleString('es-CO') ?? '--'}</span>
+            <span className="text-3xl font-extrabold text-orange-600">{loadingStats ? '--' : errorStats ? '--' : (userStats?.salesThisMonth || 0).toLocaleString('es-CO')}</span>
             <span className="text-gray-500 mt-1">Ventas este mes</span>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded shadow">Cantidad de ventas realizadas en el mes actual.</div>
           </div>
           {/* KPI Ingresos mes */}
           <div className="bg-white rounded-2xl shadow-xl border border-green-100 p-6 flex flex-col items-center group relative transition-transform duration-200 hover:scale-105 animate-fade-in">
             <div className="mb-2">{KPI_ICONS.ingresos}</div>
-            <span className="text-3xl font-extrabold text-green-600">{loadingStats ? '$--' : errorStats ? '$--' : userStats?.incomeThisMonth != null ? userStats.incomeThisMonth.toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }) : '$--'}</span>
+            <span className="text-3xl font-extrabold text-green-600">{loadingStats ? '$--' : errorStats ? '$--' : (userStats?.incomeThisMonth || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })}</span>
             <span className="text-gray-500 mt-1">Ingresos este mes</span>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-green-100 text-green-700 px-2 py-1 rounded shadow">Suma total de ingresos en el mes actual.</div>
           </div>
@@ -274,7 +293,7 @@ function ArtisanStatisticsPage() {
           {/* KPI Calificación promedio */}
           <div className="bg-white rounded-2xl shadow-xl border border-yellow-100 p-6 flex flex-col items-center group relative transition-transform duration-200 hover:scale-105 animate-fade-in">
             <div className="mb-2">{KPI_ICONS.rating}</div>
-            <span className="text-3xl font-extrabold text-yellow-500">{loadingStats ? '--' : errorStats ? '--' : userStats?.reviews?.average_rating?.toFixed(2) ?? '--'}</span>
+            <span className="text-3xl font-extrabold text-yellow-500">{loadingStats ? '--' : errorStats ? '--' : (userStats?.reviews?.average_rating || 0).toFixed(2)}</span>
             <span className="text-gray-500 mt-1">Calificación promedio</span>
             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded shadow">Promedio de calificaciones de todos tus productos.</div>
           </div>
@@ -306,6 +325,8 @@ function ArtisanStatisticsPage() {
                 <div className="text-gray-400">Cargando gráfica...</div>
               ) : errorSales ? (
                 <div className="text-red-500">{errorSales}</div>
+              ) : salesByDay.length === 0 ? (
+                <div className="text-gray-400">No hay datos de ventas para mostrar en el periodo seleccionado.</div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={salesByDay} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
@@ -338,6 +359,8 @@ function ArtisanStatisticsPage() {
                 <div className="text-gray-400">Cargando gráfica...</div>
               ) : errorIncome ? (
                 <div className="text-red-500">{errorIncome}</div>
+              ) : incomeByMonth.length === 0 ? (
+                <div className="text-gray-400">No hay datos de ingresos para mostrar en el periodo seleccionado.</div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={incomeByMonth} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
@@ -418,6 +441,8 @@ function ArtisanStatisticsPage() {
                 <div className="text-gray-400">Cargando gráfica...</div>
               ) : errorOrderStatus ? (
                 <div className="text-red-500">{errorOrderStatus}</div>
+              ) : orderStatus.length === 0 ? (
+                <div className="text-gray-400">No hay pedidos para mostrar en la distribución de estados.</div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
@@ -530,20 +555,31 @@ function ArtisanStatisticsPage() {
               <ul className="divide-y divide-gray-100">
                 {lowStockProducts.map(p => (
                   <li key={p.product_id} className="py-2 flex items-center gap-3 group">
-                    {p.image?.startsWith('/uploads/') ? (
-                      <img
-                        src={imageUrl(p.image)}
-                        alt={p.name}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
+                    {/* Determinar la fuente de la imagen usando el patrón correcto */}
+                    {p.image ? (
+                      p.image.startsWith('/uploads/') ? (
+                        <img
+                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${p.image}`}
+                          alt={p.name}
+                          className="w-10 h-10 rounded object-cover border"
+                          onError={(e) => {
+                            e.target.src = '/static/placeholder.png';
+                          }}
+                        />
+                      ) : (
+                        <Image
+                          src={imageUrl(p.image)}
+                          alt={p.name}
+                          width={40}
+                          height={40}
+                          className="w-10 h-10 rounded object-cover border"
+                          onError={(e) => {
+                            e.target.src = '/static/placeholder.png';
+                          }}
+                        />
+                      )
                     ) : (
-                      <Image
-                        src={imageUrl(p.image)}
-                        alt={p.name}
-                        width={40}
-                        height={40}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
+                      <div className="w-10 h-10 rounded bg-gray-200 border" />
                     )}
                     <span className="font-medium text-gray-800">{p.name}</span>
                     <span className={`ml-auto text-sm font-bold px-2 py-1 rounded ${p.stock <= 2 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>Stock: {p.stock}</span>
@@ -580,9 +616,12 @@ function ArtisanStatisticsPage() {
                     {r.product_image ? (
                       r.product_image.startsWith('/uploads/') ? (
                         <img
-                          src={imageUrl(r.product_image)}
+                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${r.product_image}`}
                           alt={r.product_name}
                           className="w-10 h-10 rounded object-cover border"
+                          onError={(e) => {
+                            e.target.src = '/static/placeholder.png';
+                          }}
                         />
                       ) : (
                         <Image
@@ -591,6 +630,9 @@ function ArtisanStatisticsPage() {
                           width={40}
                           height={40}
                           className="w-10 h-10 rounded object-cover border"
+                          onError={(e) => {
+                            e.target.src = '/static/placeholder.png';
+                          }}
                         />
                       )
                     ) : (

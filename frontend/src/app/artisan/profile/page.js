@@ -150,17 +150,26 @@ const ArtisanProfilePage = () => {
           <header className="flex items-center gap-6">
             <div className="relative group">
               {/* Avatar del artesano */}
-              {(avatarPreview && (typeof avatarPreview === 'string' ? avatarPreview.startsWith('/uploads') : true)) ? (
+              {avatarPreview ? (
                 <img
-                  src={typeof avatarPreview === 'string' ? imageUrl(avatarPreview) : avatarPreview}
+                  src={typeof avatarPreview === 'string' && avatarPreview.startsWith('/uploads') ? 
+                    `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${avatarPreview}` : 
+                    (typeof avatarPreview === 'string' ? imageUrl(avatarPreview) : avatarPreview)
+                  }
                   alt={user.nickname || 'Avatar'}
                   className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                  onError={(e) => {
+                    e.target.src = '/static/default-avatar.png';
+                  }}
                 />
               ) : (user.avatar && user.avatar.startsWith('/uploads') ? (
                 <img
-                  src={imageUrl(user.avatar)}
+                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${user.avatar}`}
                   alt={user.nickname || 'Avatar'}
                   className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                  onError={(e) => {
+                    e.target.src = '/static/default-avatar.png';
+                  }}
                 />
               ) : (
                 <Image
@@ -169,6 +178,9 @@ const ArtisanProfilePage = () => {
                   width={96}
                   height={96}
                   className="w-24 h-24 rounded-full object-cover border-4 border-primary mx-auto"
+                  onError={(e) => {
+                    e.target.src = '/static/default-avatar.png';
+                  }}
                 />
               ))}
               <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">

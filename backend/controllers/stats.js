@@ -195,13 +195,14 @@ const getUserStats = async (req, res) => {
       );
       salesCount = parseInt(salesResult.rows[0].count);
 
-      // KPIs del mes actual
+      // KPIs del mes actual (incluir paid y otros estados válidos)
       const salesMonthResult = await pool.query(
         `SELECT COUNT(DISTINCT o.id) as count, COALESCE(SUM(oi.price * oi.quantity),0) as income
          FROM orders o
          JOIN order_items oi ON o.id = oi.order_id
          JOIN products p ON oi.product_id = p.id
          WHERE p.artisan_id = $1
+           AND o.status IN ('paid', 'confirmed', 'shipped', 'in_transit', 'delivered')
            AND DATE_TRUNC('month', o.created_at) = DATE_TRUNC('month', CURRENT_DATE)`,
         [userId]
       );
@@ -368,7 +369,7 @@ const getSalesByDay = async (req, res) => {
       startDate.setDate(endDate.getDate() - days);
     }
 
-    // Query: contar ventas por día
+    // Query: contar ventas por día (incluir paid y otros estados válidos)
     const result = await pool.query(`
       SELECT to_char(o.created_at AT TIME ZONE 'America/Bogota', 'YYYY-MM-DD') as date,
              COUNT(DISTINCT o.id) as sales
@@ -376,7 +377,7 @@ const getSalesByDay = async (req, res) => {
       JOIN order_items oi ON o.id = oi.order_id
       JOIN products p ON oi.product_id = p.id
       WHERE p.artisan_id = $1
-        AND o.status IN ('confirmed', 'shipped', 'delivered')
+        AND o.status IN ('paid', 'confirmed', 'shipped', 'in_transit', 'delivered')
         AND o.created_at >= $2 AND o.created_at < $3
       GROUP BY date
       ORDER BY date ASC
@@ -422,7 +423,7 @@ const getIncomeByMonth = async (req, res) => {
       startDate.setMonth(endDate.getMonth() - months);
     }
 
-    // Query: sumar ingresos por mes
+    // Query: sumar ingresos por mes (incluir paid y otros estados válidos)
     const result = await pool.query(`
       SELECT to_char(o.created_at AT TIME ZONE 'America/Bogota', 'YYYY-MM') as month,
              COALESCE(SUM(oi.price * oi.quantity), 0) as income
@@ -430,7 +431,7 @@ const getIncomeByMonth = async (req, res) => {
       JOIN order_items oi ON o.id = oi.order_id
       JOIN products p ON oi.product_id = p.id
       WHERE p.artisan_id = $1
-        AND o.status IN ('confirmed', 'shipped', 'delivered')
+        AND o.status IN ('paid', 'confirmed', 'shipped', 'in_transit', 'delivered')
         AND o.created_at >= $2 AND o.created_at < $3
       GROUP BY month
       ORDER BY month ASC
@@ -466,7 +467,7 @@ const getTopProducts = async (req, res) => {
         p.price
       FROM products p
       LEFT JOIN order_items oi ON oi.product_id = p.id
-      LEFT JOIN orders o ON oi.order_id = o.id AND o.status IN ('confirmed', 'shipped', 'delivered')
+      LEFT JOIN orders o ON oi.order_id = o.id AND o.status IN ('paid', 'confirmed', 'shipped', 'in_transit', 'delivered')
       WHERE p.artisan_id = $1
       GROUP BY p.id, p.name, p.images, p.price
       ORDER BY total_sold DESC, p.name ASC
@@ -482,8 +483,8 @@ const getTopProducts = async (req, res) => {
 const getOrderStatusDistribution = async (req, res) => {
   try {
     const artisanId = req.user.id;
-    // Obtener todos los estados posibles
-    const allStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    // Obtener todos los estados posibles (incluyendo paid e in_transit)
+    const allStatuses = ['pending', 'paid', 'confirmed', 'shipped', 'in_transit', 'delivered', 'cancelled'];
     // Query: contar pedidos por estado
     const result = await pool.query(`
       SELECT o.status, COUNT(DISTINCT o.id) as count
@@ -496,7 +497,10 @@ const getOrderStatusDistribution = async (req, res) => {
     // Mapear resultados
     const statusMap = {};
     result.rows.forEach(row => { statusMap[row.status] = parseInt(row.count, 10); });
-    const data = allStatuses.map(status => ({ status, count: statusMap[status] || 0 }));
+    // Solo incluir estados que tengan datos
+    const data = allStatuses
+      .map(status => ({ status, count: statusMap[status] || 0 }))
+      .filter(item => item.count > 0); // Filtrar solo estados con datos
     res.json(data);
   } catch (error) {
     console.error('Error en getOrderStatusDistribution:', error);
